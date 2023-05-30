@@ -168,6 +168,7 @@ public class TypeContractorConfiguration
 
     public TypeContractorConfiguration AddAssemblies(params Assembly[] assemblies)
     {
+        ArgumentNullException.ThrowIfNull(assemblies, nameof(assemblies));
         foreach (var assembly in assemblies)
             AddAssembly(assembly.FullName!, assembly.Location);
 
