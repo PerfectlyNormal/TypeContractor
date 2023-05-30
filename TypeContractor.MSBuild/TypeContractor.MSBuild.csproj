@@ -6,7 +6,6 @@
 		<Nullable>enable</Nullable>
 		<IsPackable>true</IsPackable>
 		<GenerateDependencyFile>true</GenerateDependencyFile>
-		<Version>0.2.7.4</Version>
 		<Title>TypeContractor.MSBuild</Title>
 		<Authors>Hogia HR Systems</Authors>
 		<Description>Provide TypeContractor as a MSBuild task</Description>
