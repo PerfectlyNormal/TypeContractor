@@ -23,5 +23,6 @@ extends:
     version: ${{parameters.version}}
     includeScopes: 'msbuild'
     project: 'TypeContractor.MSBuild/TypeContractor.MSBuild.csproj'
+    releaseNotesFilename: 'release-notes-msbuild.md'
 
 # See https://dev.azure.com/Hogia/Infrastructure/_git/INF_BuildTemplates?path=%2Fnuget-template.yml&version=GBmaster for all available parameters
