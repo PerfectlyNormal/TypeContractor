@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TypeContractor.Tests", "Typ
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{70D3E515-AB31-4EDB-886A-23ECD377E3AE}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		.gitignore = .gitignore
+		NuGet.config = NuGet.config
 		README.md = README.md
 	EndProjectSection
 EndProject
