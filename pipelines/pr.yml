@@ -1,0 +1,13 @@
+trigger:
+- none
+
+resources:
+  repositories:
+  - repository: templates
+    type: git
+    name: Infrastructure/INF_BuildTemplates
+
+extends:
+  template: pr-template.yml@templates
+
+# See https://dev.azure.com/Hogia/Infrastructure/_git/INF_BuildTemplates?path=%2Fpr-template.yml&version=GBmaster for all available parameters
