@@ -21,10 +21,8 @@ namespace TypeContractor.Tests.Helpers
         public void IsNullable_Is_True_For_Nullable_Types(string fieldName)
         {
             var field = typeof(TypeChecksTests)
-                .GetField(fieldName, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-            if (field is null)
-                throw new ArgumentNullException(nameof(fieldName), $"Unable to find field '{fieldName}'");
+                .GetField(fieldName, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                ?? throw new ArgumentNullException(nameof(fieldName), $"Unable to find field '{fieldName}'");
 
             TypeChecks.IsNullable(field.FieldType).Should().BeTrue();
         }
@@ -36,10 +34,8 @@ namespace TypeContractor.Tests.Helpers
         public void IsNullable_Is_False_For_Reference_Types(string fieldName)
         {
             var field = typeof(TypeChecksTests)
-                .GetField(fieldName, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-            if (field is null)
-                throw new ArgumentNullException(nameof(fieldName), $"Unable to find field '{fieldName}'");
+                .GetField(fieldName, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                ?? throw new ArgumentNullException(nameof(fieldName), $"Unable to find field '{fieldName}'");
 
             TypeChecks.IsNullable(field.FieldType).Should().BeFalse();
         }
@@ -85,6 +81,7 @@ namespace TypeContractor.Tests.Helpers
     internal class ComplexListWrapper : List<ComplexNestedType>
     { }
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     internal class ComplexNestedType
     {
         public int ErrorCode { get; set; }
@@ -94,4 +91,5 @@ namespace TypeContractor.Tests.Helpers
         public Guid SequentialId { get; set; }
         public string SourceHint { get; set; }
     }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 }
