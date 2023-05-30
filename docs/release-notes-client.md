@@ -1,3 +1,8 @@
+#[0.1.0.1](https://dev.azure.com/Hogia/HRS/_git/HACK_TypeContractor/commit/bbebe1419b4c3f6b0a889baa2d7d041be1c55bca) - 2023-05-30
+
+####Other changes
+* chore(msbuild): Remove explicit nuget version [Per Christian B. Viken](https://dev.azure.com/Hogia/HRS/_git/HACK_TypeContractor/commit/bbebe1419b4c3f6b0a889baa2d7d041be1c55bca)
+
 #[0.1.0](https://dev.azure.com/Hogia/HRS/_git/HACK_TypeContractor/commit/ad79054d0e6e43206167d08fe24217f331b8a5dd) - 2023-05-30
 
 ####New functionality
