@@ -8,5 +8,6 @@ namespace ExampleContracts.v1
         public Permissions WorldPermissions { get; set; }
         public CustomClass Custom { get; set; }
         public DtoWithDictionary DtoWithDictionary { get; set; }
+        public ComplexDictionary ComplexDictionary { get; set; }
     }
 }

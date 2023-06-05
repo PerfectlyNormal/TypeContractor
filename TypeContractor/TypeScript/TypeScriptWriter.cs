@@ -51,11 +51,17 @@ public class TypeScriptWriter
 
         foreach (var import in imports)
         {
-            var importedType = GetImportedType(allTypes, import) ?? throw new ArgumentException($"Unable to find type for {import.SourceType}");
-            var relativePath = PathHelpers.RelativePath(importedType.ContractedType.Folder.Name, type.ContractedType.Folder.Name);
-            var importPath = $"{relativePath}/{importedType.Name}".Replace("//", "/", StringComparison.InvariantCultureIgnoreCase);
+            var importedTypes = GetImportedTypes(allTypes, import);
+            if (!importedTypes.Any())
+                throw new ArgumentException($"Unable to find type for {import.SourceType}");
 
-            _builder.AppendLine(CultureInfo.InvariantCulture, $"import {{ {import.DestinationType} }} from \"{importPath}\";");
+            foreach (var importedType in importedTypes)
+            {
+                var relativePath = PathHelpers.RelativePath(importedType.ContractedType.Folder.Name, type.ContractedType.Folder.Name);
+                var importPath = $"{relativePath}/{importedType.Name}".Replace("//", "/", StringComparison.InvariantCultureIgnoreCase);
+            
+                _builder.AppendLine(CultureInfo.InvariantCulture, $"import {{ {import.ImportType} }} from \"{importPath}\";");
+            }
         }
 
         if (imports.Any())
@@ -94,12 +100,20 @@ public class TypeScriptWriter
         _builder.AppendLine("}");
     }
 
-    private static OutputType? GetImportedType(IEnumerable<OutputType> allTypes, OutputProperty import)
+    private static IEnumerable<OutputType> GetImportedTypes(IEnumerable<OutputType> allTypes, OutputProperty import)
     {
         var sourceType = import.SourceType;
         if (TypeChecks.ImplementsIEnumerable(import.SourceType) || TypeChecks.IsNullable(import.SourceType))
             sourceType = TypeChecks.GetGenericType(sourceType);
 
-        return allTypes.FirstOrDefault(x => x.FullName == sourceType.FullName);
+        if (TypeChecks.ImplementsIDictionary(import.SourceType))
+        {
+            var keyType = TypeChecks.GetGenericType(sourceType, 0);
+            var valueType = TypeChecks.GetGenericType(sourceType, 1);
+
+            return allTypes.Where(x => x.FullName == keyType.FullName || x.FullName == valueType.FullName);
+        }
+
+        return allTypes.Where(x => x.FullName == sourceType.FullName);
     }
 }
