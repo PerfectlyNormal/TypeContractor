@@ -17,7 +17,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExampleContracts", "ExampleContracts\ExampleContracts.csproj", "{31A2B979-CE53-48E6-89BC-D7C9D9B12968}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TypeContractor.MSBuild", "TypeContractor.MSBuild\TypeContractor.MSBuild.csproj", "{41F7C1A7-AA54-458F-8569-061D832F5FCF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TypeContractor.MSBuild", "TypeContractor.MSBuild\TypeContractor.MSBuild.csproj", "{41F7C1A7-AA54-458F-8569-061D832F5FCF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TypeContractor.Example", "TypeContractor.Example\TypeContractor.Example.csproj", "{8766274F-1296-415C-8009-0A7A86768B7F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +43,10 @@ Global
 		{41F7C1A7-AA54-458F-8569-061D832F5FCF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{41F7C1A7-AA54-458F-8569-061D832F5FCF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{41F7C1A7-AA54-458F-8569-061D832F5FCF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8766274F-1296-415C-8009-0A7A86768B7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8766274F-1296-415C-8009-0A7A86768B7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8766274F-1296-415C-8009-0A7A86768B7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8766274F-1296-415C-8009-0A7A86768B7F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
