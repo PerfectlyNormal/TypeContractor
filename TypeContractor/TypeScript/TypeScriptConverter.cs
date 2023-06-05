@@ -93,6 +93,15 @@ public class TypeScriptConverter
         if (CustomMappedTypes.TryGetValue(sourceType, out OutputType? customType))
             return new DestinationType(customType.Name, false, false, null);
 
+        if (TypeChecks.ImplementsIDictionary(sourceType))
+        {
+            var keyType = GetDestinationType(TypeChecks.GetGenericType(sourceType, 0));
+            var valueType = TypeChecks.GetGenericType(sourceType, 1);
+            var valueDestinationType = GetDestinationType(valueType);
+
+            return new DestinationType($"{{ [key: {keyType.TypeName}]: {valueDestinationType.TypeName} }}", true, false, valueType);
+        }
+
         if (TypeChecks.ImplementsIEnumerable(sourceType))
         {
             var innerType = TypeChecks.GetGenericType(sourceType);
