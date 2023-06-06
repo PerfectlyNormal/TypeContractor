@@ -1,6 +1,6 @@
 namespace TypeContractor.Helpers;
 
-internal static class TypeChecks
+public static class TypeChecks
 {
     public static bool IsNullable(Type sourceType) => Nullable.GetUnderlyingType(sourceType) != null || sourceType.Name == "Nullable`1";
 
@@ -46,6 +46,11 @@ internal static class TypeChecks
                 return true;
 
         return false;
+    }
+
+    public static bool IsValueTuple(Type sourceType)
+    {
+        return sourceType.IsGenericType && sourceType.Name.StartsWith("ValueTuple`", StringComparison.InvariantCulture);
     }
 
     public static Type GetGenericType(Type sourceType, int index = 0)

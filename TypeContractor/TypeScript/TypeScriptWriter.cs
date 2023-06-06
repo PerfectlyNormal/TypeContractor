@@ -49,6 +49,8 @@ public class TypeScriptWriter
             .DistinctBy(p => p.InnerSourceType ?? p.SourceType)
             .ToList();
 
+        var alreadyImportedTypes = new List<string>();
+
         foreach (var import in imports)
         {
             var importedTypes = GetImportedTypes(allTypes, import);
@@ -57,9 +59,13 @@ public class TypeScriptWriter
 
             foreach (var importedType in importedTypes)
             {
+                if (alreadyImportedTypes.Contains(import.ImportType))
+                    continue;
+
                 var relativePath = PathHelpers.RelativePath(importedType.ContractedType.Folder.Name, type.ContractedType.Folder.Name);
                 var importPath = $"{relativePath}/{importedType.Name}".Replace("//", "/", StringComparison.InvariantCultureIgnoreCase);
-            
+
+                alreadyImportedTypes.Add(import.ImportType);
                 _builder.AppendLine(CultureInfo.InvariantCulture, $"import {{ {import.ImportType} }} from \"{importPath}\";");
             }
         }
