@@ -1,3 +1,15 @@
+#[0.3.0.0](https://dev.azure.com/Hogia/HRS/_git/HACK_TypeContractor/commit/f6ead2f51e8497c69e2ed8b678508bdef2f2297a) - 2023-06-06
+
+####New functionality
+* feat(lib): Add support for simple ValueTuple types [Per Christian B. Viken](https://dev.azure.com/Hogia/HRS/_git/HACK_TypeContractor/commit/ac80627009ecff40928dfb86278809590c0478ef)
+* feat(lib): Add support for nested classes [Per Christian B. Viken](https://dev.azure.com/Hogia/HRS/_git/HACK_TypeContractor/commit/4a99e89bec2adca66408fa3cbdc1b68afd6b4772)
+
+####Bug fixes or code changes
+* refactor(msbuild): Reuse type check from main library [Per Christian B. Viken](https://dev.azure.com/Hogia/HRS/_git/HACK_TypeContractor/commit/4e422da77f08af845849fabfdfa6eb9a1f27b03b)
+
+####Other changes
+* chore(lib): Add better debugging information when paths fail [Per Christian B. Viken](https://dev.azure.com/Hogia/HRS/_git/HACK_TypeContractor/commit/1a49207a1d682ea46d6ca5ffded94e14b66f5611)
+
 #[0.2.0.0](https://dev.azure.com/Hogia/HRS/_git/HACK_TypeContractor/commit/0da0a9033a6a84865329b529cdb4276ac8651d12) - 2023-06-06
 
 ####New functionality
