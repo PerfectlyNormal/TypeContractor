@@ -109,6 +109,16 @@ public class TypeScriptConverterTests
             .And.Contain(x => x.SourceName == "FinalProperty");
     }
 
+    [Fact]
+    public void Nested_Classes_Gets_DeclaringType_As_Folder_Prefix()
+    {
+        var result = Sut.Convert(typeof(YearSummary.Response));
+
+        result.Should().NotBeNull();
+        result.Name.Should().Be("Response");
+        result.ContractedType.Folder.Path.Should().EndWith("YearSummary");
+    }
+
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     private class SimpleTypes
     {
@@ -137,6 +147,21 @@ public class TypeScriptConverterTests
     {
         public string FinalProperty { get; set; }
     }
+
+    private class YearSummary
+    {
+        public class Request
+        {
+            public Guid OrganizationId { get; set; }
+        }
+
+        public class Response
+        {
+            public IEnumerable<int> Years { get; set; }
+            public Dictionary<int, int> PaymentsPerYear { get; set; }
+        }
+    }
+
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
     private MetadataLoadContext BuildMetadataLoadContext()
