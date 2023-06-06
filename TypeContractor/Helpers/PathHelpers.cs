@@ -41,7 +41,7 @@ internal static class PathHelpers
         // If we didn't find a common prefix then throw
         if (lastCommonRoot == -1)
         {
-            throw new ArgumentException("Paths do not have a common base");
+            throw new ArgumentException($"Paths \"{Path.Combine(absDirs)}\" and \"{Path.Combine(relDirs)}\" do not have a common base");
         }
 
         // Build up the relative path
