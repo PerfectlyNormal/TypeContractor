@@ -1,6 +1,6 @@
 namespace TypeContractor.Helpers;
 
-internal static class TypeChecks
+public static class TypeChecks
 {
     public static bool IsNullable(Type sourceType) => Nullable.GetUnderlyingType(sourceType) != null || sourceType.Name == "Nullable`1";
 

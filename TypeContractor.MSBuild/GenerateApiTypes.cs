@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.IO;
 using System.Runtime.InteropServices;
+using TypeContractor.Helpers;
 
 namespace TypeContractor.MSBuild
 {
@@ -194,29 +195,13 @@ namespace TypeContractor.MSBuild
             if (type.Name == "ActionResult`1")
                 return UnwrappedResult(type.GenericTypeArguments[0]);
 
-            if (ImplementsIEnumerable(type))
+            if (TypeChecks.ImplementsIEnumerable(type))
                 return UnwrappedResult(type.GenericTypeArguments[0]);
 
             if (type.FullName!.StartsWith("System.", StringComparison.InvariantCulture))
                 return null;
 
             return type;
-        }
-
-        private static bool ImplementsIEnumerable(Type sourceType)
-        {
-            if (sourceType.IsInterface && sourceType.GetGenericTypeDefinition().Name == "IEnumerable`1")
-                return true;
-
-            // We can treat a string as IEnumerable, which we don't want to happen here
-            if (sourceType.FullName == typeof(string).FullName)
-                return false;
-
-            foreach (Type interfaceUsed in sourceType.GetInterfaces())
-                if (interfaceUsed.IsGenericType && interfaceUsed.GetGenericTypeDefinition().Name == "IEnumerable`1")
-                    return true;
-
-            return false;
         }
     }
 }
