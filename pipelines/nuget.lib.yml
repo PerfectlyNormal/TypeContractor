@@ -21,7 +21,7 @@ extends:
   template: nuget-template.yml@templates
   parameters:
     version: ${{parameters.version}}
-    includeScopes: 'lib'
+    includeScopes: 'lib,all'
     project: 'TypeContractor/TypeContractor.csproj'
     releaseNotesFilename: 'release-notes.md'
 

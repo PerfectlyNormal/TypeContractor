@@ -1,4 +1,5 @@
 using Newtonsoft.Json;
+using System.Collections;
 using TypeContractor.Helpers;
 
 namespace TypeContractor.Tests.Helpers
@@ -47,6 +48,8 @@ namespace TypeContractor.Tests.Helpers
         [InlineData(typeof(byte[]))]
         [InlineData(typeof(CustomListWrapper))]
         [InlineData(typeof(ComplexListWrapper))]
+        [InlineData(typeof(ICollection<string>))]
+        [InlineData(typeof(IReadOnlyCollection<string>))]
         public void ImplementsIEnumerable_Is_True_For_Targets(Type target)
         {
             TypeChecks.ImplementsIEnumerable(target).Should().BeTrue();
@@ -58,9 +61,35 @@ namespace TypeContractor.Tests.Helpers
         [InlineData(typeof(MyEnum))]
         [InlineData(typeof(byte))]
         [InlineData(typeof(CustomCollection))]
+        [InlineData(typeof(Dictionary<string, int>))]
+        [InlineData(typeof(Dictionary<int, int>))]
+        [InlineData(typeof(Dictionary<int, string>))]
+        [InlineData(typeof(IDictionary<string, int>))]
+        [InlineData(typeof(IDictionary<int, int>))]
+        [InlineData(typeof(IDictionary<int, string>))]
+        [InlineData(typeof(IReadOnlyDictionary<string, int>))]
+        [InlineData(typeof(IReadOnlyDictionary<int, int>))]
+        [InlineData(typeof(IReadOnlyDictionary<int, string>))]
+        [InlineData(typeof(ICollection))]
+        [InlineData(typeof(IDictionary))]
         public void ImplementsIEnumerable_Is_False_For_Invalid_Targets(Type target)
         {
             TypeChecks.ImplementsIEnumerable(target).Should().BeFalse();
+        }
+
+        [Theory]
+        [InlineData(typeof(Dictionary<string, int>))]
+        [InlineData(typeof(Dictionary<int, int>))]
+        [InlineData(typeof(Dictionary<int, string>))]
+        [InlineData(typeof(IDictionary<string, int>))]
+        [InlineData(typeof(IDictionary<int, int>))]
+        [InlineData(typeof(IDictionary<int, string>))]
+        [InlineData(typeof(IReadOnlyDictionary<string, int>))]
+        [InlineData(typeof(IReadOnlyDictionary<int, int>))]
+        [InlineData(typeof(IReadOnlyDictionary<int, string>))]
+        public void ImplementsDictionary_Is_True_For_Targets(Type target)
+        {
+            TypeChecks.ImplementsIDictionary(target).Should().BeTrue();
         }
     }
 

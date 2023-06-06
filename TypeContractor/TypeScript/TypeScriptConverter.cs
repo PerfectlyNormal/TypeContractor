@@ -69,7 +69,7 @@ public class TypeScriptConverter
 
             var destinationName = GetDestinationName(property.Name);
             var destinationType = GetDestinationType(property.PropertyType);
-            outputProperties.Add(new OutputProperty(property.Name, property.PropertyType, destinationType.InnerType, destinationName, destinationType.TypeName, destinationType.IsBuiltin, destinationType.IsArray, TypeChecks.IsNullable(property.PropertyType)));
+            outputProperties.Add(new OutputProperty(property.Name, property.PropertyType, destinationType.InnerType, destinationName, destinationType.TypeName, destinationType.ImportType, destinationType.IsBuiltin, destinationType.IsArray, TypeChecks.IsNullable(property.PropertyType)));
         }
 
         // Look at base classes
@@ -93,11 +93,22 @@ public class TypeScriptConverter
         if (CustomMappedTypes.TryGetValue(sourceType, out OutputType? customType))
             return new DestinationType(customType.Name, false, false, null);
 
+        if (TypeChecks.ImplementsIDictionary(sourceType))
+        {
+            var keyType = GetDestinationType(TypeChecks.GetGenericType(sourceType, 0));
+            var valueType = TypeChecks.GetGenericType(sourceType, 1);
+            var valueDestinationType = GetDestinationType(valueType);
+
+            var isBuiltin = keyType.IsBuiltin && valueDestinationType.IsBuiltin;
+
+            return new DestinationType($"{{ [key: {keyType.TypeName}]: {valueDestinationType.TypeName} }}", isBuiltin, false, valueType, valueDestinationType.TypeName);
+        }
+
         if (TypeChecks.ImplementsIEnumerable(sourceType))
         {
             var innerType = TypeChecks.GetGenericType(sourceType);
 
-            var (TypeName, IsBuiltin, _, _) = GetDestinationType(innerType);
+            var (TypeName, _, IsBuiltin, _, _) = GetDestinationType(innerType);
             return new DestinationType(TypeName, IsBuiltin, true, innerType);
         }
 
