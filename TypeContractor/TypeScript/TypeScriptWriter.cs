@@ -100,7 +100,7 @@ public class TypeScriptWriter
         _builder.AppendLine("}");
     }
 
-    private static IEnumerable<OutputType> GetImportedTypes(IEnumerable<OutputType> allTypes, OutputProperty import)
+    private static List<OutputType> GetImportedTypes(IEnumerable<OutputType> allTypes, OutputProperty import)
     {
         var sourceType = import.SourceType;
         if (TypeChecks.ImplementsIEnumerable(import.SourceType) || TypeChecks.IsNullable(import.SourceType))
@@ -111,9 +111,9 @@ public class TypeScriptWriter
             var keyType = TypeChecks.GetGenericType(sourceType, 0);
             var valueType = TypeChecks.GetGenericType(sourceType, 1);
 
-            return allTypes.Where(x => x.FullName == keyType.FullName || x.FullName == valueType.FullName);
+            return allTypes.Where(x => x.FullName == keyType.FullName || x.FullName == valueType.FullName).ToList();
         }
 
-        return allTypes.Where(x => x.FullName == sourceType.FullName);
+        return allTypes.Where(x => x.FullName == sourceType.FullName).ToList();
     }
 }
