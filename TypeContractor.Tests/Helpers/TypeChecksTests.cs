@@ -91,6 +91,24 @@ namespace TypeContractor.Tests.Helpers
         {
             TypeChecks.ImplementsIDictionary(target).Should().BeTrue();
         }
+
+        [Theory]
+        [InlineData(typeof((string, int)))]
+        [InlineData(typeof(ValueTuple<string>))]
+        [InlineData(typeof(ValueTuple<string, int, int>))]
+        public void IsValueTuple_Is_True_For_Targets(Type target)
+        {
+            TypeChecks.IsValueTuple(target).Should().BeTrue();
+        }
+
+        [Theory]
+        [InlineData(typeof(string))]
+        [InlineData(typeof(ValueTuple))]
+        [InlineData(typeof(Dictionary<int, (int, string)>))]
+        public void IsValueTuple_Is_False_For_Invalid_Targets(Type target)
+        {
+            TypeChecks.IsValueTuple(target).Should().BeFalse();
+        }
     }
 
     internal class CustomListWrapper : List<string>

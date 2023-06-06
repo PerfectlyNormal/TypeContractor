@@ -119,6 +119,30 @@ public class TypeScriptConverterTests
         result.ContractedType.Folder.Path.Should().EndWith("YearSummary");
     }
 
+    [Fact]
+    public void Handles_Dictionary_With_Tuple_Values()
+    {
+        var result = Sut.Convert(typeof(ComplexDictionaryResponse));
+
+        result.Should().NotBeNull();
+        result.Properties.Should().ContainSingle();
+        var prop = result.Properties!.First();
+        prop.DestinationName.Should().Be("migrationWarnings");
+        prop.DestinationType.Should().Be("{ [key: string]: { item1: string[], item2: string[] } }");
+    }
+
+    [Fact]
+    public void Handles_Simple_ValueTuple_Types()
+    {
+        var result = Sut.Convert(typeof(ValueTupleResponse));
+
+        result.Should().NotBeNull();
+        result.Properties.Should().ContainSingle();
+        var prop = result.Properties!.First();
+        prop.DestinationName.Should().Be("messages");
+        prop.DestinationType.Should().Be("{ item1: string[], item2: string[] }");
+    }
+
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     private class SimpleTypes
     {
@@ -160,6 +184,16 @@ public class TypeScriptConverterTests
             public IEnumerable<int> Years { get; set; }
             public Dictionary<int, int> PaymentsPerYear { get; set; }
         }
+    }
+
+    private class ComplexDictionaryResponse
+    {
+        public Dictionary<string, (List<string> Errors, List<string> Warnings)> MigrationWarnings { get; set; }
+    }
+
+    private class ValueTupleResponse
+    {
+        public (List<string> Errors, List<string> Warnings) Messages { get; set; }
     }
 
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.

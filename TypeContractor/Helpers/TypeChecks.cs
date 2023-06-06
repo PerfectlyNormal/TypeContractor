@@ -48,6 +48,11 @@ public static class TypeChecks
         return false;
     }
 
+    public static bool IsValueTuple(Type sourceType)
+    {
+        return sourceType.IsGenericType && sourceType.Name.StartsWith("ValueTuple`", StringComparison.InvariantCulture);
+    }
+
     public static Type GetGenericType(Type sourceType, int index = 0)
     {
         if (!sourceType.GenericTypeArguments.Any() && sourceType.BaseType is not null)

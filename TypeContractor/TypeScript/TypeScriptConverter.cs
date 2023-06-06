@@ -112,6 +112,18 @@ public class TypeScriptConverter
             return new DestinationType(TypeName, IsBuiltin, true, innerType);
         }
 
+        if (TypeChecks.IsValueTuple(sourceType))
+        {
+            var arguments = sourceType.GenericTypeArguments;
+            var argumentDestinationTypes = arguments.Select(arg => GetDestinationType(arg));
+            var isBuiltin = argumentDestinationTypes.All(arg => arg.IsBuiltin);
+
+            var argumentList = argumentDestinationTypes.Select((arg, idx) => $"item{idx+1}: {arg.TypeName}{(arg.IsArray ? "[]" : "")}");
+            var typeName = $"{{ {string.Join(", ", argumentList)} }}";
+
+            return new DestinationType(typeName, isBuiltin, false, null);
+        }
+
         if (TypeChecks.IsNullable(sourceType))
         {
             return GetDestinationType(sourceType.GenericTypeArguments.First());
