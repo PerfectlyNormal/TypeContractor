@@ -4,6 +4,7 @@ trigger:
       - main
   paths:
     include:
+      - TypeContractor/* 
       - TypeContractor.MSBuild/*
 
 resources:
@@ -21,7 +22,7 @@ extends:
   template: nuget-template.yml@templates
   parameters:
     version: ${{parameters.version}}
-    includeScopes: 'msbuild'
+    includeScopes: 'msbuild,lib,all'
     project: 'TypeContractor.MSBuild/TypeContractor.MSBuild.csproj'
     releaseNotesFilename: 'release-notes-msbuild.md'
 
