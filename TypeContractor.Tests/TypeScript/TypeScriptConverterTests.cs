@@ -20,7 +20,7 @@ public class TypeScriptConverterTests
     [Fact]
     public void Throws_Given_Invalid_Input()
     {
-        Sut.Invoking(c => c.Convert(null))
+        Sut.Invoking(c => c.Convert(null!))
             .Should().Throw<ArgumentNullException>();
     }
 
@@ -119,7 +119,11 @@ public class TypeScriptConverterTests
 
     private class TypeVisibility
     {
+#pragma warning disable IDE0051 // Remove unused private members
+#pragma warning disable IDE1006 // Naming Styles
         private string _stringProp { get; set; }
+#pragma warning restore IDE1006 // Naming Styles
+#pragma warning restore IDE0051 // Remove unused private members
         public int WriteOnlyNumber { private get; set; }
         public int ReadOnlyNumber { get; private set; }
     }
