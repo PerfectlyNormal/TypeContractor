@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		
+		<PackAsTool>true</PackAsTool>
+		<PackageId>TypeContractor</PackageId>
+		<Authors>Hogia HR Systems</Authors>
+		<Description>Provide TypeContractor as .NET tool</Description>
+		<PackageTags>dotnet-tool TypeContractor TypeScript generator</PackageTags>
+		<ToolCommandName>typecontractor</ToolCommandName>
+		<PackageOutputPath>./nupkg</PackageOutputPath>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\TypeContractor\TypeContractor.csproj" />
+	</ItemGroup>
+
+</Project>
