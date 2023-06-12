@@ -1,3 +1,11 @@
+#[0.3.1.0](https://dev.azure.com/Hogia/HRS/_git/HACK_TypeContractor/commit/b5416a0660889b0602bd5a9e64236a633a84b46e) - 2023-06-12
+
+####Bug fixes or code changes
+* fix(lib): Add more null checks [Per Christian B. Viken](https://dev.azure.com/Hogia/HRS/_git/HACK_TypeContractor/commit/625a7b76936db33713b893454ba9984db24b1429)
+
+####Other changes
+* chore(lib): Add PackageId to TypeContractor main library [Per Christian B. Viken](https://dev.azure.com/Hogia/HRS/_git/HACK_TypeContractor/commit/fd2a731e4e202ae1cf31705c86ad31fc9468daf5)
+
 #[0.3.0.0](https://dev.azure.com/Hogia/HRS/_git/HACK_TypeContractor/commit/f6ead2f51e8497c69e2ed8b678508bdef2f2297a) - 2023-06-06
 
 ####New functionality
