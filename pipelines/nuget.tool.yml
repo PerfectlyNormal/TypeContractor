@@ -1,0 +1,29 @@
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - TypeContractor/*
+      - TypeContractor.Tool/*
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: Infrastructure/INF_BuildTemplates
+
+parameters:
+  - name: version
+    type: string
+    default: auto
+
+extends:
+  template: nuget-template.yml@templates
+  parameters:
+    version: ${{parameters.version}}
+    includeScopes: 'lib,tool,all'
+    project: 'TypeContractor.Tool/TypeContractor.Tool.csproj'
+    releaseNotesFilename: 'release-notes-tool.md'
+
+# See https://dev.azure.com/Hogia/Infrastructure/_git/INF_BuildTemplates?path=%2Fnuget-template.yml&version=GBmaster for all available parameters
