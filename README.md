@@ -70,6 +70,22 @@ to a list of candidates.
 For each candidate, we apply stripping and replacements and custom mappings and
 write everything to the output files.
 
+### Installing locally
+
+Instead of installing the tool globally, you can also add it locally to the
+project that is going to use it. This makes it easier to make sure everyone
+who wants to run the project have it available.
+
+For the initial setup, run:
+
+`dotnet new tool-manifest`
+`dotnet tool install typecontractor`
+
+in your Web-project.
+
+Whenever new users check out the repository, they can run `dotnet tool restore`
+and get everything you need installed.
+
 ### Running automatically
 
 In your `Web.csproj` add a target that calls the tool after build. Example:
