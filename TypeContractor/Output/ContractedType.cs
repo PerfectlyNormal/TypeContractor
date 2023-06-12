@@ -1,10 +1,13 @@
+using System.Security.AccessControl;
+
 namespace TypeContractor.Output;
 
 public record ContractedType(string Name, string FullName, Type Type, Folder Folder)
 {
     public static ContractedType FromName(string name, Type type, TypeContractorConfiguration configuration)
     {
-        if (configuration is null) throw new ArgumentNullException(nameof(configuration));
+        ArgumentNullException.ThrowIfNull(type, nameof(type));
+        ArgumentNullException.ThrowIfNull(configuration, nameof(configuration));
 
         var nameparts = ApplyReplacements(name, configuration.Replacements).Split('.');
         var typeName = nameparts.Last();
