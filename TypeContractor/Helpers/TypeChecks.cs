@@ -2,7 +2,11 @@ namespace TypeContractor.Helpers;
 
 public static class TypeChecks
 {
-    public static bool IsNullable(Type sourceType) => Nullable.GetUnderlyingType(sourceType) != null || sourceType.Name == "Nullable`1";
+    public static bool IsNullable(Type sourceType)
+    {
+        ArgumentNullException.ThrowIfNull(sourceType, nameof(sourceType));
+        return Nullable.GetUnderlyingType(sourceType) != null || sourceType.Name == "Nullable`1";
+    }
 
     /// <summary>
     /// Returns <c>true</c> if the given type or any interfaces it implements is <c>IEnumerable&lt;T></c>.
@@ -16,6 +20,8 @@ public static class TypeChecks
     /// <returns></returns>
     public static bool ImplementsIEnumerable(Type sourceType)
     {
+        ArgumentNullException.ThrowIfNull(sourceType, nameof(sourceType));
+
         if (sourceType.IsInterface && (GetGenericTypeDefinition(sourceType) == typeof(IEnumerable<>) || sourceType.Name == "IEnumerable`1") && !IsDictionary(sourceType))
             return true;
 
@@ -38,6 +44,8 @@ public static class TypeChecks
 
     public static bool ImplementsIDictionary(Type sourceType)
     {
+        ArgumentNullException.ThrowIfNull(sourceType, nameof(sourceType));
+
         if (sourceType.IsInterface && IsDictionary(sourceType))
             return true;
 
@@ -50,11 +58,14 @@ public static class TypeChecks
 
     public static bool IsValueTuple(Type sourceType)
     {
+        ArgumentNullException.ThrowIfNull(sourceType, nameof(sourceType));
         return sourceType.IsGenericType && sourceType.Name.StartsWith("ValueTuple`", StringComparison.InvariantCulture);
     }
 
     public static Type GetGenericType(Type sourceType, int index = 0)
     {
+        ArgumentNullException.ThrowIfNull(sourceType, nameof(sourceType));
+
         if (!sourceType.GenericTypeArguments.Any() && sourceType.BaseType is not null)
             return GetGenericType(sourceType.BaseType);
 
