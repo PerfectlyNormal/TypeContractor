@@ -1,3 +1,5 @@
+#[0.3.1](https://dev.azure.com/Hogia/HRS/_git/HACK_TypeContractor/commit/82dc787c037532f30c8ca177da6d166630380030) - 2023-06-12
+
 #[0.1.0](https://dev.azure.com/Hogia/HRS/_git/HACK_TypeContractor/commit/6bcdc91644e0494eda633c93462549b1b2c040d0) - 2023-06-12
 
 ####New functionality
