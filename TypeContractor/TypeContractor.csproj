@@ -5,6 +5,7 @@
 		<Nullable>enable</Nullable>
 		<AnalysisLevel>latest-recommended</AnalysisLevel>
 		<CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
+		<PackageId>TypeContractor.Lib</PackageId>
 	</PropertyGroup>
 	<ItemGroup>
 	  <PackageReference Include="System.Reflection.MetadataLoadContext" Version="6.0.0" />
