@@ -52,16 +52,16 @@ internal class Generator
         foreach (var controller in controllers)
         {
             Log.LogDebug($"Checking controller {controller.FullName}.");
-            var returnTypes = controller
-                .GetMethods().Where(ReturnsActionResult)
+            var endpoints = controller
+                .GetMethods().Where(ReturnsActionResult);
+
+            var returnTypes = endpoints
                 .Select(UnwrappedResult).Where(x => x != null)
+                .Cast<Type>()
                 .ToList();
 
             foreach (var returnType in returnTypes)
             {
-                if (returnType is null)
-                    continue;
-
                 Log.LogDebug($"Adding (return) type {returnType.FullName} from assembly {returnType.Assembly.FullName}");
                 typesToLoad.TryAdd(returnType.Assembly, new HashSet<Type>());
                 typesToLoad[returnType.Assembly].Add(returnType);
