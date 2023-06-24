@@ -1,5 +1,4 @@
 using System.Reflection;
-using System.Runtime.InteropServices;
 using TypeContractor.Helpers;
 
 namespace TypeContractor.Tool;
@@ -30,7 +29,7 @@ internal class Generator
         MetadataLoadContext context;
         try
         {
-            context = GetMetadataContext();
+            context = ReflectionContextHelper.GetMetadataContext(_packPath, _assemblyPath);
         }
         catch (FileNotFoundException ex)
         {
@@ -132,53 +131,6 @@ internal class Generator
             }
 
         return Contractor.WithConfiguration(configuration);
-    }
-
-    private MetadataLoadContext GetMetadataContext() => new(GetResolver());
-
-    private PathAssemblyResolver GetResolver()
-    {
-        // Get the array of runtime assemblies.
-        var runtimeAssemblies = Directory.GetFiles(RuntimeEnvironment.GetRuntimeDirectory(), "*.dll");
-        var runtimeFiles = runtimeAssemblies.Select(ass => Path.GetFileName(ass)).ToList();
-
-        // Get the .NET Core assemblies
-        var netcoreDirectory = GetNetCorePack("Microsoft.NETCore.App.Ref")
-            ?? throw new FileNotFoundException($"Unable to find Microsoft.NETCore.App.Ref v6.0.x references. Searched in {_packPath}.");
-        var netcoreAssemblies = Directory
-            .GetFiles(netcoreDirectory, "*.dll")
-            .Where(ass => !runtimeFiles.Contains(Path.GetFileName(ass)));
-
-        // Get the ASP.NET Core assemblies
-        var aspnetDirectory = GetNetCorePack("Microsoft.AspNetCore.App.Ref")
-            ?? throw new FileNotFoundException($"Unable to find Microsoft.AspNetCore.App.Ref v6.0.x references. Searched in {_packPath}.");
-        var aspnetAssemblies = Directory.GetFiles(aspnetDirectory, "*.dll");
-
-        // Get the app-specific assemblies
-        var appAssemblies = Directory.GetFiles(Path.GetDirectoryName(_assemblyPath)!, "*.dll");
-
-        // Create the list of assembly paths consisting of runtime assemblies and the inspected assembly.
-        var paths = runtimeAssemblies.Concat(netcoreAssemblies).Concat(aspnetAssemblies).Concat(appAssemblies);
-
-        return new PathAssemblyResolver(paths);
-    }
-
-    private string? GetNetCorePack(string packName)
-    {
-        var packPrefix = @$"{_packPath}\{packName}";
-        if (!Directory.Exists(packPrefix))
-            return null;
-
-        var availablePacks = Directory.EnumerateDirectories(packPrefix, "6.0.*");
-        var packDirectory = availablePacks.OrderByDescending(x => x).FirstOrDefault();
-        if (string.IsNullOrWhiteSpace(packDirectory))
-            return null;
-        
-        packDirectory = Path.Combine(packDirectory, "ref", "net6.0");
-        if (!Directory.Exists(packDirectory))
-            return null;
-
-        return packDirectory;
     }
 
     private bool IsController(Type type)
