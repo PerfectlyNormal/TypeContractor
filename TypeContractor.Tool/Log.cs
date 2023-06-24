@@ -18,11 +18,11 @@ internal static class Log
             Console.Error.WriteLine($"[ ERR] {message}");
     }
 
-#pragma warning disable IDE0060 // Remove unused parameter
-    public static void LogError(Exception e, string message)
-#pragma warning restore IDE0060 // Remove unused parameter
+    public static void LogError(Exception exception, string message)
     {
         LogError(message);
+        if (_logLevel <= LogLevel.Debug)
+            Console.Error.Write(exception);
     }
 
     public static void LogWarning(string message)

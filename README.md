@@ -180,6 +180,6 @@ by looking at the configured assembly. The resulting files are placed in
 * Kebab-case output files and directories
 * Better documentation
 * Better performance -- if this should run on build, it can't take forever
+* Possible to add types to exclude?
 * Improve method for finding AspNetCore framework DLLs
   * Possible to provide a manual path, so not a priority
-
