@@ -12,8 +12,9 @@ internal class Generator
     private readonly string[] _replacements;
     private readonly string[] _strip;
     private readonly string[] _customMaps;
+    private readonly string _packPath;
 
-    public Generator(string assemblyPath, string output, bool clean, string[] replacements, string[] strip, string[] customMaps)
+    public Generator(string assemblyPath, string output, bool clean, string[] replacements, string[] strip, string[] customMaps, string packsPath)
     {
         _assemblyPath = assemblyPath;
         _output = output;
@@ -21,11 +22,22 @@ internal class Generator
         _replacements = replacements;
         _strip = strip;
         _customMaps = customMaps;
+        _packPath = packsPath;
     }
 
     public Task Execute()
     {
-        var context = GetMetadataContext();
+        MetadataLoadContext context;
+        try
+        {
+            context = GetMetadataContext();
+        }
+        catch (FileNotFoundException ex)
+        {
+            Log.LogError(ex, ex.Message);
+            return Task.CompletedTask;
+        }
+
         var assembly = context.LoadFromAssemblyPath(_assemblyPath);
         var controllers = assembly
             .GetTypes().Where(IsController)
@@ -131,23 +143,15 @@ internal class Generator
         var runtimeFiles = runtimeAssemblies.Select(ass => Path.GetFileName(ass)).ToList();
 
         // Get the .NET Core assemblies
-        const string netcorePrefix = @"C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref";
-        var netcoreDirectories = Directory.EnumerateDirectories(netcorePrefix, "6.0.*");
-        var netcoreDirectory = netcoreDirectories.OrderByDescending(x => x).FirstOrDefault();
-        if (string.IsNullOrWhiteSpace(netcoreDirectory))
-            throw new FileNotFoundException($"Unable to find Microsoft.NETCore.App.Ref references. Searched in {netcorePrefix}.");
-        netcoreDirectory = Path.Combine(netcoreDirectory, "ref", "net6.0");
+        var netcoreDirectory = GetNetCorePack("Microsoft.NETCore.App.Ref")
+            ?? throw new FileNotFoundException($"Unable to find Microsoft.NETCore.App.Ref v6.0.x references. Searched in {_packPath}.");
         var netcoreAssemblies = Directory
             .GetFiles(netcoreDirectory, "*.dll")
             .Where(ass => !runtimeFiles.Contains(Path.GetFileName(ass)));
 
         // Get the ASP.NET Core assemblies
-        const string aspnetPrefix = @"C:\Program Files\dotnet\packs\Microsoft.AspNetCore.App.Ref";
-        var aspnetDirectories = Directory.EnumerateDirectories(aspnetPrefix, "6.0.*");
-        var aspnetDirectory = aspnetDirectories.OrderByDescending(x => x).FirstOrDefault();
-        if (string.IsNullOrWhiteSpace(aspnetDirectory))
-            throw new FileNotFoundException($"Unable to find Microsoft.AspNetCore.App references. Searched in {aspnetPrefix}.");
-        aspnetDirectory = Path.Combine(aspnetDirectory, "ref", "net6.0");
+        var aspnetDirectory = GetNetCorePack("Microsoft.AspNetCore.App.Ref")
+            ?? throw new FileNotFoundException($"Unable to find Microsoft.AspNetCore.App.Ref v6.0.x references. Searched in {_packPath}.");
         var aspnetAssemblies = Directory.GetFiles(aspnetDirectory, "*.dll");
 
         // Get the app-specific assemblies
@@ -157,6 +161,24 @@ internal class Generator
         var paths = runtimeAssemblies.Concat(netcoreAssemblies).Concat(aspnetAssemblies).Concat(appAssemblies);
 
         return new PathAssemblyResolver(paths);
+    }
+
+    private string? GetNetCorePack(string packName)
+    {
+        var packPrefix = @$"{_packPath}\{packName}";
+        if (!Directory.Exists(packPrefix))
+            return null;
+
+        var availablePacks = Directory.EnumerateDirectories(packPrefix, "6.0.*");
+        var packDirectory = availablePacks.OrderByDescending(x => x).FirstOrDefault();
+        if (string.IsNullOrWhiteSpace(packDirectory))
+            return null;
+        
+        packDirectory = Path.Combine(packDirectory, "ref", "net6.0");
+        if (!Directory.Exists(packDirectory))
+            return null;
+
+        return packDirectory;
     }
 
     private bool IsController(Type type)
