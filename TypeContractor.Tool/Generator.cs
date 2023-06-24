@@ -1,5 +1,5 @@
 using System.Reflection;
-using TypeContractor.Helpers;
+using static TypeContractor.Helpers.TypeChecks;
 
 namespace TypeContractor.Tool;
 
@@ -38,9 +38,8 @@ internal class Generator
         }
 
         var assembly = context.LoadFromAssemblyPath(_assemblyPath);
-        var controllers = assembly
-            .GetTypes().Where(TypeChecks.IsController)
-            .ToList();
+        var controllers = assembly.GetTypes()
+            .Where(IsController).ToList();
 
         if (!controllers.Any())
         {
@@ -52,19 +51,29 @@ internal class Generator
         foreach (var controller in controllers)
         {
             Log.LogDebug($"Checking controller {controller.FullName}.");
-            var endpoints = controller
-                .GetMethods().Where(TypeChecks.ReturnsActionResult);
+            var endpoints = controller.GetMethods()
+                .Where(ReturnsActionResult).ToList();
 
             var returnTypes = endpoints
-                .Select(TypeChecks.UnwrappedReturnType).Where(x => x != null)
-                .Cast<Type>()
-                .ToList();
+                .Select(UnwrappedReturnType).Where(x => x != null)
+                .Cast<Type>().ToList();
+
+            var parameterTypes = endpoints
+                .SelectMany(UnwrappedParameters).Where(x => x != null)
+                .Cast<Type>().ToList();
 
             foreach (var returnType in returnTypes)
             {
                 Log.LogDebug($"Adding (return) type {returnType.FullName} from assembly {returnType.Assembly.FullName}");
                 typesToLoad.TryAdd(returnType.Assembly, new HashSet<Type>());
                 typesToLoad[returnType.Assembly].Add(returnType);
+            }
+
+            foreach (var parameterType in parameterTypes)
+            {
+                Log.LogDebug($"Adding (parameter) type {parameterType.FullName} from assembly {parameterType.Assembly.FullName}");
+                typesToLoad.TryAdd(parameterType.Assembly, new HashSet<Type>());
+                typesToLoad[parameterType.Assembly].Add(parameterType);
             }
         }
 

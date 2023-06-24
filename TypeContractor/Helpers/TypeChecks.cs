@@ -94,10 +94,13 @@ public static class TypeChecks
     {
         ArgumentNullException.ThrowIfNull(methodInfo, nameof(methodInfo));
 
-        if (methodInfo.ReturnType.Name == "ActionResult`1")
+        if (methodInfo.CustomAttributes.Any(a => a.AttributeType.FullName == "Microsoft.AspNetCore.Mvc.NonActionAttribute"))
+            return false;
+
+        if (methodInfo.ReturnType.Name == "ActionResult`1" || methodInfo.ReturnType.Name == "ActionResult")
             return true;
 
-        if (methodInfo.ReturnType.Name == "Task`1" && methodInfo.ReturnType.GenericTypeArguments.Any(rt => rt.Name == "ActionResult`1"))
+        if (methodInfo.ReturnType.Name == "Task`1" && methodInfo.ReturnType.GenericTypeArguments.Any(rt => rt.Name == "ActionResult`1" || rt.Name == "ActionResult"))
             return true;
 
         return false;
@@ -116,10 +119,24 @@ public static class TypeChecks
         return null;
     }
 
+    public static Type[] UnwrappedParameters(MethodInfo methodInfo)
+    {
+        ArgumentNullException.ThrowIfNull(methodInfo, nameof(methodInfo));
+
+        return methodInfo.GetParameters()
+            .Select(p => UnwrappedResult(p.ParameterType))
+            .Where(p => p is not null)
+            .Cast<Type>()
+            .ToArray();
+    }
+
     private static Type? UnwrappedResult(Type type)
     {
         if (type.Name == "ActionResult`1")
             return UnwrappedResult(type.GenericTypeArguments[0]);
+
+        if (type.Name == "ActionResult")
+            return null;
 
         if (ImplementsIEnumerable(type))
             return UnwrappedResult(type.GenericTypeArguments[0]);

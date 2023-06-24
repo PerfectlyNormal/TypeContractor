@@ -4,22 +4,8 @@ Looks at one or more assemblies containing contracts and translates to TypeScrip
 
 ## Goals
 
-1. Take one or more assemblies and reflect to find types matching a list
-   of suffixes (by default `Dto`, `Request`, and `Response`). If a type doesn't
-   match the suffix, it gets ignored -- unless a type that *is* matched
-   has this type as a dependency. In that case, we have to have the type
-   even if the suffix doesn't match.
-
-   For example:
-
-   We have a type `GetPaymentListResponse` that gets included from the default
-   list of suffixes. That type has a list of `GetPaymentListResponse_Payment`,
-   which would be ignored by configuration, but since it is a part of 
-   `GetPaymentListResponse`, we convert both.
-
-   `GetPaymentListResponse_Payment` also has a reference to an enum,
-   `PaymentState`, that gets ignored by the configuration. But again, since it
-   is a dependency, it gets converted.
+1. Take one or more assemblies and reflect to find relevant types and their dependencies
+   that should get a TypeScript definition published.
 
 2. Perform replacements on the names to strip away prefixes
 
@@ -62,10 +48,28 @@ executable installed on the system and always available.
 Run `typecontractor` to get a list of available options.
 
 This tool reflects over the main assembly provided and finds all controllers
-(that inherits from `Microsoft.AspNetCore.Mvc.ControllerBase`).  Each
+(that inherits from `Microsoft.AspNetCore.Mvc.ControllerBase`). Each
 controller is reflected over in turn, and finds all public methods that returns
-`ActionResult<T>`. The `ActionResult` is unwrapped and the inner type is added
-to a list of candidates.
+`ActionResult<T>`. The `ActionResult<T>` is unwrapped and the inner type `T`
+is added to a list of candidates.
+
+Additionally, the public methods returning an `ActionResult<T>` *or* a plain
+`ActionResult` will have their parameters analyzed as well. Anything that's
+not a builtin type will be added to the list of candidates.
+
+Meaning if you have a method looking like:
+
+```csharp
+public async Task<ActionResult> Create([FromBody] CreateObjectDto request, CancellationToken cancellationToken)
+{
+   ...
+}
+```
+
+we will add `CreateObjectDto` to the list of candidates.
+`System.Threading.CancellationToken` is a builtin type (currently, this means
+it is defined inside `System.`) and will be ignored. Same with other basic
+types such as `int`, `Guid`, `IEnumerable<T>` and so on.
 
 For each candidate, we apply stripping and replacements and custom mappings and
 write everything to the output files.
@@ -176,6 +180,6 @@ by looking at the configured assembly. The resulting files are placed in
 * Kebab-case output files and directories
 * Better documentation
 * Better performance -- if this should run on build, it can't take forever
-* Install as a global dotnet tool?
 * Improve method for finding AspNetCore framework DLLs
+  * Possible to provide a manual path, so not a priority
 

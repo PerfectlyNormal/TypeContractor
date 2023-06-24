@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Collections;
+using System.Reflection;
+using System.Reflection.Metadata;
 using TypeContractor.Helpers;
 
 namespace TypeContractor.Tests.Helpers
@@ -132,6 +134,8 @@ namespace TypeContractor.Tests.Helpers
         [Theory]
         [InlineData(true, nameof(NestedController.GetNumberAsync))]
         [InlineData(true, nameof(NestedController.GetNumber))]
+        [InlineData(true, nameof(NestedController.FileStreamEndpoint))]
+        [InlineData(true, nameof(NestedController.FileStreamEndpointAsync))]
         [InlineData(false, nameof(NestedController.LegacyEndpointAsync))]
         [InlineData(false, nameof(NestedController.LegacyEndpoint))]
         [InlineData(false, nameof(NestedController.WhatEvenIsThisAsync))]
@@ -142,6 +146,20 @@ namespace TypeContractor.Tests.Helpers
                 Assert.Fail("Unable to find method " + methodName + " on controller");
             
             TypeChecks.ReturnsActionResult(target).Should().Be(expectedResult);
+        }
+
+        [Fact]
+        public void ReturnsActionResult_Ignores_NonAction_Methods()
+        {
+            var methods = typeof(ControllerBase).GetMethods();
+
+            foreach (var method in methods)
+            {
+                var hasNonActionAttribute = method.GetCustomAttribute<NonActionAttribute>() != null;
+                var result = TypeChecks.ReturnsActionResult(method);
+                if (hasNonActionAttribute && result)
+                    Assert.Fail($"Expected method {method.Name} to not return ActionResult, but it does.");
+            }
         }
 
         [Theory]
@@ -155,17 +173,16 @@ namespace TypeContractor.Tests.Helpers
 
             var returnType = TypeChecks.UnwrappedReturnType(target);
 
-            if (expectedType is null)
-                returnType.Should().BeNull();
-            else
-                returnType.Should().Be(expectedType);
+            returnType.Should().Be(expectedType);
         }
 
         [Theory]
-        [InlineData(null, nameof(ReturnTypeController.GetRandomGuid))]
-        [InlineData(null, nameof(ReturnTypeController.SomeStringMethod))]
-        [InlineData(null, nameof(ReturnTypeController.ListOfNumbers))]
-        public void UnwrappedReturnType_Ignores_Builtins(Type? expectedType, string methodName)
+        [InlineData(nameof(ReturnTypeController.GetRandomGuid))]
+        [InlineData(nameof(ReturnTypeController.SomeStringMethod))]
+        [InlineData(nameof(ReturnTypeController.ListOfNumbers))]
+        [InlineData(nameof(ReturnTypeController.FileStreamEndpoint))]
+        [InlineData(nameof(ReturnTypeController.FileStreamEndpointAsync))]
+        public void UnwrappedReturnType_Ignores_Builtins(string methodName)
         {
             var target = typeof(ReturnTypeController).GetMethod(methodName);
             if (target is null)
@@ -173,10 +190,43 @@ namespace TypeContractor.Tests.Helpers
 
             var returnType = TypeChecks.UnwrappedReturnType(target);
 
-            if (expectedType is null)
-                returnType.Should().BeNull();
+            returnType.Should().BeNull();
+        }
+
+        [Theory]
+        [InlineData(nameof(ParameterTypeController.CreateObject), new[] { typeof(ComplexRequest) })]
+        [InlineData(nameof(ParameterTypeController.CreateManyObjects), new[] { typeof(ComplexRequest) })]
+        [InlineData(nameof(ParameterTypeController.MultipleDtos), new[] { typeof(ComplexRequest), typeof(SimpleRequest) })]
+        public void UnwrappedParameters_Returns_Correct_Type(string methodName, Type[] expectedTypes)
+        {
+            var target = typeof(ParameterTypeController).GetMethod(methodName);
+            if (target is null)
+                Assert.Fail("Unable to find method " + methodName + " on controller");
+
+            var parameterTypes = TypeChecks.UnwrappedParameters(target);
+
+            if (expectedTypes is null)
+                parameterTypes.Should().BeEmpty();
             else
-                returnType.Should().Be(expectedType);
+                parameterTypes.Should().ContainInOrder(expectedTypes);
+        }
+
+        [Theory]
+        [InlineData(nameof(ParameterTypeController.GetById), null)]
+        [InlineData(nameof(ParameterTypeController.GetByNumericId), null)]
+        [InlineData(nameof(ParameterTypeController.GetWithListOfIds), null)]
+        public void UnwrappedParameters_Ignores_Builtins(string methodName, Type[] expectedTypes)
+        {
+            var target = typeof(ParameterTypeController).GetMethod(methodName);
+            if (target is null)
+                Assert.Fail("Unable to find method " + methodName + " on controller");
+
+            var parameterTypes = TypeChecks.UnwrappedParameters(target);
+
+            if (expectedTypes is null)
+                parameterTypes.Should().BeEmpty();
+            else
+                parameterTypes.Should().ContainInOrder(expectedTypes);
         }
     }
 
@@ -189,6 +239,8 @@ namespace TypeContractor.Tests.Helpers
         public Task<ActionResult<int>> GetNumberAsync() => throw new NotImplementedException();
         public ActionResult<int> GetNumber() => throw new NotImplementedException();
         public Task<IActionResult> LegacyEndpointAsync() => throw new NotImplementedException();
+        public ActionResult FileStreamEndpoint() => throw new NotImplementedException();
+        public Task<ActionResult> FileStreamEndpointAsync() => throw new NotImplementedException();
         public IActionResult LegacyEndpoint() => throw new NotImplementedException();
         public Task<string> WhatEvenIsThisAsync() => throw new NotImplementedException();
     }
@@ -197,9 +249,21 @@ namespace TypeContractor.Tests.Helpers
     {
         public Task<ActionResult<Guid>> GetRandomGuid() => throw new NotImplementedException();
         public ActionResult<string> SomeStringMethod() => throw new NotImplementedException();
+        public ActionResult FileStreamEndpoint() => throw new NotImplementedException();
+        public Task<ActionResult> FileStreamEndpointAsync() => throw new NotImplementedException();
         public ActionResult<CustomCollection> GetCustomCollection() => throw new NotImplementedException();
         public ActionResult<IEnumerable<int>> ListOfNumbers() => throw new NotImplementedException();
         public ActionResult<List<ComplexNestedType>> GetListOfObjects() => throw new NotImplementedException();
+    }
+
+    internal class ParameterTypeController : ControllerBase
+    {
+        public Task<ActionResult<ComplexNestedType>> GetById(Guid id, CancellationToken cancellationToken) => throw new NotImplementedException();
+        public Task<ActionResult<ComplexNestedType>> GetByNumericId(int id, [FromQuery] string search, CancellationToken cancellationToken) => throw new NotImplementedException();
+        public Task<ActionResult<IEnumerable<ComplexNestedType>>> GetWithListOfIds([FromBody] IEnumerable<Guid> organizationId, CancellationToken cancellationToken) => throw new NotImplementedException();
+        public Task<ActionResult<Guid>> CreateObject(ComplexRequest request, CancellationToken cancellationToken) => throw new NotImplementedException();
+        public Task<ActionResult<IEnumerable<Guid>>> CreateManyObjects(IEnumerable<ComplexRequest> requests, CancellationToken cancellationToken) => throw new NotImplementedException();
+        public Task<ActionResult<IEnumerable<Guid>>> MultipleDtos(ComplexRequest request, SimpleRequest extraData, CancellationToken cancellationToken) => throw new NotImplementedException();
     }
 
     internal class CustomListWrapper : List<string>
@@ -220,6 +284,18 @@ namespace TypeContractor.Tests.Helpers
     { }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    internal class ComplexRequest
+    {
+        public Guid OrganizationId { get; set; }
+        public string Name { get; set; }
+        public int Count { get; set; }
+    }
+
+    internal class SimpleRequest
+    {
+        public string CustomerName { get; set; }
+    }
+
     internal class ComplexNestedType
     {
         public int ErrorCode { get; set; }
