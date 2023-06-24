@@ -51,7 +51,7 @@ internal class Generator
         var typesToLoad = new Dictionary<Assembly, HashSet<Type>>();
         foreach (var controller in controllers)
         {
-            Log.LogMessage($"Checking controller {controller.FullName}.");
+            Log.LogDebug($"Checking controller {controller.FullName}.");
             var returnTypes = controller
                 .GetMethods().Where(ReturnsActionResult)
                 .Select(UnwrappedResult).Where(x => x != null)
@@ -62,6 +62,7 @@ internal class Generator
                 if (returnType is null)
                     continue;
 
+                Log.LogDebug($"Adding (return) type {returnType.FullName} from assembly {returnType.Assembly.FullName}");
                 typesToLoad.TryAdd(returnType.Assembly, new HashSet<Type>());
                 typesToLoad[returnType.Assembly].Add(returnType);
             }

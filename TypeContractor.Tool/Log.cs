@@ -1,10 +1,21 @@
 namespace TypeContractor.Tool;
 
+public enum LogLevel
+{
+    Debug,
+    Info,
+    Warning,
+    Error,
+}
+
 internal static class Log
 {
+    internal static LogLevel _logLevel;
+
     public static void LogError(string message)
     {
-        Console.Error.WriteLine($"[ERR] {message}");
+        if (_logLevel <= LogLevel.Error)
+            Console.Error.WriteLine($"[ ERR] {message}");
     }
 
 #pragma warning disable IDE0060 // Remove unused parameter
@@ -16,11 +27,24 @@ internal static class Log
 
     public static void LogWarning(string message)
     {
-        Console.WriteLine($"[WARN] {message}");
+        if (_logLevel <= LogLevel.Warning)
+            Console.WriteLine($"[WARN] {message}");
     }
 
     public static void LogMessage(string message)
     {
-        Console.WriteLine($"[INFO] {message}");
+        if (_logLevel <= LogLevel.Info)
+            Console.WriteLine($"[INFO] {message}");
+    }
+
+    public static void LogDebug(string message)
+    {
+        if (_logLevel <= LogLevel.Debug)
+            Console.WriteLine($"[ DBG] {message}");
+    }
+
+    internal static void SetLevel(LogLevel logLevel)
+    {
+        _logLevel = logLevel;
     }
 }

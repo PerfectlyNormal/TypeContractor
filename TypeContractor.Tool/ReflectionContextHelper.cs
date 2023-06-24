@@ -13,12 +13,14 @@ internal static class ReflectionContextHelper
     internal static PathAssemblyResolver GetResolver(string packPath, string assemblyPath)
     {
         // Get the array of runtime assemblies.
+        Log.LogDebug($"Adding {RuntimeEnvironment.GetRuntimeDirectory()} to list of assemblies");
         var runtimeAssemblies = Directory.GetFiles(RuntimeEnvironment.GetRuntimeDirectory(), "*.dll");
         var runtimeFiles = runtimeAssemblies.Select(ass => Path.GetFileName(ass)).ToList();
 
         // Get the .NET Core assemblies
         var netcoreDirectory = GetNetCorePack(packPath, "Microsoft.NETCore.App.Ref")
             ?? throw new FileNotFoundException($"Unable to find Microsoft.NETCore.App.Ref v6.0.x references. Searched in {packPath}.");
+        Log.LogDebug($"Adding {netcoreDirectory} to list of assemblies");
         var netcoreAssemblies = Directory
             .GetFiles(netcoreDirectory, "*.dll")
             .Where(ass => !runtimeFiles.Contains(Path.GetFileName(ass)));
@@ -26,9 +28,11 @@ internal static class ReflectionContextHelper
         // Get the ASP.NET Core assemblies
         var aspnetDirectory = GetNetCorePack(packPath, "Microsoft.AspNetCore.App.Ref")
             ?? throw new FileNotFoundException($"Unable to find Microsoft.AspNetCore.App.Ref v6.0.x references. Searched in {packPath}.");
+        Log.LogDebug($"Adding {aspnetDirectory} to list of assemblies"); 
         var aspnetAssemblies = Directory.GetFiles(aspnetDirectory, "*.dll");
 
         // Get the app-specific assemblies
+        Log.LogDebug($"Adding {Path.GetDirectoryName(assemblyPath)} to list of assemblies");
         var appAssemblies = Directory.GetFiles(Path.GetDirectoryName(assemblyPath)!, "*.dll");
 
         // Create the list of assembly paths consisting of runtime assemblies and the inspected assembly.
