@@ -1,3 +1,19 @@
+#[0.4.0.0](https://dev.azure.com/Hogia/HRS/_git/HACK_TypeContractor/commit/533faebace82f8b698c695f26a89cc1319cc5f4c) - 2023-06-24
+#####[Lön: Generera TypeScript-typer automatiskt](https://dev.azure.com/Hogia/HRS/_workitems/edit/245172)
+
+####New functionality
+* feat(lib, tool): Find parameters for endpoints [Per Christian B. Viken](https://dev.azure.com/Hogia/HRS/_git/HACK_TypeContractor/commit/f4d82ab03931fd3ebd7c059e1e9ba5b7d805dcbc)
+* feat(tool): Add configurable log levels and more debug logging [Per Christian B. Viken](https://dev.azure.com/Hogia/HRS/_git/HACK_TypeContractor/commit/526a0e48d65a8b54d01a1e51cc69ca62f2fe0450)
+* feat(tool): Add customizable path to dotnet reference assemblies [Per Christian B. Viken](https://dev.azure.com/Hogia/HRS/_git/HACK_TypeContractor/commit/a025b6dd8605732dd7f9c9d9573bc7ca44792512)
+
+####Bug fixes or code changes
+* refactor(lib, tool): Move type checks to library [Per Christian B. Viken](https://dev.azure.com/Hogia/HRS/_git/HACK_TypeContractor/commit/bc4d0e96649d6efea837c670761c0c71a18e6524)
+* refactor(tool): Skip unnecessary null check [Per Christian B. Viken](https://dev.azure.com/Hogia/HRS/_git/HACK_TypeContractor/commit/93124077c703310c3d4fe364ca4f67a290e13988)
+* refactor(tool): Move MetadataContext construction to helper file [Per Christian B. Viken](https://dev.azure.com/Hogia/HRS/_git/HACK_TypeContractor/commit/31ae4c8c15baaed6f8418013dad357c8f61e5187)
+
+####Other changes
+* chore(tool): Log exception if running with debug logging [Per Christian B. Viken](https://dev.azure.com/Hogia/HRS/_git/HACK_TypeContractor/commit/fce9267b52fb0b2abe18d96c6cf9fae082c2ef99)
+
 #[0.3.1](https://dev.azure.com/Hogia/HRS/_git/HACK_TypeContractor/commit/82dc787c037532f30c8ca177da6d166630380030) - 2023-06-12
 
 #[0.1.0](https://dev.azure.com/Hogia/HRS/_git/HACK_TypeContractor/commit/6bcdc91644e0494eda633c93462549b1b2c040d0) - 2023-06-12
