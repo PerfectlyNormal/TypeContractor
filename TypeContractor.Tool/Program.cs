@@ -8,7 +8,8 @@ var cleanOption = new Option<bool>("--clean", () => false, "If true, remove ever
 var replaceOptions = new Option<string[]>("--replace", "Provide one replacement in the form '<search>:<replace>'. Can be repeated");
 var stripOptions = new Option<string[]>("--strip", "Provide a prefix to strip out of types. Can be repeated");
 var mapOptions = new Option<string[]>("--custom-map", "Provide a custom type map in the form '<from>:<to>'. Can be repeated");
-
+var packsOptions = new Option<string>("--packs-path", () => @"C:\Program Files\dotnet\packs\", "Path where dotnet is installed and reference assemblies can be found.");
+var logLevelOptions = new Option<LogLevel>("--log-level", () => LogLevel.Info);
 assemblyOption.IsRequired = true;
 outputOption.IsRequired = true;
 
@@ -18,11 +19,14 @@ rootCommand.AddOption(cleanOption);
 rootCommand.AddOption(replaceOptions);
 rootCommand.AddOption(stripOptions);
 rootCommand.AddOption(mapOptions);
+rootCommand.AddOption(packsOptions);
+rootCommand.AddOption(logLevelOptions);
 
-rootCommand.SetHandler(async (string assemblyOption, string output, bool clean, string[] replacements, string[] strip, string[] customMaps) =>
+rootCommand.SetHandler(async (string assemblyOption, string output, bool clean, string[] replacements, string[] strip, string[] customMaps, string packsPath, LogLevel logLevel) =>
 {
-    var generator = new Generator(assemblyOption, output, clean, replacements, strip, customMaps);
+    Log.SetLevel(logLevel);
+    var generator = new Generator(assemblyOption, output, clean, replacements, strip, customMaps, packsPath);
     await generator.Execute();
-}, assemblyOption, outputOption, cleanOption, replaceOptions, stripOptions, mapOptions);
+}, assemblyOption, outputOption, cleanOption, replaceOptions, stripOptions, mapOptions, packsOptions, logLevelOptions);
 
 await rootCommand.InvokeAsync(args);

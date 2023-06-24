@@ -1,6 +1,5 @@
 using System.Reflection;
-using System.Runtime.InteropServices;
-using TypeContractor.Helpers;
+using static TypeContractor.Helpers.TypeChecks;
 
 namespace TypeContractor.Tool;
 
@@ -12,8 +11,9 @@ internal class Generator
     private readonly string[] _replacements;
     private readonly string[] _strip;
     private readonly string[] _customMaps;
+    private readonly string _packPath;
 
-    public Generator(string assemblyPath, string output, bool clean, string[] replacements, string[] strip, string[] customMaps)
+    public Generator(string assemblyPath, string output, bool clean, string[] replacements, string[] strip, string[] customMaps, string packsPath)
     {
         _assemblyPath = assemblyPath;
         _output = output;
@@ -21,15 +21,25 @@ internal class Generator
         _replacements = replacements;
         _strip = strip;
         _customMaps = customMaps;
+        _packPath = packsPath;
     }
 
     public Task Execute()
     {
-        var context = GetMetadataContext();
+        MetadataLoadContext context;
+        try
+        {
+            context = ReflectionContextHelper.GetMetadataContext(_packPath, _assemblyPath);
+        }
+        catch (FileNotFoundException ex)
+        {
+            Log.LogError(ex, ex.Message);
+            return Task.CompletedTask;
+        }
+
         var assembly = context.LoadFromAssemblyPath(_assemblyPath);
-        var controllers = assembly
-            .GetTypes().Where(IsController)
-            .ToList();
+        var controllers = assembly.GetTypes()
+            .Where(IsController).ToList();
 
         if (!controllers.Any())
         {
@@ -40,19 +50,30 @@ internal class Generator
         var typesToLoad = new Dictionary<Assembly, HashSet<Type>>();
         foreach (var controller in controllers)
         {
-            Log.LogMessage($"Checking controller {controller.FullName}.");
-            var returnTypes = controller
-                .GetMethods().Where(ReturnsActionResult)
-                .Select(UnwrappedResult).Where(x => x != null)
-                .ToList();
+            Log.LogDebug($"Checking controller {controller.FullName}.");
+            var endpoints = controller.GetMethods()
+                .Where(ReturnsActionResult).ToList();
+
+            var returnTypes = endpoints
+                .Select(UnwrappedReturnType).Where(x => x != null)
+                .Cast<Type>().ToList();
+
+            var parameterTypes = endpoints
+                .SelectMany(UnwrappedParameters).Where(x => x != null)
+                .Cast<Type>().ToList();
 
             foreach (var returnType in returnTypes)
             {
-                if (returnType is null)
-                    continue;
-
+                Log.LogDebug($"Adding (return) type {returnType.FullName} from assembly {returnType.Assembly.FullName}");
                 typesToLoad.TryAdd(returnType.Assembly, new HashSet<Type>());
                 typesToLoad[returnType.Assembly].Add(returnType);
+            }
+
+            foreach (var parameterType in parameterTypes)
+            {
+                Log.LogDebug($"Adding (parameter) type {parameterType.FullName} from assembly {parameterType.Assembly.FullName}");
+                typesToLoad.TryAdd(parameterType.Assembly, new HashSet<Type>());
+                typesToLoad[parameterType.Assembly].Add(parameterType);
             }
         }
 
@@ -120,89 +141,5 @@ internal class Generator
             }
 
         return Contractor.WithConfiguration(configuration);
-    }
-
-    private MetadataLoadContext GetMetadataContext() => new(GetResolver());
-
-    private PathAssemblyResolver GetResolver()
-    {
-        // Get the array of runtime assemblies.
-        var runtimeAssemblies = Directory.GetFiles(RuntimeEnvironment.GetRuntimeDirectory(), "*.dll");
-        var runtimeFiles = runtimeAssemblies.Select(ass => Path.GetFileName(ass)).ToList();
-
-        // Get the .NET Core assemblies
-        const string netcorePrefix = @"C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref";
-        var netcoreDirectories = Directory.EnumerateDirectories(netcorePrefix, "6.0.*");
-        var netcoreDirectory = netcoreDirectories.OrderByDescending(x => x).FirstOrDefault();
-        if (string.IsNullOrWhiteSpace(netcoreDirectory))
-            throw new FileNotFoundException($"Unable to find Microsoft.NETCore.App.Ref references. Searched in {netcorePrefix}.");
-        netcoreDirectory = Path.Combine(netcoreDirectory, "ref", "net6.0");
-        var netcoreAssemblies = Directory
-            .GetFiles(netcoreDirectory, "*.dll")
-            .Where(ass => !runtimeFiles.Contains(Path.GetFileName(ass)));
-
-        // Get the ASP.NET Core assemblies
-        const string aspnetPrefix = @"C:\Program Files\dotnet\packs\Microsoft.AspNetCore.App.Ref";
-        var aspnetDirectories = Directory.EnumerateDirectories(aspnetPrefix, "6.0.*");
-        var aspnetDirectory = aspnetDirectories.OrderByDescending(x => x).FirstOrDefault();
-        if (string.IsNullOrWhiteSpace(aspnetDirectory))
-            throw new FileNotFoundException($"Unable to find Microsoft.AspNetCore.App references. Searched in {aspnetPrefix}.");
-        aspnetDirectory = Path.Combine(aspnetDirectory, "ref", "net6.0");
-        var aspnetAssemblies = Directory.GetFiles(aspnetDirectory, "*.dll");
-
-        // Get the app-specific assemblies
-        var appAssemblies = Directory.GetFiles(Path.GetDirectoryName(_assemblyPath)!, "*.dll");
-
-        // Create the list of assembly paths consisting of runtime assemblies and the inspected assembly.
-        var paths = runtimeAssemblies.Concat(netcoreAssemblies).Concat(aspnetAssemblies).Concat(appAssemblies);
-
-        return new PathAssemblyResolver(paths);
-    }
-
-    private bool IsController(Type type)
-    {
-        if (type.FullName == "Microsoft.AspNetCore.Mvc.ControllerBase")
-            return true;
-
-        if (type.BaseType is not null)
-            return IsController(type.BaseType);
-
-        return false;
-    }
-
-    private bool ReturnsActionResult(MethodInfo methodInfo)
-    {
-        if (methodInfo.ReturnType.Name == "ActionResult`1")
-            return true;
-
-        if (methodInfo.ReturnType.Name == "Task`1" && methodInfo.ReturnType.GenericTypeArguments.Any(rt => rt.Name == "ActionResult`1"))
-            return true;
-
-        return false;
-    }
-
-    private Type? UnwrappedResult(MethodInfo methodInfo)
-    {
-        if (methodInfo.ReturnType.Name == "Task`1")
-            return UnwrappedResult(methodInfo.ReturnType.GenericTypeArguments.First());
-
-        if (methodInfo.ReturnType.Name == "ActionResult`1")
-            return UnwrappedResult(methodInfo.ReturnType.GenericTypeArguments.First());
-
-        return null;
-    }
-
-    private Type? UnwrappedResult(Type type)
-    {
-        if (type.Name == "ActionResult`1")
-            return UnwrappedResult(type.GenericTypeArguments[0]);
-
-        if (TypeChecks.ImplementsIEnumerable(type))
-            return UnwrappedResult(type.GenericTypeArguments[0]);
-
-        if (type.FullName!.StartsWith("System.", StringComparison.InvariantCulture))
-            return null;
-
-        return type;
     }
 }
