@@ -1,4 +1,4 @@
-using Newtonsoft.Json;
+using Microsoft.AspNetCore.Mvc;
 using System.Collections;
 using TypeContractor.Helpers;
 
@@ -109,6 +109,97 @@ namespace TypeContractor.Tests.Helpers
         {
             TypeChecks.IsValueTuple(target).Should().BeFalse();
         }
+
+        [Theory]
+        [InlineData(typeof(string))]
+        [InlineData(typeof(IDictionary<string, int>))]
+        [InlineData(typeof(CustomListWrapper))]
+        public void IsController_Is_False_For_Invalid_Targets(Type target)
+        {
+            TypeChecks.IsController(target).Should().BeFalse();
+        }
+
+        [Theory]
+        [InlineData(typeof(ControllerBase))]
+        [InlineData(typeof(Controller))]
+        [InlineData(typeof(CustomApplicationController))]
+        [InlineData(typeof(NestedController))]
+        public void IsController_Is_True_For_Valid_Targets(Type target)
+        {
+            TypeChecks.IsController(target).Should().BeTrue();
+        }
+
+        [Theory]
+        [InlineData(true, nameof(NestedController.GetNumberAsync))]
+        [InlineData(true, nameof(NestedController.GetNumber))]
+        [InlineData(false, nameof(NestedController.LegacyEndpointAsync))]
+        [InlineData(false, nameof(NestedController.LegacyEndpoint))]
+        [InlineData(false, nameof(NestedController.WhatEvenIsThisAsync))]
+        public void ReturnsActionResult_Returns_Correct_Value(bool expectedResult, string methodName)
+        {
+            var target = typeof(NestedController).GetMethod(methodName);
+            if (target is null)
+                Assert.Fail("Unable to find method " + methodName + " on controller");
+            
+            TypeChecks.ReturnsActionResult(target).Should().Be(expectedResult);
+        }
+
+        [Theory]
+        [InlineData(typeof(CustomCollection), nameof(ReturnTypeController.GetCustomCollection))]
+        [InlineData(typeof(ComplexNestedType), nameof(ReturnTypeController.GetListOfObjects))]
+        public void UnwrappedReturnType_Returns_Correct_Type(Type? expectedType, string methodName)
+        {
+            var target = typeof(ReturnTypeController).GetMethod(methodName);
+            if (target is null)
+                Assert.Fail("Unable to find method " + methodName + " on controller");
+
+            var returnType = TypeChecks.UnwrappedReturnType(target);
+
+            if (expectedType is null)
+                returnType.Should().BeNull();
+            else
+                returnType.Should().Be(expectedType);
+        }
+
+        [Theory]
+        [InlineData(null, nameof(ReturnTypeController.GetRandomGuid))]
+        [InlineData(null, nameof(ReturnTypeController.SomeStringMethod))]
+        [InlineData(null, nameof(ReturnTypeController.ListOfNumbers))]
+        public void UnwrappedReturnType_Ignores_Builtins(Type? expectedType, string methodName)
+        {
+            var target = typeof(ReturnTypeController).GetMethod(methodName);
+            if (target is null)
+                Assert.Fail("Unable to find method " + methodName + " on controller");
+
+            var returnType = TypeChecks.UnwrappedReturnType(target);
+
+            if (expectedType is null)
+                returnType.Should().BeNull();
+            else
+                returnType.Should().Be(expectedType);
+        }
+    }
+
+
+    internal class CustomApplicationController : ControllerBase
+    { }
+
+    internal class NestedController : CustomApplicationController
+    {
+        public Task<ActionResult<int>> GetNumberAsync() => throw new NotImplementedException();
+        public ActionResult<int> GetNumber() => throw new NotImplementedException();
+        public Task<IActionResult> LegacyEndpointAsync() => throw new NotImplementedException();
+        public IActionResult LegacyEndpoint() => throw new NotImplementedException();
+        public Task<string> WhatEvenIsThisAsync() => throw new NotImplementedException();
+    }
+
+    internal class ReturnTypeController : CustomApplicationController
+    {
+        public Task<ActionResult<Guid>> GetRandomGuid() => throw new NotImplementedException();
+        public ActionResult<string> SomeStringMethod() => throw new NotImplementedException();
+        public ActionResult<CustomCollection> GetCustomCollection() => throw new NotImplementedException();
+        public ActionResult<IEnumerable<int>> ListOfNumbers() => throw new NotImplementedException();
+        public ActionResult<List<ComplexNestedType>> GetListOfObjects() => throw new NotImplementedException();
     }
 
     internal class CustomListWrapper : List<string>

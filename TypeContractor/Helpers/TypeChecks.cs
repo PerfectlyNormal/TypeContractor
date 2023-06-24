@@ -1,3 +1,5 @@
+using System.Reflection;
+
 namespace TypeContractor.Helpers;
 
 public static class TypeChecks
@@ -73,6 +75,59 @@ public static class TypeChecks
             throw new InvalidOperationException($"Expected {sourceType.FullName} to have a generic type argument, but unable to find any.");
 
         return sourceType.GenericTypeArguments.ElementAt(index);
+    }
+
+    public static bool IsController(Type type)
+    {
+        ArgumentNullException.ThrowIfNull(type, nameof(type));
+
+        if (type.FullName == "Microsoft.AspNetCore.Mvc.ControllerBase")
+            return true;
+
+        if (type.BaseType is not null)
+            return IsController(type.BaseType);
+
+        return false;
+    }
+
+    public static bool ReturnsActionResult(MethodInfo methodInfo)
+    {
+        ArgumentNullException.ThrowIfNull(methodInfo, nameof(methodInfo));
+
+        if (methodInfo.ReturnType.Name == "ActionResult`1")
+            return true;
+
+        if (methodInfo.ReturnType.Name == "Task`1" && methodInfo.ReturnType.GenericTypeArguments.Any(rt => rt.Name == "ActionResult`1"))
+            return true;
+
+        return false;
+    }
+
+    public static Type? UnwrappedReturnType(MethodInfo methodInfo)
+    {
+        ArgumentNullException.ThrowIfNull(methodInfo, nameof(methodInfo));
+
+        if (methodInfo.ReturnType.Name == "Task`1")
+            return UnwrappedResult(methodInfo.ReturnType.GenericTypeArguments.First());
+
+        if (methodInfo.ReturnType.Name == "ActionResult`1")
+            return UnwrappedResult(methodInfo.ReturnType.GenericTypeArguments.First());
+
+        return null;
+    }
+
+    private static Type? UnwrappedResult(Type type)
+    {
+        if (type.Name == "ActionResult`1")
+            return UnwrappedResult(type.GenericTypeArguments[0]);
+
+        if (ImplementsIEnumerable(type))
+            return UnwrappedResult(type.GenericTypeArguments[0]);
+
+        if (type.FullName!.StartsWith("System.", StringComparison.InvariantCulture))
+            return null;
+
+        return type;
     }
 
     private static Type? GetGenericTypeDefinition(Type sourceType)

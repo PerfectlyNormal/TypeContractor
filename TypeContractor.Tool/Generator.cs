@@ -39,7 +39,7 @@ internal class Generator
 
         var assembly = context.LoadFromAssemblyPath(_assemblyPath);
         var controllers = assembly
-            .GetTypes().Where(IsController)
+            .GetTypes().Where(TypeChecks.IsController)
             .ToList();
 
         if (!controllers.Any())
@@ -53,10 +53,10 @@ internal class Generator
         {
             Log.LogDebug($"Checking controller {controller.FullName}.");
             var endpoints = controller
-                .GetMethods().Where(ReturnsActionResult);
+                .GetMethods().Where(TypeChecks.ReturnsActionResult);
 
             var returnTypes = endpoints
-                .Select(UnwrappedResult).Where(x => x != null)
+                .Select(TypeChecks.UnwrappedReturnType).Where(x => x != null)
                 .Cast<Type>()
                 .ToList();
 
@@ -132,52 +132,5 @@ internal class Generator
             }
 
         return Contractor.WithConfiguration(configuration);
-    }
-
-    private bool IsController(Type type)
-    {
-        if (type.FullName == "Microsoft.AspNetCore.Mvc.ControllerBase")
-            return true;
-
-        if (type.BaseType is not null)
-            return IsController(type.BaseType);
-
-        return false;
-    }
-
-    private bool ReturnsActionResult(MethodInfo methodInfo)
-    {
-        if (methodInfo.ReturnType.Name == "ActionResult`1")
-            return true;
-
-        if (methodInfo.ReturnType.Name == "Task`1" && methodInfo.ReturnType.GenericTypeArguments.Any(rt => rt.Name == "ActionResult`1"))
-            return true;
-
-        return false;
-    }
-
-    private Type? UnwrappedResult(MethodInfo methodInfo)
-    {
-        if (methodInfo.ReturnType.Name == "Task`1")
-            return UnwrappedResult(methodInfo.ReturnType.GenericTypeArguments.First());
-
-        if (methodInfo.ReturnType.Name == "ActionResult`1")
-            return UnwrappedResult(methodInfo.ReturnType.GenericTypeArguments.First());
-
-        return null;
-    }
-
-    private Type? UnwrappedResult(Type type)
-    {
-        if (type.Name == "ActionResult`1")
-            return UnwrappedResult(type.GenericTypeArguments[0]);
-
-        if (TypeChecks.ImplementsIEnumerable(type))
-            return UnwrappedResult(type.GenericTypeArguments[0]);
-
-        if (type.FullName!.StartsWith("System.", StringComparison.InvariantCulture))
-            return null;
-
-        return type;
     }
 }
