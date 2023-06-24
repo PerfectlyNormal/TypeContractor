@@ -1,3 +1,12 @@
+#[0.4.0.0](https://dev.azure.com/Hogia/HRS/_git/HACK_TypeContractor/commit/3cfe850b72e15cf4c7a69522c6201d563b929e95) - 2023-06-24
+#####[Lön: Generera TypeScript-typer automatiskt](https://dev.azure.com/Hogia/HRS/_workitems/edit/245172)
+
+####New functionality
+* feat(lib, tool): Find parameters for endpoints [Per Christian B. Viken](https://dev.azure.com/Hogia/HRS/_git/HACK_TypeContractor/commit/f4d82ab03931fd3ebd7c059e1e9ba5b7d805dcbc)
+
+####Bug fixes or code changes
+* refactor(lib, tool): Move type checks to library [Per Christian B. Viken](https://dev.azure.com/Hogia/HRS/_git/HACK_TypeContractor/commit/bc4d0e96649d6efea837c670761c0c71a18e6524)
+
 #[0.3.1.0](https://dev.azure.com/Hogia/HRS/_git/HACK_TypeContractor/commit/b5416a0660889b0602bd5a9e64236a633a84b46e) - 2023-06-12
 
 ####Bug fixes or code changes
