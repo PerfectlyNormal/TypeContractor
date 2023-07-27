@@ -1,4 +1,4 @@
-﻿namespace TypeContractor.TypeScript;
+namespace TypeContractor.TypeScript;
 
 public static class DestinationTypes
 {
@@ -6,4 +6,5 @@ public static class DestinationTypes
     public const string Boolean = "boolean";
     public const string Number = "number";
     public const string ByteArray = "number[]";
+    public const string Dynamic = "any";
 }

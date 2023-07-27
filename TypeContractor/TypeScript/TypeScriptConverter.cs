@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using TypeContractor.Helpers;
 using TypeContractor.Output;
 
@@ -68,7 +69,7 @@ public class TypeScriptConverter
             if (getter is null) continue;
 
             var destinationName = GetDestinationName(property.Name);
-            var destinationType = GetDestinationType(property.PropertyType);
+            var destinationType = GetDestinationType(property.PropertyType, property.CustomAttributes);
             outputProperties.Add(new OutputProperty(property.Name, property.PropertyType, destinationType.InnerType, destinationName, destinationType.TypeName, destinationType.ImportType, destinationType.IsBuiltin, destinationType.IsArray, TypeChecks.IsNullable(property.PropertyType)));
         }
 
@@ -85,7 +86,7 @@ public class TypeScriptConverter
 
     private static string GetDestinationName(string name) => name.ToTypeScriptName();
 
-    private DestinationType GetDestinationType(in Type sourceType)
+    private DestinationType GetDestinationType(in Type sourceType, IEnumerable<CustomAttributeData> customAttributes)
     {
         if (_configuration.TypeMaps.TryGetValue(sourceType.FullName!, out string? destType))
             return new DestinationType(destType, true, false, null);
@@ -95,9 +96,9 @@ public class TypeScriptConverter
 
         if (TypeChecks.ImplementsIDictionary(sourceType))
         {
-            var keyType = GetDestinationType(TypeChecks.GetGenericType(sourceType, 0));
+            var keyType = GetDestinationType(TypeChecks.GetGenericType(sourceType, 0), customAttributes);
             var valueType = TypeChecks.GetGenericType(sourceType, 1);
-            var valueDestinationType = GetDestinationType(valueType);
+            var valueDestinationType = GetDestinationType(valueType, customAttributes);
 
             var isBuiltin = keyType.IsBuiltin && valueDestinationType.IsBuiltin;
 
@@ -108,14 +109,14 @@ public class TypeScriptConverter
         {
             var innerType = TypeChecks.GetGenericType(sourceType);
 
-            var (TypeName, _, IsBuiltin, _, _) = GetDestinationType(innerType);
+            var (TypeName, _, IsBuiltin, _, _) = GetDestinationType(innerType, customAttributes);
             return new DestinationType(TypeName, IsBuiltin, true, innerType);
         }
 
         if (TypeChecks.IsValueTuple(sourceType))
         {
             var arguments = sourceType.GenericTypeArguments;
-            var argumentDestinationTypes = arguments.Select(arg => GetDestinationType(arg));
+            var argumentDestinationTypes = arguments.Select(arg => GetDestinationType(arg, customAttributes));
             var isBuiltin = argumentDestinationTypes.All(arg => arg.IsBuiltin);
 
             var argumentList = argumentDestinationTypes.Select((arg, idx) => $"item{idx+1}: {arg.TypeName}{(arg.IsArray ? "[]" : "")}");
@@ -126,8 +127,11 @@ public class TypeScriptConverter
 
         if (TypeChecks.IsNullable(sourceType))
         {
-            return GetDestinationType(sourceType.GenericTypeArguments.First());
+            return GetDestinationType(sourceType.GenericTypeArguments.First(), customAttributes);
         }
+
+        if (customAttributes.Any(x => x.AttributeType == typeof(DynamicAttribute)))
+            return new DestinationType(DestinationTypes.Dynamic, true, false, null);
 
         // FIXME: Check if this is one of our types?
         var outputType = Convert(sourceType);

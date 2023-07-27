@@ -143,6 +143,18 @@ public class TypeScriptConverterTests
         prop.DestinationType.Should().Be("{ item1: string[], item2: string[] }");
     }
 
+    [Fact]
+    public void Handles_Dynamic_Types()
+    {
+        var result = Sut.Convert(typeof(DynamicResponse));
+
+        result.Should().NotBeNull();
+        result.Properties.Should().ContainSingle();
+        var prop = result.Properties!.First();
+        prop.DestinationName.Should().Be("result");
+        prop.DestinationType.Should().Be("any");
+    }
+
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     private class SimpleTypes
     {
@@ -194,6 +206,11 @@ public class TypeScriptConverterTests
     private class ValueTupleResponse
     {
         public (List<string> Errors, List<string> Warnings) Messages { get; set; }
+    }
+
+    private class DynamicResponse
+    {
+        public dynamic Result { get; set; }
     }
 
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
