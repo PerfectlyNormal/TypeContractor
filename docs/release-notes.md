@@ -1,3 +1,8 @@
+#[0.5.0.0](https://dev.azure.com/Hogia/HRS/_git/HACK_TypeContractor/commit/0e62d568a22d0b99741ee54cda4427c5696d614e) - 2023-07-27
+
+####New functionality
+* feat(lib): Add mapping from `dynamic` to `any` [Per Christian B. Viken](https://dev.azure.com/Hogia/HRS/_git/HACK_TypeContractor/commit/d5023a628557c168a6347570af7e1c40f7cdf667)
+
 #[0.4.0.0](https://dev.azure.com/Hogia/HRS/_git/HACK_TypeContractor/commit/3cfe850b72e15cf4c7a69522c6201d563b929e95) - 2023-06-24
 #####[Lön: Generera TypeScript-typer automatiskt](https://dev.azure.com/Hogia/HRS/_workitems/edit/245172)
 
