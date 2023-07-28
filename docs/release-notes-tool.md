@@ -1,3 +1,11 @@
+#[0.5.1.0](https://dev.azure.com/Hogia/HRS/_git/HACK_TypeContractor/commit/f9c58b953fa2200d50d7c11bd541c0fc5e1620b7) - 2023-07-28
+
+####Bug fixes or code changes
+* fix(lib): Can't use `typeof` when comparing types [Per Christian B. Viken](https://dev.azure.com/Hogia/HRS/_git/HACK_TypeContractor/commit/c1211af410d2e54a2f88aa319669c1c65815fd3c)
+
+####Other changes
+* chore(lib): Improve debugging when importing fails [Per Christian B. Viken](https://dev.azure.com/Hogia/HRS/_git/HACK_TypeContractor/commit/c654513b6367f61cfbde3993ece6efd77c88d40b)
+
 #[0.5.0.0](https://dev.azure.com/Hogia/HRS/_git/HACK_TypeContractor/commit/76e42d22238cb0b998e40bbb8227fe7dc320c597) - 2023-07-28
 
 ####New functionality
