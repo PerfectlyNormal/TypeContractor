@@ -130,7 +130,7 @@ public class TypeScriptConverter
             return GetDestinationType(sourceType.GenericTypeArguments.First(), customAttributes);
         }
 
-        if (customAttributes.Any(x => x.AttributeType == typeof(DynamicAttribute)))
+        if (customAttributes.Any(x => x.AttributeType.FullName == "System.Runtime.CompilerServices.DynamicAttribute"))
             return new DestinationType(DestinationTypes.Dynamic, true, false, null);
 
         // FIXME: Check if this is one of our types?

@@ -62,11 +62,18 @@ public class TypeScriptWriter
                 if (alreadyImportedTypes.Contains(import.ImportType))
                     continue;
 
-                var relativePath = PathHelpers.RelativePath(importedType.ContractedType.Folder.Name, type.ContractedType.Folder.Name);
-                var importPath = $"{relativePath}/{importedType.Name}".Replace("//", "/", StringComparison.InvariantCultureIgnoreCase);
+                try
+                {
+                    var relativePath = PathHelpers.RelativePath(importedType.ContractedType.Folder.Name, type.ContractedType.Folder.Name);
+                    var importPath = $"{relativePath}/{importedType.Name}".Replace("//", "/", StringComparison.InvariantCultureIgnoreCase);
 
-                alreadyImportedTypes.Add(import.ImportType);
-                _builder.AppendLine(CultureInfo.InvariantCulture, $"import {{ {import.ImportType} }} from \"{importPath}\";");
+                    alreadyImportedTypes.Add(import.ImportType);
+                    _builder.AppendLine(CultureInfo.InvariantCulture, $"import {{ {import.ImportType} }} from \"{importPath}\";");
+                }
+                catch (ArgumentException ex)
+                {
+                    throw new TypeScriptImportException(type, importedType, ex);
+                }
             }
         }
 
