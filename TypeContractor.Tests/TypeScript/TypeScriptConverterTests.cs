@@ -1,6 +1,5 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography.X509Certificates;
 using TypeContractor.TypeScript;
 
 namespace TypeContractor.Tests.TypeScript;
@@ -153,6 +152,7 @@ public class TypeScriptConverterTests
         var prop = result.Properties!.First();
         prop.DestinationName.Should().Be("result");
         prop.DestinationType.Should().Be("any");
+        prop.IsBuiltin.Should().BeTrue();
     }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
