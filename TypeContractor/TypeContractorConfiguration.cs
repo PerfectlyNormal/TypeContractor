@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Reflection;
+using TypeContractor.Logger;
 using TypeContractor.TypeScript;
 
 namespace TypeContractor;
@@ -12,6 +13,7 @@ public class TypeContractorConfiguration
     private readonly Dictionary<string, string> _assemblies = new();
     private readonly Dictionary<string, string> _replacements = new();
     private string? _outputPath;
+    private ILog? _logger;
 
     public IReadOnlyDictionary<string, string> TypeMaps => _map;
     public IReadOnlyList<string> Suffixes => _suffixes.AsReadOnly();
@@ -19,6 +21,7 @@ public class TypeContractorConfiguration
     public IReadOnlyDictionary<string, string> Assemblies => _assemblies;
     public IReadOnlyDictionary<string, string> Replacements => _replacements;
     public string OutputPath => _outputPath ?? throw new InvalidOperationException("Output path is not configured");
+    public ILog Logger => _logger ?? new NullLogger();
 
     /// <summary>
     /// Set up a default configuration using <see cref="AddDefaultSuffixes"/> and <see cref="AddDefaultTypeMaps"/>
@@ -223,6 +226,30 @@ public class TypeContractorConfiguration
     {
         _outputPath = outputDirectory;
 
+        return this;
+    }
+
+    /// <summary>
+    /// Add a logger of the provided type.
+    /// 
+    /// <para>
+    /// An instance will be automatically created, and must have a parameterless constructor.
+    /// If you have additional needs, create and provide an instance using <see cref="WithLogger{T}(T)"/> instead.
+    /// </para>
+    /// </summary>
+    /// <typeparam name="T">A type implementing <see cref="ILog"/></typeparam>
+    /// <returns>The configuration object for continued chaining</returns>
+    public TypeContractorConfiguration WithLogger<T>() where T : ILog => WithLogger(Activator.CreateInstance<T>());
+
+    /// <summary>
+    /// Use the provided <see cref="ILog"/> instance as a logger
+    /// </summary>
+    /// <param name="logger">A logger instance</param>
+    /// <typeparam name="T">A type implementing <see cref="ILog"/></typeparam>
+    /// <returns>The configuration object for continued chaining</returns>
+    public TypeContractorConfiguration WithLogger<T>(T logger) where T : ILog
+    {
+        _logger = logger;
         return this;
     }
 }
