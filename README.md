@@ -1,25 +1,28 @@
 # TypeContractor
 
-Looks at one or more assemblies containing contracts and translates to TypeScript interfaces and enums
+Looks at one or more assemblies containing contracts and translates to
+TypeScript interfaces and enums
 
 ## Goals
 
-1. Take one or more assemblies and reflect to find relevant types and their dependencies
-   that should get a TypeScript definition published.
+1. Take one or more assemblies and reflect to find relevant types and their
+   dependencies that should get a TypeScript definition published.
 
 2. Perform replacements on the names to strip away prefixes
 
-   `Hogia.SalaryService.Common` is unnecessary to have in the output path.
-   We can strip the common prefix and get `api/Modules/Absence/AbsenceRequest.ts`
-   instead of `api/Hogia/SalaryService/Common/Modules/Absence/AbsenceRequest.ts`.
+   `MyCompany.SystemName.Common` is unnecessary to have in the output path. 
+   We 
+   can strip the common prefix and get `api/Modules/MyModule/SomeRequest.ts`
+   instead of 
+   `api/MyCompany/SystemName/Common/Modules/MyModule/SomeRequest.ts`.
 
 3. Map custom types to their TypeScript-friendly counterparts if necessary.
 
-   For example, SalaryService has a custom `Money` type that maps down to
+   For example, say your system has a custom `Money` type that maps down to
    `number`. If we don't configure that manually, it will create the `Money`
    interface, which only contains `amount` as a `number`. That's both
-   cumbersome to work with, as well as *wrong*, since the BFF will 
-   serialize `Money` as a `number`.
+   cumbersome to work with, as well as *wrong*, since the serialization will
+   (most likely) serialize `Money` as a `number`.
 
 
 ## Setup and configuration
@@ -29,9 +32,9 @@ create Contractor like this:
 
 ```csharp
 Contractor.FromDefaultConfiguration(configuration => configuration
-            .AddAssembly("Hogia.SalaryService.Common", "Hogia.SalaryService.Common.dll")
-            .AddCustomMap("Hogia.SalaryService.Common.Types.Money", DestinationTypes.Number)
-            .StripString("Hogia.SalaryService.Common")
+            .AddAssembly("MyCompany.SystemName.Common", "MyCompany.SystemName.Common.dll")
+            .AddCustomMap("MyCompany.SystemName.Common.Types.Money", DestinationTypes.Number)
+            .StripString("MyCompany.SystemName.Common")
             .SetOutputDirectory(Path.Combine(Directory.GetCurrentDirectory(), "api")));
 ```
 
@@ -41,21 +44,21 @@ Get an instance of `Contractor` and call `contractor.Build();`
 
 ## Integrate with ASP.NET Core
 
-The easiest way is to TypeContractor, using `dotnet
-tool install --global typecontractor`.  This adds `typecontractor` as an
-executable installed on the system and always available.
+The easiest way is to TypeContractor, using `dotnet tool install --global
+typecontractor`.  This adds `typecontractor` as an executable installed on the
+system and always available.
 
 Run `typecontractor` to get a list of available options.
 
 This tool reflects over the main assembly provided and finds all controllers
-(that inherits from `Microsoft.AspNetCore.Mvc.ControllerBase`). Each
-controller is reflected over in turn, and finds all public methods that returns
-`ActionResult<T>`. The `ActionResult<T>` is unwrapped and the inner type `T`
-is added to a list of candidates.
+(that inherits from `Microsoft.AspNetCore.Mvc.ControllerBase`). Each controller
+is reflected over in turn, and finds all public methods that returns
+`ActionResult<T>`. The `ActionResult<T>` is unwrapped and the inner type `T` is
+added to a list of candidates.
 
 Additionally, the public methods returning an `ActionResult<T>` *or* a plain
-`ActionResult` will have their parameters analyzed as well. Anything that's
-not a builtin type will be added to the list of candidates.
+`ActionResult` will have their parameters analyzed as well. Anything that's not
+a builtin type will be added to the list of candidates.
 
 Meaning if you have a method looking like:
 
@@ -77,8 +80,8 @@ write everything to the output files.
 ### Installing locally
 
 Instead of installing the tool globally, you can also add it locally to the
-project that is going to use it. This makes it easier to make sure everyone
-who wants to run the project have it available.
+project that is going to use it. This makes it easier to make sure everyone who
+wants to run the project have it available.
 
 For the initial setup, run:
 
@@ -101,7 +104,7 @@ In your `Web.csproj` add a target that calls the tool after build. Example:
   <Exec 
       Condition="'$(AGENT_ID)' == ''"
       ContinueOnError="true"
-      Command="typecontractor --assembly $(OutputPath)$(AssemblyName).dll --output $(MSBuildThisFileDirectory)\App\src\api --clean --replace OpenHR.Lon.Web.App.src.modules:Lon --replace Infrastructure.Http.Common:Common --strip Hogia" />
+      Command="typecontractor --assembly $(OutputPath)$(AssemblyName).dll --output $(MSBuildThisFileDirectory)\App\src\api --clean smart --replace My.Web.App.src.modules:App --replace Infrastructure.Common:Common --strip MyCompany" />
   <Message Importance="high" Text="Finished generating API types" Condition="'$(AGENT_ID)' == ''" />
 </Target>
 ```
@@ -113,12 +116,25 @@ thing.
 
 It will first:
 
-1. Strip out `Hogia.` from the beginning of namespaces
-2. Replace `OpenHR.Lon.Web.App.src.modules` with `Lon`
-3. Replace `Infrastructure.Http.Common` with `Common`
+1. Strip out `MyCompany.` from the beginning of namespaces
+2. Replace `My.Web.App.src.modules` with `App`
+3. Replace `Infrastructure.Common` with `Common`
 
 by looking at the configured assembly. The resulting files are placed in
 `Web\App\src\api`.
+
+When running with `--clean smart`, which is the default, it first generates the
+updated or newly created files. After that, it looks in the output directory
+and removes every file and directory that are no longer needed.
+
+Other options are:
+
+* `none` -- which as the name suggests, does no cleanup at all.
+  That part is left as an exercise to the user.
+* `remove` -- which removes the entire output directory before
+  starting the file generation. This is probably the quickest, but some tools
+  that are watching for changes does not always react so well to having files
+  suddenly disappear and reappear.
 
 ## Future improvements
 
@@ -128,3 +144,4 @@ by looking at the configured assembly. The resulting files are placed in
 * Possible to add types to exclude?
 * Improve method for finding AspNetCore framework DLLs
   * Possible to provide a manual path, so not a priority
+* Work with Hot Reload?
