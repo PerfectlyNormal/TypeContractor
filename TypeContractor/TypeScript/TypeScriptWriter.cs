@@ -16,7 +16,7 @@ public class TypeScriptWriter
         _outputPath = outputPath;
     }
 
-    public void Write(OutputType outputType, IEnumerable<OutputType> allTypes)
+    public string Write(OutputType outputType, IEnumerable<OutputType> allTypes)
     {
         if (outputType is null)
             throw new ArgumentNullException(nameof(outputType));
@@ -39,6 +39,9 @@ public class TypeScriptWriter
 
         // Write file
         File.WriteAllText(filePath, _builder.ToString());
+
+        // Return the path we wrote to
+        return filePath;
     }
 
     private void BuildImports(OutputType type, IEnumerable<OutputType> allTypes)

@@ -43,6 +43,7 @@ public class Contractor
     {
         metadataLoadContext ??= BuildMetadataLoadContext();
         var toConvert = new List<ContractedType>();
+        var generatedFiles = new List<string>();
 
         foreach (var (assemblyName, assemblyPath) in _configuration.Assemblies)
         {
@@ -78,7 +79,46 @@ public class Contractor
 
             foreach (var type in outputTypes)
             {
-                writer.Write(type, outputTypes);
+                var filePath = writer.Write(type, outputTypes);
+                generatedFiles.Add(filePath);
+            }
+        }
+
+        _configuration.Logger.LogMessage("Cleaning no longer relevant output files.");
+        var allFiles = Directory.GetFiles(_configuration.OutputPath, "*", SearchOption.AllDirectories);
+        var diff = allFiles.Except(generatedFiles).ToList();
+
+        var allDirectories = Directory.GetDirectories(_configuration.OutputPath, "*", SearchOption.AllDirectories);
+        var generatedDirectories = allDirectories.Where(d => generatedFiles.Any(f => f.StartsWith(d, StringComparison.InvariantCultureIgnoreCase)));
+        var directoryDiff = allDirectories.Except(generatedDirectories).ToList();
+
+        _configuration.Logger.LogDebug($"Found a diff of {diff.Count} items:");
+        foreach (var file in diff)
+        {
+            _configuration.Logger.LogDebug($"  {file}");
+            try
+            {
+            if (File.Exists(file))
+                File.Delete(file);
+        }
+            catch (IOException ex)
+            {
+                _configuration.Logger.LogWarning($"Unable to delete file {file}: {ex.Message}");
+            }
+        }
+
+        _configuration.Logger.LogDebug($"Found a diff of {directoryDiff.Count} folders:");
+        foreach (var dir in directoryDiff)
+        {
+            _configuration.Logger.LogDebug($"  {dir}");
+            try
+            {
+            if (Directory.Exists(dir))
+                Directory.Delete(dir, true);
+        }
+            catch (IOException ex)
+            {
+                _configuration.Logger.LogWarning($"Unable to delete directory {dir}: {ex.Message}");
             }
         }
     }
