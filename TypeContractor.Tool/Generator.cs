@@ -8,18 +8,18 @@ internal class Generator
 {
     private readonly string _assemblyPath;
     private readonly string _output;
-    private readonly bool _clean;
+    private readonly CleanMethod _cleanMethod;
     private readonly string[] _replacements;
     private readonly string[] _strip;
     private readonly string[] _customMaps;
     private readonly string _packPath;
     private readonly ILog _logger;
 
-    public Generator(string assemblyPath, string output, bool clean, string[] replacements, string[] strip, string[] customMaps, string packsPath, ILog logger)
+    public Generator(string assemblyPath, string output, CleanMethod cleanMethod, string[] replacements, string[] strip, string[] customMaps, string packsPath, ILog logger)
     {
         _assemblyPath = assemblyPath;
         _output = output;
-        _clean = clean;
+        _cleanMethod = cleanMethod;
         _replacements = replacements;
         _strip = strip;
         _customMaps = customMaps;
@@ -88,7 +88,7 @@ internal class Generator
 
         var contractor = GenerateContractor(typesToLoad);
 
-        if (_clean)
+        if (_cleanMethod == CleanMethod.Remove)
         {
             _logger.LogWarning($"Going to clean output path '{_output}'.");
             if (Directory.Exists(_output))
@@ -99,7 +99,7 @@ internal class Generator
         }
 
         _logger.LogMessage("Writing types.");
-        contractor.Build(context);
+        contractor.Build(context, _cleanMethod == CleanMethod.Smart);
         _logger.LogMessage("Finished generating types.");
 
         return Task.CompletedTask;
