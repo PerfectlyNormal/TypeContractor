@@ -24,8 +24,8 @@ rootCommand.AddOption(logLevelOptions);
 
 rootCommand.SetHandler(async (string assemblyOption, string output, bool clean, string[] replacements, string[] strip, string[] customMaps, string packsPath, LogLevel logLevel) =>
 {
-    Log.SetLevel(logLevel);
-    var generator = new Generator(assemblyOption, output, clean, replacements, strip, customMaps, packsPath);
+    var logger = new Logger(logLevel);
+    var generator = new Generator(assemblyOption, output, clean, replacements, strip, customMaps, packsPath, logger);
     await generator.Execute();
 }, assemblyOption, outputOption, cleanOption, replaceOptions, stripOptions, mapOptions, packsOptions, logLevelOptions);
 

@@ -1,3 +1,5 @@
+using TypeContractor.Logger;
+
 namespace TypeContractor.Tool;
 
 public enum LogLevel
@@ -8,42 +10,47 @@ public enum LogLevel
     Error,
 }
 
-internal static class Log
+internal class Logger : ILog
 {
-    internal static LogLevel _logLevel;
+    internal LogLevel _logLevel;
 
-    public static void LogError(string message)
+    public Logger(LogLevel level)
+    {
+        _logLevel = level;
+    }
+
+    public void LogError(string message)
     {
         if (_logLevel <= LogLevel.Error)
             Console.Error.WriteLine($"[ ERR] {message}");
     }
 
-    public static void LogError(Exception exception, string message)
+    public void LogError(Exception exception, string message)
     {
         LogError(message);
         if (_logLevel <= LogLevel.Debug)
             Console.Error.Write(exception);
     }
 
-    public static void LogWarning(string message)
+    public void LogWarning(string message)
     {
         if (_logLevel <= LogLevel.Warning)
             Console.WriteLine($"[WARN] {message}");
     }
 
-    public static void LogMessage(string message)
+    public void LogMessage(string message)
     {
         if (_logLevel <= LogLevel.Info)
             Console.WriteLine($"[INFO] {message}");
     }
 
-    public static void LogDebug(string message)
+    public void LogDebug(string message)
     {
         if (_logLevel <= LogLevel.Debug)
             Console.WriteLine($"[ DBG] {message}");
     }
 
-    internal static void SetLevel(LogLevel logLevel)
+    internal void SetLevel(LogLevel logLevel)
     {
         _logLevel = logLevel;
     }
