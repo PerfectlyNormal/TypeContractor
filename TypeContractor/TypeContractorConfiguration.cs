@@ -7,6 +7,8 @@ namespace TypeContractor;
 
 public class TypeContractorConfiguration
 {
+    private static readonly string[] _defaultSuffixes = new[] { "Dto", "Request", "Response" };
+
     private readonly List<string> _suffixes = new();
     private readonly List<string> _types = new();
     private readonly Dictionary<string, string> _map = new();
@@ -43,7 +45,7 @@ public class TypeContractorConfiguration
     /// <returns>The configuration object for continued chaining</returns>
     public TypeContractorConfiguration AddDefaultSuffixes()
     {
-        _suffixes.AddRange(new[] { "Dto", "Request", "Response" });
+        _suffixes.AddRange(_defaultSuffixes);
         return this;
     }
 
