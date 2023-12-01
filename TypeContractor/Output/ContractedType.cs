@@ -21,8 +21,8 @@ public record ContractedType(string Name, string FullName, Type Type, Folder Fol
 
     public static string ApplyReplacements(string input, IReadOnlyDictionary<string, string> replacements)
     {
-        if (input is null) throw new ArgumentNullException(nameof(input));
-        if (replacements is null) throw new ArgumentNullException(nameof(replacements));
+        ArgumentNullException.ThrowIfNull(input);
+        ArgumentNullException.ThrowIfNull(replacements);
 
         foreach (var (needle, replacement) in replacements)
             input = input.Replace(needle, replacement, StringComparison.InvariantCulture);
