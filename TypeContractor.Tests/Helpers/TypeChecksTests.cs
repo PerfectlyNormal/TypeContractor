@@ -215,7 +215,7 @@ namespace TypeContractor.Tests.Helpers
         [InlineData(nameof(ParameterTypeController.GetById), null)]
         [InlineData(nameof(ParameterTypeController.GetByNumericId), null)]
         [InlineData(nameof(ParameterTypeController.GetWithListOfIds), null)]
-        public void UnwrappedParameters_Ignores_Builtins(string methodName, Type[] expectedTypes)
+        public void UnwrappedParameters_Ignores_Builtins(string methodName, Type[]? expectedTypes)
         {
             var target = typeof(ParameterTypeController).GetMethod(methodName);
             if (target is null)

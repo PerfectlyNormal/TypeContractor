@@ -20,13 +20,13 @@ public class TypeScriptConverter
 
     public OutputType Convert(ContractedType contractedType)
     {
-        if (contractedType is null) throw new ArgumentNullException(nameof(contractedType));
+        ArgumentNullException.ThrowIfNull(contractedType);
         return Convert(contractedType.Type, contractedType);
     }
 
     public OutputType Convert(Type type, ContractedType? contractedType = null)
     {
-        if (type is null) throw new ArgumentNullException(nameof(type));
+        ArgumentNullException.ThrowIfNull(type);
 
         return new(
             type.Name,
@@ -38,7 +38,7 @@ public class TypeScriptConverter
         );
     }
 
-    private ICollection<OutputEnumMember> GetEnumProperties(Type type)
+    private List<OutputEnumMember> GetEnumProperties(Type type)
     {
         var matchAssembly = _metadataLoadContext.LoadFromAssemblyName(type.Assembly.FullName!);
         var matchedEnumType = matchAssembly.GetType(type.FullName!)!;
@@ -51,7 +51,7 @@ public class TypeScriptConverter
             .ToList();
     }
 
-    private ICollection<OutputProperty> GetProperties(Type type)
+    private List<OutputProperty> GetProperties(Type type)
     {
         var outputProperties = new List<OutputProperty>();
 

@@ -68,10 +68,10 @@ public static class TypeChecks
     {
         ArgumentNullException.ThrowIfNull(sourceType, nameof(sourceType));
 
-        if (!sourceType.GenericTypeArguments.Any() && sourceType.BaseType is not null)
+        if (sourceType.GenericTypeArguments.Length == 0 && sourceType.BaseType is not null)
             return GetGenericType(sourceType.BaseType);
 
-        if (!sourceType.GenericTypeArguments.Any())
+        if (sourceType.GenericTypeArguments.Length == 0)
             throw new InvalidOperationException($"Expected {sourceType.FullName} to have a generic type argument, but unable to find any.");
 
         return sourceType.GenericTypeArguments.ElementAt(index);

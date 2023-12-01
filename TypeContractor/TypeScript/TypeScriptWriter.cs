@@ -18,8 +18,7 @@ public class TypeScriptWriter
 
     public string Write(OutputType outputType, IEnumerable<OutputType> allTypes)
     {
-        if (outputType is null)
-            throw new ArgumentNullException(nameof(outputType));
+        ArgumentNullException.ThrowIfNull(outputType);
 
         _builder.Clear();
 
@@ -57,7 +56,7 @@ public class TypeScriptWriter
         foreach (var import in imports)
         {
             var importedTypes = GetImportedTypes(allTypes, import);
-            if (!importedTypes.Any())
+            if (importedTypes.Count == 0)
                 throw new ArgumentException($"Unable to find type for {import.SourceType}");
 
             foreach (var importedType in importedTypes)
@@ -80,7 +79,7 @@ public class TypeScriptWriter
             }
         }
 
-        if (imports.Any())
+        if (imports.Count > 0)
             _builder.AppendLine();
     }
 
