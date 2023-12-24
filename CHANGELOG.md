@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.8.1] - 2023-12-24
+
 ### Fixed
 
 - Add default maps from `System.Double` to `number` and `System.TimeSpan` to `string` (#19)
@@ -15,7 +17,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Improve error logging if a type fails to convert (#20)
 - Update xunit to v2.6.4
-- Update xunit.runner.visualstudio to v2.5.6
 - Update xunit.runner.visualstudio to v2.5.6
 - Update xunit.analyzers to v1.8.0
 
@@ -85,13 +86,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Move code from tool into library for better sharing
-  
+
 ## [0.3.1] - 2023-06-12
 
 ### Added
 
 - Add the dotnet-tool
-  
+
 ### Fixed
 
 - Add more null checks
@@ -116,7 +117,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add support for mapping `Dictionary<TKey, TValue>` to TypeScript
-  
+
 ### Fixed
 
 - Fix compiler warnings
@@ -133,7 +134,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release
 
 
-[unreleased]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.8.0...HEAD
+[unreleased]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.8.1...HEAD
+[0.8.1]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.5.1...v0.6.0
