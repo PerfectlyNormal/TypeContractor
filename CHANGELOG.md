@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Changed
+
+- Update xunit to 2.7.1
+- Update xunit.analyzers to 1.12.0
+- Update xunit.runner.visualstudio to 2.5.8
+- Update coverlet.collector to 6.0.2
+- Update Microsoft.NET.Test.Sdk to 17.9.0
+
 ## [0.9.2] - 2024-01-28
 
 ### Fixed
