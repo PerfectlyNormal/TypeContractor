@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Added
+
+- Add default map from `System.DateOnly` and `System.TimeOnly` to `string`
+
 ### Changed
 
 - Update xunit to 2.7.1

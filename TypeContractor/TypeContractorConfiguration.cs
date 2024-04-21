@@ -61,6 +61,8 @@ public class TypeContractorConfiguration
         AddCustomMap(typeof(string), DestinationTypes.StringType);
         AddCustomMap(typeof(DateTime), DestinationTypes.StringType);
         AddCustomMap(typeof(DateTimeOffset), DestinationTypes.StringType);
+        AddCustomMap(typeof(DateOnly), DestinationTypes.StringType);
+        AddCustomMap(typeof(TimeOnly), DestinationTypes.StringType);
         AddCustomMap(typeof(Guid), DestinationTypes.StringType);
         AddCustomMap(typeof(bool), DestinationTypes.Boolean);
         AddCustomMap(typeof(byte), DestinationTypes.Number);

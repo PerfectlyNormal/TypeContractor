@@ -248,6 +248,34 @@ public class TypeScriptConverterTests
         prop.IsReadonly.Should().Be(isReadonly);
     }
 
+    [Fact]
+    public void Handles_DateOnly()
+    {
+        var result = Sut.Convert(typeof(DateOnlyResponse));
+
+        result.Should().NotBeNull();
+        result.Properties.Should().ContainSingle();
+
+        var prop = result.Properties!.Single();
+        prop.DestinationName.Should().Be("birthDate");
+        prop.FullDestinationType.Should().Be("string");
+        prop.IsBuiltin.Should().BeTrue();
+    }
+    
+    [Fact]
+    public void Handles_TimeOnly()
+    {
+        var result = Sut.Convert(typeof(TimeOnlyResponse));
+
+        result.Should().NotBeNull();
+        result.Properties.Should().ContainSingle();
+
+        var prop = result.Properties!.Single();
+        prop.DestinationName.Should().Be("meetingTime");
+        prop.FullDestinationType.Should().Be("string");
+        prop.IsBuiltin.Should().BeTrue();
+    }
+
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     private class SimpleTypes
     {
@@ -333,6 +361,16 @@ public class TypeScriptConverterTests
         public DateTime Created { get; }
         public IEnumerable<string> Errors { get; set; }
         public Dictionary<string, IEnumerable<string>> Warnings { get; }
+    }
+    
+    private class DateOnlyResponse
+    {
+        public DateOnly BirthDate { get; set; }
+    }
+
+    private class TimeOnlyResponse
+    {
+        public TimeOnly MeetingTime { get; set; }
     }
 
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
