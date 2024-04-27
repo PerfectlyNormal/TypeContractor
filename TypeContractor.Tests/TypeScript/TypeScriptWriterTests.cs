@@ -40,7 +40,7 @@ public class TypeScriptWriterTests : IDisposable
                 .ToList();
 
         // Act
-        var result = Sut.Write(outputTypes.First(), outputTypes);
+        var result = Sut.Write(outputTypes.First(), outputTypes, false);
 
         // Assert
         var file = File.ReadAllLines(result).Select(x => x.TrimStart());
@@ -70,7 +70,7 @@ public class TypeScriptWriterTests : IDisposable
                 .ToList();
 
         // Act
-        var result = Sut.Write(outputTypes.First(), outputTypes);
+        var result = Sut.Write(outputTypes.First(), outputTypes, false);
 
         // Assert
         var file = File.ReadAllText(result);
@@ -94,7 +94,7 @@ public class TypeScriptWriterTests : IDisposable
                 .ToList();
 
         // Act
-        var result = Sut.Write(outputTypes.First(), outputTypes);
+        var result = Sut.Write(outputTypes.First(), outputTypes, false);
 
         // Assert
         var file = File.ReadAllText(result);
@@ -118,7 +118,7 @@ public class TypeScriptWriterTests : IDisposable
                 .ToList();
 
         // Act
-        var result = Sut.Write(outputTypes.First(), outputTypes);
+        var result = Sut.Write(outputTypes.First(), outputTypes, false);
 
         // Assert
         var file = File.ReadAllText(result);
@@ -145,7 +145,7 @@ public class TypeScriptWriterTests : IDisposable
                 .ToList();
 
         // Act
-        var result = Sut.Write(outputTypes.First(), outputTypes);
+        var result = Sut.Write(outputTypes.First(), outputTypes, false);
 
         // Assert
         var file = File.ReadAllText(result);
@@ -174,9 +174,9 @@ public class TypeScriptWriterTests : IDisposable
                 .ToList();
 
         // Act
-        var topLevelResult = Sut.Write(outputTypes.First(), outputTypes);
-        var secondStoryResult = Sut.Write(outputTypes.First(x => x.Name == "SecondStoryRecord"), outputTypes);
-        var someOtherDeeplyNestedResult = Sut.Write(outputTypes.First(x => x.Name == "SomeOtherDeeplyNestedRecord"), outputTypes);
+        var topLevelResult = Sut.Write(outputTypes.First(), outputTypes, false);
+        var secondStoryResult = Sut.Write(outputTypes.First(x => x.Name == "SecondStoryRecord"), outputTypes, false);
+        var someOtherDeeplyNestedResult = Sut.Write(outputTypes.First(x => x.Name == "SomeOtherDeeplyNestedRecord"), outputTypes, false);
 
         // Assert
         var topLevelFile = File.ReadAllText(topLevelResult);

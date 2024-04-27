@@ -136,6 +136,55 @@ Other options are:
   that are watching for changes does not always react so well to having files
   suddenly disappear and reappear.
 
+## Integration with Zod
+
+An experimental option to generate [Zod schemas](https://zod.dev/) exists
+behind the `--build-zod-schemas` flag. This causes each generated TypeScript
+file to also have a `<TypeName>Schema` generated that can be integrated with
+Zod. Currently no support for validations, but that might come in a future
+update.
+
+Example:
+
+```csharp
+public class PaymentsPerYearResponse
+{
+    public IEnumerable<int> Years { get; set; } = [2023, 2024];
+    public Dictionary<int, int> PaymentsPerYear { get; set; } = new Dictionary<int, int>
+    {
+        { 2024, 4 },
+        { 2023, 12 }
+    };
+}
+```
+
+generates
+
+```typescript
+import { z } from 'zod';
+
+export interface PaymentsPerYearResponse {
+  years: number[];
+  paymentsPerYear: { [key: number]: number };
+}
+
+export const PaymentsPerYearResponseSchema = z.object({
+  years: z.array(z.number()),
+  paymentsPerYear: z.record(z.string(), z.number()), // JavaScript is very stringy (https://zod.dev/?id=records)
+});
+```
+
+and can be integrated using something similar to
+
+```typescript
+const response = await this.http.fetch('api/paymentsPerYear', { signal: cancellationToken });
+const input = await response.json();
+return PaymentsPerYearResponseSchema.parse(input);
+```
+
+which will throw a `ZodError` if `input` fails to parse against the schema.
+Otherwise it returns a cleaned up version of `input`.
+
 ## Future improvements
 
 * Kebab-case output files and directories

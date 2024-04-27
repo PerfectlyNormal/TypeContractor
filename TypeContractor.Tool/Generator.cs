@@ -14,8 +14,9 @@ internal class Generator
     private readonly string[] _customMaps;
     private readonly string _packPath;
     private readonly int _dotnetVersion;
+    private readonly bool _buildZodSchemas;
 
-    public Generator(string assemblyPath, string output, CleanMethod cleanMethod, string[] replacements, string[] strip, string[] customMaps, string packsPath, int dotnetVersion)
+    public Generator(string assemblyPath, string output, CleanMethod cleanMethod, string[] replacements, string[] strip, string[] customMaps, string packsPath, int dotnetVersion, bool buildZodSchemas)
     {
         _assemblyPath = assemblyPath;
         _output = output;
@@ -25,6 +26,7 @@ internal class Generator
         _customMaps = customMaps;
         _packPath = packsPath;
         _dotnetVersion = dotnetVersion;
+        _buildZodSchemas = buildZodSchemas;
     }
 
     public Task<int> Execute()
@@ -91,7 +93,7 @@ internal class Generator
                 return Task.FromResult(1);
             }
 
-            var contractor = GenerateContractor(typesToLoad);
+            var contractor = GenerateContractor(typesToLoad, _buildZodSchemas);
 
             if (_cleanMethod == CleanMethod.Remove)
             {
@@ -116,13 +118,16 @@ internal class Generator
         return Task.FromResult(returnCode);
     }
 
-    private Contractor GenerateContractor(Dictionary<Assembly, HashSet<Type>> typesToLoad)
+    private Contractor GenerateContractor(Dictionary<Assembly, HashSet<Type>> typesToLoad, bool buildZodSchemas)
     {
         var configuration = new TypeContractorConfiguration()
                             .AddDefaultTypeMaps()
                             .AddAssemblies([.. typesToLoad.Keys])
                             .AddTypes(typesToLoad.Values.SelectMany(list => list.Select(t => t.FullName!)).ToArray())
                             .SetOutputDirectory(_output!);
+
+        if (buildZodSchemas)
+            configuration = configuration.EnableZodSchemas();
 
         if (_strip is not null)
             foreach (var strip in _strip)

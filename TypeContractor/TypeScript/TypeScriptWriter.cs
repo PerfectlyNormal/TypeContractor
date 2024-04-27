@@ -9,7 +9,7 @@ public class TypeScriptWriter(string outputPath)
 {
     private readonly StringBuilder _builder = new();
 
-    public string Write(OutputType outputType, IEnumerable<OutputType> allTypes)
+    public string Write(OutputType outputType, IEnumerable<OutputType> allTypes, bool buildZodSchema)
     {
         ArgumentNullException.ThrowIfNull(outputType);
 
