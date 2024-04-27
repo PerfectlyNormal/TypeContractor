@@ -15,8 +15,10 @@ public class TypeScriptWriter(string outputPath)
 
         _builder.Clear();
 
-        BuildImports(outputType, allTypes);
+        BuildImports(outputType, allTypes, buildZodSchema);
         BuildExport(outputType);
+        if (buildZodSchema)
+            ZodSchemaWriter.Write(outputType, allTypes, _builder);
 
         var directory = Path.Combine(outputPath, outputType.ContractedType.Folder.Path);
         var filePath = Path.Combine(directory, $"{outputType.Name}.ts");
@@ -34,13 +36,16 @@ public class TypeScriptWriter(string outputPath)
         return filePath;
     }
 
-    private void BuildImports(OutputType type, IEnumerable<OutputType> allTypes)
+    private void BuildImports(OutputType type, IEnumerable<OutputType> allTypes, bool buildZodSchema)
     {
         var properties = type.Properties ?? Enumerable.Empty<OutputProperty>();
         var imports = properties
             .Where(p => !p.IsBuiltin)
             .DistinctBy(p => p.InnerSourceType ?? p.SourceType)
             .ToList();
+
+        if (buildZodSchema)
+            _builder.AppendLine(ZodSchemaWriter.LibraryImport);
 
         var alreadyImportedTypes = new List<string>();
 
@@ -71,7 +76,15 @@ public class TypeScriptWriter(string outputPath)
                     var importPath = $"{relativePath}/{importedType.Name}".Replace("//", "/", StringComparison.InvariantCultureIgnoreCase);
 
                     alreadyImportedTypes.Add(import.ImportType);
-                    _builder.AppendLine(CultureInfo.InvariantCulture, $"import {{ {import.ImportType} }} from \"{importPath}\";");
+                    var importTypes = new List<string> { import.ImportType };
+                    if (buildZodSchema)
+                    {
+                        var zodImport = ZodSchemaWriter.BuildImport(import);
+                        if (!string.IsNullOrWhiteSpace(zodImport))
+                            importTypes.Add(zodImport);
+                    }
+
+                    _builder.AppendLine(CultureInfo.InvariantCulture, $"import {{ {string.Join(", ", importTypes)} }} from \"{importPath}\";");
                 }
                 catch (ArgumentException ex)
                 {
@@ -80,7 +93,7 @@ public class TypeScriptWriter(string outputPath)
             }
         }
 
-        if (imports.Count > 0)
+        if (imports.Count > 0 || buildZodSchema)
             _builder.AppendLine();
     }
 

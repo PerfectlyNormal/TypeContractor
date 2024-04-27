@@ -1,6 +1,5 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
 using TypeContractor.Output;
 using TypeContractor.TypeScript;
 
@@ -30,14 +29,7 @@ public class TypeScriptWriterTests : IDisposable
     public void Can_Write_Simple_Types()
     {
         // Arrange
-        var types = new[] { typeof(SimpleTypes) }
-            .Select(t => ContractedType.FromName(t.FullName!, t, _configuration));
-
-        var outputTypes = types
-                .Select(_converter.Convert)
-                .ToList() // Needed so `converter.Convert` runs before we concat
-                .Concat(_converter.CustomMappedTypes.Values)
-                .ToList();
+        var outputTypes = BuildOutputTypes(typeof(SimpleTypes));
 
         // Act
         var result = Sut.Write(outputTypes.First(), outputTypes, false);
@@ -60,14 +52,7 @@ public class TypeScriptWriterTests : IDisposable
     public void Handles_Dictionary_With_Complex_Values()
     {
         // Arrange
-        var types = new[] { typeof(ComplexValueDictionary) }
-            .Select(t => ContractedType.FromName(t.FullName!, t, _configuration));
-
-        var outputTypes = types
-                .Select(_converter.Convert)
-                .ToList() // Needed so `converter.Convert` runs before we concat
-                .Concat(_converter.CustomMappedTypes.Values)
-                .ToList();
+        var outputTypes = BuildOutputTypes(typeof(ComplexValueDictionary));
 
         // Act
         var result = Sut.Write(outputTypes.First(), outputTypes, false);
@@ -84,14 +69,7 @@ public class TypeScriptWriterTests : IDisposable
     public void Handles_Dictionary_With_Nested_Dictionary_Values()
     {
         // Arrange
-        var types = new[] { typeof(NestedValueDictionary) }
-            .Select(t => ContractedType.FromName(t.FullName!, t, _configuration));
-
-        var outputTypes = types
-                .Select(_converter.Convert)
-                .ToList() // Needed so `converter.Convert` runs before we concat
-                .Concat(_converter.CustomMappedTypes.Values)
-                .ToList();
+        var outputTypes = BuildOutputTypes(typeof(NestedValueDictionary));
 
         // Act
         var result = Sut.Write(outputTypes.First(), outputTypes, false);
@@ -108,14 +86,7 @@ public class TypeScriptWriterTests : IDisposable
     public void Includes_Deprecated_JSDoc()
     {
         // Arrange
-        var types = new[] { typeof(ObsoleteResponse) }
-            .Select(t => ContractedType.FromName(t.FullName!, t, _configuration));
-
-        var outputTypes = types
-                .Select(_converter.Convert)
-                .ToList() // Needed so `converter.Convert` runs before we concat
-                .Concat(_converter.CustomMappedTypes.Values)
-                .ToList();
+        var outputTypes = BuildOutputTypes(typeof(ObsoleteResponse));
 
         // Act
         var result = Sut.Write(outputTypes.First(), outputTypes, false);
@@ -135,14 +106,7 @@ public class TypeScriptWriterTests : IDisposable
     public void Includes_Deprecated_JSDoc_For_Enum_Members()
     {
         // Arrange
-        var types = new[] { typeof(ObsoleteEnum) }
-            .Select(t => ContractedType.FromName(t.FullName!, t, _configuration));
-
-        var outputTypes = types
-                .Select(_converter.Convert)
-                .ToList() // Needed so `converter.Convert` runs before we concat
-                .Concat(_converter.CustomMappedTypes.Values)
-                .ToList();
+        var outputTypes = BuildOutputTypes(typeof(ObsoleteEnum));
 
         // Act
         var result = Sut.Write(outputTypes.First(), outputTypes, false);
@@ -164,14 +128,7 @@ public class TypeScriptWriterTests : IDisposable
     public void Handles_Nested_Nullable_Records()
     {
         // Arrange
-        var types = new[] { typeof(TopLevelRecord) }
-            .Select(t => ContractedType.FromName(t.FullName!, t, _configuration));
-
-        var outputTypes = types
-                .Select(_converter.Convert)
-                .ToList() // Needed so `converter.Convert` runs before we concat
-                .Concat(_converter.CustomMappedTypes.Values)
-                .ToList();
+        var outputTypes = BuildOutputTypes(typeof(TopLevelRecord));
 
         // Act
         var topLevelResult = Sut.Write(outputTypes.First(), outputTypes, false);
@@ -206,6 +163,163 @@ public class TypeScriptWriterTests : IDisposable
             .And.Contain("}");
     }
 
+    [Fact]
+    public void Writes_Basic_Zod_Schema()
+    {
+        // Arrange
+        var outputTypes = BuildOutputTypes(typeof(SimpleTypes));
+
+        // Act
+        var result = Sut.Write(outputTypes.First(), outputTypes, true);
+        var file = File.ReadAllText(result);
+
+        // Assert
+        file.Should()
+            .NotBeEmpty()
+            .And.Contain("import { z } from \"zod\";")
+            .And.Contain("export const SimpleTypesSchema = z.object({")
+            .And.Contain("  stringProperty: z.string(),")
+            .And.Contain("  numberProperty: z.number().nullable(),")
+            .And.Contain("  numbersProperty: z.array(z.number()),")
+            .And.Contain("  doubleTime: z.number(),")
+            .And.Contain("  timeyWimeySpan: z.string(),")
+            .And.Contain("  someObject: z.any(),")
+            .And.Contain("});");
+    }
+
+    [Fact]
+    public void Writes_Zod_Schema_With_Reference_To_Custom_Types()
+    {
+        // Arrange
+        var outputTypes = BuildOutputTypes(typeof(ReferenceType));
+
+        // Act
+        var result = Sut.Write(outputTypes.First(), outputTypes, true);
+        var file = File.ReadAllText(result);
+
+        // Assert
+        file.Should()
+            .NotBeEmpty()
+            .And.Contain("import { z } from \"zod\";")
+            .And.Contain("import { SimpleTypes, SimpleTypesSchema } from \"./SimpleTypes\";")
+            .And.Contain("export const ReferenceTypeSchema = z.object({")
+            .And.Contain("  name: z.string().nullable(),")
+            .And.Contain("  simpleReference: SimpleTypesSchema,")
+            .And.Contain("});");
+    }
+
+    [Fact]
+    public void Writes_Zod_Schema_With_Enum_Reference()
+    {
+        // Arrange
+        var outputTypes = BuildOutputTypes(typeof(TypeWithEnum));
+
+        // Act
+        var result = Sut.Write(outputTypes.First(), outputTypes, true);
+        var file = File.ReadAllText(result);
+
+        // Assert
+        file.Should()
+            .NotBeEmpty()
+            .And.Contain("import { z } from \"zod\";")
+            .And.Contain("import { ObsoleteEnum } from \"./ObsoleteEnum\";")
+            .And.Contain("export const TypeWithEnumSchema = z.object({")
+            .And.Contain("  status: z.nativeEnum(ObsoleteEnum),")
+            .And.Contain("});");
+    }
+
+    [Fact]
+    public void Writes_Zod_Schema_With_Custom_Types_In_Dictionaries()
+    {
+        // Arrange
+        var outputTypes = BuildOutputTypes(typeof(TypeWithCustomDictionaryValues));
+
+        // Act
+        var result = Sut.Write(outputTypes.First(), outputTypes, true);
+        var file = File.ReadAllText(result);
+
+        // Assert
+        file.Should()
+            .NotBeEmpty()
+            .And.Contain("import { z } from \"zod\";")
+            .And.Contain("import { ReferenceType, ReferenceTypeSchema } from \"./ReferenceType\";")
+            .And.Contain("export const TypeWithCustomDictionaryValuesSchema = z.object({")
+            .And.Contain("  references: z.record(z.string(), ReferenceTypeSchema),")
+            .And.Contain("});");
+    }
+
+    [Fact]
+    public void Writes_Zod_Schema_With_List_Of_Custom_Types_In_Dictionaries()
+    {
+        // Arrange
+        var outputTypes = BuildOutputTypes(typeof(TypeWithCustomEnumerableDictionaryValues));
+
+        // Act
+        var result = Sut.Write(outputTypes.First(), outputTypes, true);
+        var file = File.ReadAllText(result);
+
+        // Assert
+        file.Should()
+            .NotBeEmpty()
+            .And.Contain("import { z } from \"zod\";")
+            .And.Contain("import { ReferenceType, ReferenceTypeSchema } from \"./ReferenceType\";")
+            .And.Contain("export const TypeWithCustomEnumerableDictionaryValuesSchema = z.object({")
+            .And.Contain("  references: z.record(z.string(), z.array(ReferenceTypeSchema)),")
+            .And.Contain("});");
+    }
+
+    [Fact]
+    public void Zod_Schema_Handles_Nested_Nullable_Records()
+    {
+        // Arrange
+        var outputTypes = BuildOutputTypes(typeof(TopLevelRecord));
+
+        // Act
+        var topLevelResult = Sut.Write(outputTypes.First(), outputTypes, true);
+        var secondStoryResult = Sut.Write(outputTypes.First(x => x.Name == "SecondStoryRecord"), outputTypes, true);
+        var someOtherDeeplyNestedResult = Sut.Write(outputTypes.First(x => x.Name == "SomeOtherDeeplyNestedRecord"), outputTypes, true);
+
+        // Assert
+        var topLevelFile = File.ReadAllText(topLevelResult);
+        topLevelFile.Should()
+            .NotBeEmpty()
+            .And.Contain("import { SecondStoryRecord, SecondStoryRecordSchema } from \"./SecondStoryRecord\";")
+            .And.Contain("export const TopLevelRecordSchema = z.object({")
+            .And.Contain("  name: z.string(),")
+            .And.Contain("  secondStoryRecord: SecondStoryRecordSchema.nullable(),")
+            .And.Contain("});");
+
+        var secondStoryFile = File.ReadAllText(secondStoryResult);
+        secondStoryFile.Should()
+            .NotBeEmpty()
+            .And.Contain("import { SomeOtherDeeplyNestedRecord, SomeOtherDeeplyNestedRecordSchema } from \"./SomeOtherDeeplyNestedRecord\";")
+            .And.Contain("export const SecondStoryRecordSchema = z.object({")
+            .And.Contain("  description: z.string(),")
+            .And.Contain("  someOtherDeeplyNestedRecord: SomeOtherDeeplyNestedRecordSchema.nullable(),")
+            .And.Contain("});");
+
+        var deeplyNestedFile = File.ReadAllText(someOtherDeeplyNestedResult);
+        deeplyNestedFile.Should()
+            .NotBeEmpty()
+            .And.Contain("import { z }")
+            .And.NotMatchRegex("import \\{ [^z]+ \\}")
+            .And.Contain("export const SomeOtherDeeplyNestedRecordSchema = z.object({")
+            .And.Contain("  extra: z.string(),")
+            .And.Contain("});");
+    }
+
+    private List<OutputType> BuildOutputTypes(params Type[] types)
+    {
+        var contractedTypes = types
+                    .Select(t => ContractedType.FromName(t.FullName!, t, _configuration));
+
+        return contractedTypes
+                .Select(_converter.Convert)
+                .ToList() // Needed so `converter.Convert` runs before we concat
+                .Concat(_converter.CustomMappedTypes.Values)
+                .ToList();
+    }
+
     #region Test input
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     private class SimpleTypes
@@ -216,6 +330,27 @@ public class TypeScriptWriterTests : IDisposable
         public double DoubleTime { get; set; }
         public TimeSpan TimeyWimeySpan { get; set; }
         public object SomeObject { get; set; }
+    }
+
+    private class ReferenceType
+    {
+        public string? Name { get; set; }
+        public SimpleTypes SimpleReference { get; set; }
+    }
+
+    private class TypeWithEnum
+    {
+        public ObsoleteEnum Status { get; set; }
+    }
+
+    private class TypeWithCustomDictionaryValues
+    {
+        public Dictionary<string, ReferenceType> References { get; set; }
+    }
+    
+    private class TypeWithCustomEnumerableDictionaryValues
+    {
+        public Dictionary<string, IEnumerable<ReferenceType>> References { get; set; }
     }
 
     private class ObsoleteResponse
