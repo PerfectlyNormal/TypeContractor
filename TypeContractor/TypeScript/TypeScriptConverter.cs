@@ -1,5 +1,4 @@
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using TypeContractor.Helpers;
 using TypeContractor.Output;
 
@@ -16,7 +15,7 @@ public class TypeScriptConverter
         _metadataLoadContext = metadataLoadContext ?? throw new ArgumentNullException(nameof(metadataLoadContext));
     }
 
-    public Dictionary<Type, OutputType> CustomMappedTypes { get; } = new();
+    public Dictionary<Type, OutputType> CustomMappedTypes { get; } = [];
 
     public OutputType Convert(ContractedType contractedType)
     {
@@ -123,7 +122,7 @@ public class TypeScriptConverter
             var argumentDestinationTypes = arguments.Select(arg => GetDestinationType(arg, customAttributes, isReadonly));
             var isBuiltin = argumentDestinationTypes.All(arg => arg.IsBuiltin);
 
-            var argumentList = argumentDestinationTypes.Select((arg, idx) => $"item{idx+1}: {arg.FullTypeName}");
+            var argumentList = argumentDestinationTypes.Select((arg, idx) => $"item{idx + 1}: {arg.FullTypeName}");
             var typeName = $"{{ {string.Join(", ", argumentList)} }}";
 
             return new DestinationType(typeName, isBuiltin, false, isReadonly, null);

@@ -5,16 +5,9 @@ using TypeContractor.Output;
 
 namespace TypeContractor.TypeScript;
 
-public class TypeScriptWriter
+public class TypeScriptWriter(string outputPath)
 {
-    private readonly StringBuilder _builder;
-    private readonly string _outputPath;
-
-    public TypeScriptWriter(string outputPath)
-    {
-        _builder = new StringBuilder();
-        _outputPath = outputPath;
-    }
+    private readonly StringBuilder _builder = new();
 
     public string Write(OutputType outputType, IEnumerable<OutputType> allTypes, bool buildZodSchema)
     {
@@ -25,7 +18,7 @@ public class TypeScriptWriter
         BuildImports(outputType, allTypes);
         BuildExport(outputType);
 
-        var directory = Path.Combine(_outputPath, outputType.ContractedType.Folder.Path);
+        var directory = Path.Combine(outputPath, outputType.ContractedType.Folder.Path);
         var filePath = Path.Combine(directory, $"{outputType.Name}.ts");
 
         // Create directory if needed
