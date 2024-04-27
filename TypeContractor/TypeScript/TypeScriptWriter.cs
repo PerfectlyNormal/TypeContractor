@@ -16,9 +16,7 @@ public class TypeScriptWriter(string outputPath)
         _builder.Clear();
 
         BuildImports(outputType, allTypes);
-        BuildHeader(outputType);
-        BuildBody(outputType);
-        BuildFooter();
+        BuildExport(outputType);
 
         var directory = Path.Combine(outputPath, outputType.ContractedType.Folder.Path);
         var filePath = Path.Combine(directory, $"{outputType.Name}.ts");
@@ -86,8 +84,9 @@ public class TypeScriptWriter(string outputPath)
             _builder.AppendLine();
     }
 
-    private void BuildHeader(OutputType type)
+    private void BuildExport(OutputType type)
     {
+        // Header
         if (type.IsEnum)
         {
             _builder.AppendLine(CultureInfo.InvariantCulture, $"export enum {type.Name} {{");
@@ -96,10 +95,8 @@ public class TypeScriptWriter(string outputPath)
         {
             _builder.AppendLine(CultureInfo.InvariantCulture, $"export interface {type.Name} {{");
         }
-    }
 
-    private void BuildBody(OutputType type)
-    {
+        // Body
         foreach (var property in type.Properties ?? Enumerable.Empty<OutputProperty>())
         {
             var nullable = property.IsNullable ? "?" : "";
@@ -115,10 +112,8 @@ public class TypeScriptWriter(string outputPath)
             _builder.AppendDeprecationComment(member.Obsolete);
             _builder.AppendFormat(CultureInfo.InvariantCulture, "  {0} = {1},\r\n", member.DestinationName, member.DestinationValue);
         }
-    }
 
-    private void BuildFooter()
-    {
+        // Footer
         _builder.AppendLine("}");
     }
 
