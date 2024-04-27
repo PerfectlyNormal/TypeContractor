@@ -35,7 +35,7 @@ public class TypeScriptWriterTests : IDisposable
                 .ToList();
 
         // Act
-        var result = Sut.Write(outputTypes.First(), outputTypes);
+        var result = Sut.Write(outputTypes.First(), outputTypes, false);
 
         // Assert
         var file = File.ReadAllLines(result).Select(x => x.TrimStart());
@@ -65,7 +65,7 @@ public class TypeScriptWriterTests : IDisposable
                 .ToList();
 
         // Act
-        var result = Sut.Write(outputTypes.First(), outputTypes);
+        var result = Sut.Write(outputTypes.First(), outputTypes, false);
 
         // Assert
         var file = File.ReadAllText(result);
@@ -89,7 +89,7 @@ public class TypeScriptWriterTests : IDisposable
                 .ToList();
 
         // Act
-        var result = Sut.Write(outputTypes.First(), outputTypes);
+        var result = Sut.Write(outputTypes.First(), outputTypes, false);
 
         // Assert
         var file = File.ReadAllText(result);

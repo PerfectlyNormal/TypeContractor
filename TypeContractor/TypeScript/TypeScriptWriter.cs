@@ -16,7 +16,7 @@ public class TypeScriptWriter
         _outputPath = outputPath;
     }
 
-    public string Write(OutputType outputType, IEnumerable<OutputType> allTypes)
+    public string Write(OutputType outputType, IEnumerable<OutputType> allTypes, bool buildZodSchema)
     {
         ArgumentNullException.ThrowIfNull(outputType);
 

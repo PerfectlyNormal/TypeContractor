@@ -12,6 +12,7 @@ var mapOptions = new Option<string[]>("--custom-map", "Provide a custom type map
 var packsOptions = new Option<string>("--packs-path", () => @"C:\Program Files\dotnet\packs\", "Path where dotnet is installed and reference assemblies can be found.");
 var dotnetVersionOptions = new Option<int>("--dotnet-version", () => 8, "Major version of dotnet to look for");
 var logLevelOptions = new Option<LogLevel>("--log-level", () => LogLevel.Info);
+var buildZodSchemasOptions = new Option<bool>("--build-zod-schemas", () => false, "Enable experimental support for Zod schemas alongside generated types.");
 assemblyOption.IsRequired = true;
 outputOption.IsRequired = true;
 
@@ -24,6 +25,7 @@ rootCommand.AddOption(mapOptions);
 rootCommand.AddOption(packsOptions);
 rootCommand.AddOption(dotnetVersionOptions);
 rootCommand.AddOption(logLevelOptions);
+rootCommand.AddOption(buildZodSchemasOptions);
 
 rootCommand.SetHandler(async (context) =>
 {
@@ -36,9 +38,10 @@ rootCommand.SetHandler(async (context) =>
     var packsPathValue = context.ParseResult.GetValueForOption(packsOptions)!;
     var dotnetVersionValue = context.ParseResult.GetValueForOption(dotnetVersionOptions);
     var logLevelValue = context.ParseResult.GetValueForOption(logLevelOptions);
+    var buildZodSchemasValue = context.ParseResult.GetValueForOption(buildZodSchemasOptions);
 
     Log.Instance = new ConsoleLogger(logLevelValue);
-    var generator = new Generator(assemblyOptionValue, outputValue, cleanValue, replacementsValue, stripValue, customMapsValue, packsPathValue, dotnetVersionValue);
+    var generator = new Generator(assemblyOptionValue, outputValue, cleanValue, replacementsValue, stripValue, customMapsValue, packsPathValue, dotnetVersionValue, buildZodSchemasValue);
 
     context.ExitCode = await generator.Execute();
 });
