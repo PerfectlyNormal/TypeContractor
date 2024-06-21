@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.11.0] - 2024-06-21
+
 ### Added
 
 - Include `@deprecated` JSDoc if property is marked as `[Obsolete]` (#45)
@@ -201,7 +203,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[unreleased]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.10.0...HEAD
+[unreleased]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.11.0...HEAD
+[0.11.0]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.11.0...v0.10.0
 [0.10.0]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.10.0...v0.9.2
 [0.9.2]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.9.2...v0.9.1
 [0.9.1]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.9.1...v0.9.0
