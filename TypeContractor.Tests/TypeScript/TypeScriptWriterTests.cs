@@ -160,6 +160,52 @@ public class TypeScriptWriterTests : IDisposable
             .And.Contain("Done = 4,");
     }
 
+    [Fact]
+    public void Handles_Nested_Nullable_Records()
+    {
+        // Arrange
+        var types = new[] { typeof(TopLevelRecord) }
+            .Select(t => ContractedType.FromName(t.FullName!, t, _configuration));
+
+        var outputTypes = types
+                .Select(_converter.Convert)
+                .ToList() // Needed so `converter.Convert` runs before we concat
+                .Concat(_converter.CustomMappedTypes.Values)
+                .ToList();
+
+        // Act
+        var topLevelResult = Sut.Write(outputTypes.First(), outputTypes);
+        var secondStoryResult = Sut.Write(outputTypes.First(x => x.Name == "SecondStoryRecord"), outputTypes);
+        var someOtherDeeplyNestedResult = Sut.Write(outputTypes.First(x => x.Name == "SomeOtherDeeplyNestedRecord"), outputTypes);
+
+        // Assert
+        var topLevelFile = File.ReadAllText(topLevelResult);
+        topLevelFile.Should()
+            .NotBeEmpty()
+            .And.Contain("import { SecondStoryRecord } from \"./SecondStoryRecord\";")
+            .And.Contain("export interface TopLevelRecord {")
+            .And.Contain("  name: string;")
+            .And.Contain("  secondStoryRecord?: SecondStoryRecord;")
+            .And.Contain("}");
+
+        var secondStoryFile = File.ReadAllText(secondStoryResult);
+        secondStoryFile.Should()
+            .NotBeEmpty()
+            .And.Contain("import { SomeOtherDeeplyNestedRecord } from \"./SomeOtherDeeplyNestedRecord\";")
+            .And.Contain("export interface SecondStoryRecord {")
+            .And.Contain("  description: string;")
+            .And.Contain("  someOtherDeeplyNestedRecord?: SomeOtherDeeplyNestedRecord;")
+            .And.Contain("}");
+
+        var deeplyNestedFile = File.ReadAllText(someOtherDeeplyNestedResult);
+        deeplyNestedFile.Should()
+            .NotBeEmpty()
+            .And.NotContain("import {")
+            .And.Contain("export interface SomeOtherDeeplyNestedRecord {")
+            .And.Contain("  extra: string;")
+            .And.Contain("}");
+    }
+
     #region Test input
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     private class SimpleTypes
@@ -210,6 +256,10 @@ public class TypeScriptWriterTests : IDisposable
         public string Name { get; set; }
         public string Definition { get; set; }
     }
+
+    private record TopLevelRecord(string Name, SecondStoryRecord? SecondStoryRecord);
+    private record SecondStoryRecord(string Description, SomeOtherDeeplyNestedRecord? SomeOtherDeeplyNestedRecord);
+    private record SomeOtherDeeplyNestedRecord(string Extra);
     #endregion
 #pragma warning restore CS8618
 

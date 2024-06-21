@@ -4,9 +4,23 @@ namespace TypeContractor.Helpers;
 
 public static class TypeChecks
 {
+    private static readonly NullabilityInfoContext _nullabilityContext = new();
+
+    public static bool IsNullable(FieldInfo fieldInfo)
+    {
+        ArgumentNullException.ThrowIfNull(fieldInfo);
+        return IsNullable(fieldInfo.FieldType) || _nullabilityContext.Create(fieldInfo).WriteState == NullabilityState.Nullable;
+    }
+
+    public static bool IsNullable(PropertyInfo propertyInfo)
+    {
+        ArgumentNullException.ThrowIfNull(propertyInfo);
+        return IsNullable(propertyInfo.PropertyType) || _nullabilityContext.Create(propertyInfo).WriteState == NullabilityState.Nullable;
+    }
+
     public static bool IsNullable(Type sourceType)
     {
-        ArgumentNullException.ThrowIfNull(sourceType, nameof(sourceType));
+        ArgumentNullException.ThrowIfNull(sourceType);
         return Nullable.GetUnderlyingType(sourceType) != null || sourceType.Name == "Nullable`1";
     }
 

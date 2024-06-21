@@ -7,7 +7,7 @@ namespace TypeContractor.TypeScript;
 
 public class TypeScriptWriter(string outputPath)
 {
-    private readonly StringBuilder _builder = new StringBuilder();
+    private readonly StringBuilder _builder = new();
 
     public string Write(OutputType outputType, IEnumerable<OutputType> allTypes)
     {

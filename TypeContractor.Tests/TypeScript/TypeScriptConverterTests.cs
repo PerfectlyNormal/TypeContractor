@@ -331,7 +331,23 @@ public class TypeScriptConverterTests
         prop.IsBuiltin.Should().BeTrue();
     }
 
+    [Fact]
+    public void Handles_Nullable_Records_Inside_Other_Records()
+    {
+        var result = Sut.Convert(typeof(TopLevelRecord));
+
+        result.Should().NotBeNull();
+        result.Properties.Should().HaveCount(2);
+
+        var second = result.Properties!.Last();
+        second.IsNullable.Should().BeTrue();
+    }
+
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    private record TopLevelRecord(string Name, SecondStoryRecord? SecondStoryRecord);
+    private record SecondStoryRecord(string Description, SomeOtherDeeplyNestedRecord? SomeOtherDeeplyNestedRecord);
+    private record SomeOtherDeeplyNestedRecord(string Extra);
+
     private class SimpleTypes
     {
         public string StringProperty { get; set; }

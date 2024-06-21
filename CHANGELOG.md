@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Include `@deprecated` JSDoc if property is marked as `[Obsolete]` #45
 
+### Fixed
+
+- Handle nullability for more types, including `string` and records (#51)
+
 ## [0.10.0] - 2024-04-21
 
 ### Added

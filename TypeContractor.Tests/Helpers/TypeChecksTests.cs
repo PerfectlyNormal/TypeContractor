@@ -9,38 +9,44 @@ namespace TypeContractor.Tests.Helpers
     public class TypeChecksTests
     {
 #pragma warning disable CS0649
+        public string _regularString = "";
         public string? _nullableString;
         public decimal? _nullableDecimal;
         public bool? _nullableBoolean;
         internal CustomCollection? _customCollection;
         internal MyEnum _enum;
         internal MyEnum? _nullableEnum;
+        internal MyRecord? _nullableRecord;
+        internal MyRecord _regularRecordReference;
 #pragma warning restore CS0649
 
         [Theory]
         [InlineData(nameof(_nullableDecimal))]
         [InlineData(nameof(_nullableBoolean))]
         [InlineData(nameof(_nullableEnum))]
+        [InlineData(nameof(_nullableRecord))]
+        [InlineData(nameof(_nullableString))]
+        [InlineData(nameof(_customCollection))]
         public void IsNullable_Is_True_For_Nullable_Types(string fieldName)
         {
             var field = typeof(TypeChecksTests)
-                .GetField(fieldName, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .GetField(fieldName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
                 ?? throw new ArgumentNullException(nameof(fieldName), $"Unable to find field '{fieldName}'");
 
-            TypeChecks.IsNullable(field.FieldType).Should().BeTrue();
+            TypeChecks.IsNullable(field).Should().BeTrue();
         }
 
         [Theory]
-        [InlineData(nameof(_nullableString))]
-        [InlineData(nameof(_customCollection))]
+        [InlineData(nameof(_regularString))]
         [InlineData(nameof(_enum))]
+        [InlineData(nameof(_regularRecordReference))]
         public void IsNullable_Is_False_For_Reference_Types(string fieldName)
         {
             var field = typeof(TypeChecksTests)
-                .GetField(fieldName, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .GetField(fieldName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
                 ?? throw new ArgumentNullException(nameof(fieldName), $"Unable to find field '{fieldName}'");
 
-            TypeChecks.IsNullable(field.FieldType).Should().BeFalse();
+            TypeChecks.IsNullable(field).Should().BeFalse();
         }
 
         [Theory]
@@ -274,6 +280,8 @@ namespace TypeContractor.Tests.Helpers
         None,
         Error,
     }
+
+    internal record MyRecord(string Name);
 
     internal class CustomCollection
     {
