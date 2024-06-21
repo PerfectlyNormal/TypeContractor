@@ -5,16 +5,9 @@ using TypeContractor.Output;
 
 namespace TypeContractor.TypeScript;
 
-public class TypeScriptWriter
+public class TypeScriptWriter(string outputPath)
 {
-    private readonly StringBuilder _builder;
-    private readonly string _outputPath;
-
-    public TypeScriptWriter(string outputPath)
-    {
-        _builder = new StringBuilder();
-        _outputPath = outputPath;
-    }
+    private readonly StringBuilder _builder = new StringBuilder();
 
     public string Write(OutputType outputType, IEnumerable<OutputType> allTypes)
     {
@@ -27,7 +20,7 @@ public class TypeScriptWriter
         BuildBody(outputType);
         BuildFooter();
 
-        var directory = Path.Combine(_outputPath, outputType.ContractedType.Folder.Path);
+        var directory = Path.Combine(outputPath, outputType.ContractedType.Folder.Path);
         var filePath = Path.Combine(directory, $"{outputType.Name}.ts");
 
         // Create directory if needed
@@ -112,11 +105,14 @@ public class TypeScriptWriter
             var nullable = property.IsNullable ? "?" : "";
             var array = property.IsArray ? "[]" : "";
             var isReadonly = property.IsReadonly ? "readonly " : "";
+
+            _builder.AppendDeprecationComment(property.Obsolete);
             _builder.AppendFormat(CultureInfo.InvariantCulture, "  {4}{0}{1}: {2}{3};\r\n", property.DestinationName, nullable, property.DestinationType, array, isReadonly);
         }
 
         foreach (var member in type.EnumMembers ?? Enumerable.Empty<OutputEnumMember>())
         {
+            _builder.AppendDeprecationComment(member.Obsolete);
             _builder.AppendFormat(CultureInfo.InvariantCulture, "  {0} = {1},\r\n", member.DestinationName, member.DestinationValue);
         }
     }
@@ -154,5 +150,18 @@ public class TypeScriptWriter
         }
 
         return allTypes.Where(x => x.FullName == sourceType.FullName).ToList();
+    }
+}
+
+public static class StringBuilderExtensions
+{
+    public static void AppendDeprecationComment(this StringBuilder builder, ObsoleteInfo? obsoleteInfo)
+    {
+        if (obsoleteInfo is null)
+            return;
+
+        builder.AppendLine("  /**");
+        builder.AppendLine($"   * @deprecated {obsoleteInfo.Reason ?? ""}".TrimEnd());
+        builder.AppendLine("   */");
     }
 }

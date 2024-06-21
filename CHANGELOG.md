@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Added
+
+- Include `@deprecated` JSDoc if property is marked as `[Obsolete]` #45
+
 ## [0.10.0] - 2024-04-21
 
 ### Added

@@ -1,5 +1,5 @@
+using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using TypeContractor.Helpers;
 using TypeContractor.Output;
 
@@ -16,7 +16,7 @@ public class TypeScriptConverter
         _metadataLoadContext = metadataLoadContext ?? throw new ArgumentNullException(nameof(metadataLoadContext));
     }
 
-    public Dictionary<Type, OutputType> CustomMappedTypes { get; } = new();
+    public Dictionary<Type, OutputType> CustomMappedTypes { get; } = [];
 
     public OutputType Convert(ContractedType contractedType)
     {
@@ -47,7 +47,13 @@ public class TypeScriptConverter
 
         return matchedEnumType
             .GetEnumNames()
-            .Select((name, idx) => new OutputEnumMember(name, name, underlyingValues.GetValue(idx)!))
+            .Select((name, idx) =>
+            {
+                var member = matchedEnumType.GetMember(name);
+                var obsolete = member.FirstOrDefault()?.CustomAttributes.FirstOrDefault(x => x.AttributeType.FullName == "System.ObsoleteAttribute");
+                var obsoleteInfo = obsolete is not null ? new ObsoleteInfo((string?)obsolete.ConstructorArguments.FirstOrDefault().Value) : null;
+                return new OutputEnumMember(name, name, underlyingValues.GetValue(idx)!, obsoleteInfo);
+            })
             .ToList();
     }
 
@@ -74,7 +80,12 @@ public class TypeScriptConverter
 
             var destinationName = GetDestinationName(property.Name);
             var destinationType = GetDestinationType(property.PropertyType, property.CustomAttributes, isReadonly);
-            outputProperties.Add(new OutputProperty(property.Name, property.PropertyType, destinationType.InnerType, destinationName, destinationType.TypeName, destinationType.ImportType, destinationType.IsBuiltin, destinationType.IsArray, TypeChecks.IsNullable(property.PropertyType), destinationType.IsReadonly));
+            var outputProperty = new OutputProperty(property.Name, property.PropertyType, destinationType.InnerType, destinationName, destinationType.TypeName, destinationType.ImportType, destinationType.IsBuiltin, destinationType.IsArray, TypeChecks.IsNullable(property.PropertyType), destinationType.IsReadonly);
+
+            var obsolete = property.CustomAttributes.FirstOrDefault(x => x.AttributeType.FullName == "System.ObsoleteAttribute");
+            outputProperty.Obsolete = obsolete is not null ? new ObsoleteInfo((string?)obsolete.ConstructorArguments.FirstOrDefault().Value) : null;
+
+            outputProperties.Add(outputProperty);
         }
 
         // Look at base classes
@@ -123,7 +134,7 @@ public class TypeScriptConverter
             var argumentDestinationTypes = arguments.Select(arg => GetDestinationType(arg, customAttributes, isReadonly));
             var isBuiltin = argumentDestinationTypes.All(arg => arg.IsBuiltin);
 
-            var argumentList = argumentDestinationTypes.Select((arg, idx) => $"item{idx+1}: {arg.FullTypeName}");
+            var argumentList = argumentDestinationTypes.Select((arg, idx) => $"item{idx + 1}: {arg.FullTypeName}");
             var typeName = $"{{ {string.Join(", ", argumentList)} }}";
 
             return new DestinationType(typeName, isBuiltin, false, isReadonly, null);

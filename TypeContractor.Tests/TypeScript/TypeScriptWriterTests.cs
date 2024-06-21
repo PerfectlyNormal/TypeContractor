@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using TypeContractor.Output;
 using TypeContractor.TypeScript;
 
@@ -15,8 +16,12 @@ public class TypeScriptWriterTests : IDisposable
 
     public TypeScriptWriterTests()
     {
+        var assembly = typeof(TypeScriptWriterTests).Assembly;
         _outputDirectory = Directory.CreateTempSubdirectory();
-        _configuration = TypeContractorConfiguration.WithDefaultConfiguration().SetOutputDirectory(_outputDirectory.FullName);
+        _configuration = TypeContractorConfiguration
+            .WithDefaultConfiguration()
+            .AddAssembly(assembly.FullName!, assembly.Location)
+            .SetOutputDirectory(_outputDirectory.FullName);
         _converter = new TypeScriptConverter(_configuration, BuildMetadataLoadContext());
         Sut = new TypeScriptWriter(_configuration.OutputPath);
     }
@@ -99,6 +104,62 @@ public class TypeScriptWriterTests : IDisposable
             .And.Contain("formulas: { [key: string]: { [key: string]: FormulaDto[] } };");
     }
 
+    [Fact]
+    public void Includes_Deprecated_JSDoc()
+    {
+        // Arrange
+        var types = new[] { typeof(ObsoleteResponse) }
+            .Select(t => ContractedType.FromName(t.FullName!, t, _configuration));
+
+        var outputTypes = types
+                .Select(_converter.Convert)
+                .ToList() // Needed so `converter.Convert` runs before we concat
+                .Concat(_converter.CustomMappedTypes.Values)
+                .ToList();
+
+        // Act
+        var result = Sut.Write(outputTypes.First(), outputTypes);
+
+        // Assert
+        var file = File.ReadAllText(result);
+        file.Should()
+            .NotBeEmpty()
+            .And.NotContain("import ")
+            .And.Contain("export interface ObsoleteResponse {")
+            .And.MatchRegex(@"/\*\*\r?\n\s+\* @deprecated\r?\n\s+\*/\r?\n\s+ obsoleteNoDesc: number;")
+            .And.MatchRegex(@"/\*\*\r?\n\s+\* @deprecated Use NonObsoleteProp instead\r?\n\s+\*/\r?\n\s+ obsolete: number;")
+            .And.MatchRegex(@"\s+nonObsoleteProp: number;");
+    }
+
+    [Fact]
+    public void Includes_Deprecated_JSDoc_For_Enum_Members()
+    {
+        // Arrange
+        var types = new[] { typeof(ObsoleteEnum) }
+            .Select(t => ContractedType.FromName(t.FullName!, t, _configuration));
+
+        var outputTypes = types
+                .Select(_converter.Convert)
+                .ToList() // Needed so `converter.Convert` runs before we concat
+                .Concat(_converter.CustomMappedTypes.Values)
+                .ToList();
+
+        // Act
+        var result = Sut.Write(outputTypes.First(), outputTypes);
+
+        // Assert
+        var file = File.ReadAllText(result);
+        file.Should()
+            .NotBeEmpty()
+            .And.NotContain("import ")
+            .And.Contain("export enum ObsoleteEnum {")
+            .And.Contain("None = 0,")
+            .And.Contain("Pending = 1,")
+            .And.MatchRegex(@"/\*\*\r?\n\s+\* @deprecated No longer used\r?\n\s+\*/\r?\n\s+ Paid = 2,")
+            .And.MatchRegex(@"/\*\*\r?\n\s+\* @deprecated\r?\n\s+\*/\r?\n\s+ Rejected = 3,")
+            .And.Contain("Done = 4,");
+    }
+
     #region Test input
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     private class SimpleTypes
@@ -109,6 +170,28 @@ public class TypeScriptWriterTests : IDisposable
         public double DoubleTime { get; set; }
         public TimeSpan TimeyWimeySpan { get; set; }
         public object SomeObject { get; set; }
+    }
+
+    private class ObsoleteResponse
+    {
+        [Obsolete]
+        public int ObsoleteNoDesc { get; set; }
+
+        [Obsolete("Use NonObsoleteProp instead")]
+        public double Obsolete { get; set; }
+
+        public decimal NonObsoleteProp { get; set; }
+    }
+
+    private enum ObsoleteEnum
+    {
+        None,
+        Pending,
+        [Obsolete("No longer used")]
+        Paid,
+        [Obsolete]
+        Rejected,
+        Done,
     }
 
     private class ComplexValueDictionary

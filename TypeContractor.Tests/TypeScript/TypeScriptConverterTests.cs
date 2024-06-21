@@ -12,7 +12,10 @@ public class TypeScriptConverterTests
 
     public TypeScriptConverterTests()
     {
-        _configuration = TypeContractorConfiguration.WithDefaultConfiguration();
+        var assembly = typeof(TypeScriptConverterTests).Assembly;
+        _configuration = TypeContractorConfiguration
+            .WithDefaultConfiguration()
+            .AddAssembly(assembly.FullName!, assembly.Location);
         Sut = new TypeScriptConverter(_configuration, BuildMetadataLoadContext());
     }
 
@@ -248,6 +251,58 @@ public class TypeScriptConverterTests
         prop.IsReadonly.Should().Be(isReadonly);
     }
 
+    [Theory]
+    [InlineData(0, "obsoleteNoDesc", null, true)]
+    [InlineData(1, "obsolete", "Use NonObsoleteProp instead", true)]
+    [InlineData(2, "nonObsoleteProp", null, false)]
+    public void Adds_Obsolete_Comment(int index, string destinationName, string? reason, bool isObsolete)
+    {
+        var result = Sut.Convert(typeof(ObsoleteResponse));
+
+        result.Should().NotBeNull();
+        result.Properties.Should().HaveCount(3);
+
+        var prop = result.Properties!.ElementAt(index);
+        prop.DestinationName.Should().Be(destinationName);
+        if (isObsolete)
+        {
+            prop.Obsolete.Should().NotBeNull();
+            prop.Obsolete!.Reason.Should().Be(reason);
+        }
+        else
+        {
+            prop.Obsolete.Should().BeNull();
+        }
+    }
+
+    [Theory]
+    [InlineData(0, "None", null, false)]
+    [InlineData(1, "Pending", null, false)]
+    [InlineData(2, "Paid", "No longer used", true)]
+    [InlineData(3, "Rejected", null, true)]
+    [InlineData(4, "Done", null, false)]
+    public void Adds_Obsolete_Comment_On_Enums(int index, string destinationName, string? reason, bool isObsolete)
+    {
+        var result = Sut.Convert(typeof(ObsoleteEnum));
+
+        result.Should().NotBeNull();
+        result.IsEnum.Should().BeTrue();
+        result.EnumMembers.Should().HaveCount(5);
+
+        var prop = result.EnumMembers!.ElementAt(index);
+        prop.DestinationName.Should().Be(destinationName);
+        prop.DestinationValue.Should().Be(index);
+        if (isObsolete)
+        {
+            prop.Obsolete.Should().NotBeNull();
+            prop.Obsolete!.Reason.Should().Be(reason);
+        }
+        else
+        {
+            prop.Obsolete.Should().BeNull();
+        }
+    }
+
     [Fact]
     public void Handles_DateOnly()
     {
@@ -261,7 +316,7 @@ public class TypeScriptConverterTests
         prop.FullDestinationType.Should().Be("string");
         prop.IsBuiltin.Should().BeTrue();
     }
-    
+
     [Fact]
     public void Handles_TimeOnly()
     {
@@ -362,7 +417,29 @@ public class TypeScriptConverterTests
         public IEnumerable<string> Errors { get; set; }
         public Dictionary<string, IEnumerable<string>> Warnings { get; }
     }
-    
+
+    private class ObsoleteResponse
+    {
+        [Obsolete]
+        public int ObsoleteNoDesc { get; set; }
+
+        [Obsolete("Use NonObsoleteProp instead")]
+        public double Obsolete { get; set; }
+
+        public decimal NonObsoleteProp { get; set; }
+    }
+
+    private enum ObsoleteEnum
+    {
+        None,
+        Pending,
+        [Obsolete("No longer used")]
+        Paid,
+        [Obsolete]
+        Rejected,
+        Done,
+    }
+
     private class DateOnlyResponse
     {
         public DateOnly BirthDate { get; set; }
