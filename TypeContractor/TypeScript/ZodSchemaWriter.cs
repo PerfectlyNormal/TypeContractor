@@ -97,7 +97,7 @@ namespace TypeContractor.TypeScript
                 output = $"z.array({output})";
 
             if (property.IsNullable)
-                output += ".optional()";
+                output += ".nullable()";
             else if (property.IsReadonly)
                 output += ".readonly()";
 
@@ -138,7 +138,7 @@ namespace TypeContractor.TypeScript
                 if (TypeChecks.ImplementsIEnumerable(sourceType))
                     output = $"z.array({output})";
                 else if (TypeChecks.IsNullable(sourceType))
-                    output += ".optional()";
+                    output += ".nullable()";
 
             return string.IsNullOrWhiteSpace(output) ? null : output;
         }
