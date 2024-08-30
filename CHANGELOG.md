@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Experimental creation of [Zod schemas](https://zod.dev/)
 
+### Changed
+
+- Update xunit and friends
+- Update Microsoft.NET.Test.Sdk to 17.11.0
+
 ## [0.11.0] - 2024-06-21
 
 ### Added
