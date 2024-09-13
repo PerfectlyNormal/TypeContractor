@@ -1,10 +1,11 @@
-using System.Globalization;
+using System.Data;
 using System.Text;
 using TypeContractor.Helpers;
 using TypeContractor.Output;
 
 namespace TypeContractor.TypeScript;
 
+#pragma warning disable CA1305 // Specify IFormatProvider
 public class TypeScriptWriter(string outputPath)
 {
     private readonly StringBuilder _builder = new();
@@ -25,9 +26,7 @@ public class TypeScriptWriter(string outputPath)
 
         // Create directory if needed
         if (!Directory.Exists(directory))
-        {
             Directory.CreateDirectory(directory);
-        }
 
         // Write file
         File.WriteAllText(filePath, _builder.ToString());
@@ -56,7 +55,8 @@ public class TypeScriptWriter(string outputPath)
             {
                 var references = allTypes
                     .Where(x => x.Properties is not null)
-                    .Select(x => {
+                    .Select(x =>
+                    {
                         var properties = x.Properties!.Where(prop => prop.SourceType.FullName == type.FullName || prop.InnerSourceType?.FullName == type.FullName);
                         return new TypeScriptReference(x, properties);
                     })
@@ -84,7 +84,7 @@ public class TypeScriptWriter(string outputPath)
                             importTypes.Add(zodImport);
                     }
 
-                    _builder.AppendLine(CultureInfo.InvariantCulture, $"import {{ {string.Join(", ", importTypes)} }} from \"{importPath}\";");
+                    _builder.AppendLine($"import {{ {string.Join(", ", importTypes)} }} from \"{importPath}\";");
                 }
                 catch (ArgumentException ex)
                 {
@@ -102,11 +102,11 @@ public class TypeScriptWriter(string outputPath)
         // Header
         if (type.IsEnum)
         {
-            _builder.AppendLine(CultureInfo.InvariantCulture, $"export enum {type.Name} {{");
+            _builder.AppendLine($"export enum {type.Name} {{");
         }
         else
         {
-            _builder.AppendLine(CultureInfo.InvariantCulture, $"export interface {type.Name} {{");
+            _builder.AppendLine($"export interface {type.Name} {{");
         }
 
         // Body
@@ -117,13 +117,13 @@ public class TypeScriptWriter(string outputPath)
             var isReadonly = property.IsReadonly ? "readonly " : "";
 
             _builder.AppendDeprecationComment(property.Obsolete);
-            _builder.AppendFormat(CultureInfo.InvariantCulture, "  {4}{0}{1}: {2}{3};\r\n", property.DestinationName, nullable, property.DestinationType, array, isReadonly);
+            _builder.AppendFormat("  {4}{0}{1}: {2}{3};\r\n", property.DestinationName, nullable, property.DestinationType, array, isReadonly);
         }
 
         foreach (var member in type.EnumMembers ?? Enumerable.Empty<OutputEnumMember>())
         {
             _builder.AppendDeprecationComment(member.Obsolete);
-            _builder.AppendFormat(CultureInfo.InvariantCulture, "  {0} = {1},\r\n", member.DestinationName, member.DestinationValue);
+            _builder.AppendFormat("  {0} = {1},\r\n", member.DestinationName, member.DestinationValue);
         }
 
         // Footer
@@ -160,16 +160,4 @@ public class TypeScriptWriter(string outputPath)
         return allTypes.Where(x => x.FullName == sourceType.FullName).ToList();
     }
 }
-
-public static class StringBuilderExtensions
-{
-    public static void AppendDeprecationComment(this StringBuilder builder, ObsoleteInfo? obsoleteInfo)
-    {
-        if (obsoleteInfo is null)
-            return;
-
-        builder.AppendLine("  /**");
-        builder.AppendLine($"   * @deprecated {obsoleteInfo.Reason ?? ""}".TrimEnd());
-        builder.AppendLine("   */");
-    }
-}
+#pragma warning restore CA1305 // Specify IFormatProvider

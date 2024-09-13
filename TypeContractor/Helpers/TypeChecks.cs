@@ -5,6 +5,15 @@ namespace TypeContractor.Helpers;
 public static class TypeChecks
 {
     private static readonly NullabilityInfoContext _nullabilityContext = new();
+    private static readonly string[] _httpAttributes = [
+        "Microsoft.AspNetCore.Mvc.HttpGetAttribute",
+        "Microsoft.AspNetCore.Mvc.HttpPostAttribute",
+        "Microsoft.AspNetCore.Mvc.HttpPutAttribute",
+        "Microsoft.AspNetCore.Mvc.HttpPatchAttribute",
+        "Microsoft.AspNetCore.Mvc.HttpDeleteAttribute",
+        "Microsoft.AspNetCore.Mvc.HttpHeadAttribute",
+        "Microsoft.AspNetCore.Mvc.HttpOptionsAttribute",
+    ];
 
     public static bool IsNullable(FieldInfo fieldInfo)
     {
@@ -120,16 +129,16 @@ public static class TypeChecks
         if (methodInfo.CustomAttributes.Any(a => a.AttributeType.FullName == "Microsoft.AspNetCore.Mvc.NonActionAttribute"))
             return false;
 
-        if (methodInfo.ReturnType.Name == "ActionResult`1" || methodInfo.ReturnType.Name == "ActionResult")
+        if (methodInfo.ReturnType.Name == "ActionResult`1" || methodInfo.ReturnType.Name == "ActionResult" || methodInfo.ReturnType.Name == "IActionResult")
             return true;
 
-        if (methodInfo.ReturnType.Name == "Task`1" && methodInfo.ReturnType.GenericTypeArguments.Any(rt => rt.Name == "ActionResult`1" || rt.Name == "ActionResult"))
+        if (methodInfo.ReturnType.Name == "Task`1" && methodInfo.ReturnType.GenericTypeArguments.Any(rt => rt.Name == "ActionResult`1" || rt.Name == "ActionResult" || rt.Name == "IActionResult"))
             return true;
 
         return false;
     }
 
-    public static Type? UnwrappedReturnType(MethodInfo methodInfo)
+    public static Type? FullyUnwrappedReturnType(MethodInfo methodInfo)
     {
         ArgumentNullException.ThrowIfNull(methodInfo, nameof(methodInfo));
 
@@ -140,6 +149,30 @@ public static class TypeChecks
             return UnwrappedResult(methodInfo.ReturnType.GenericTypeArguments.First());
 
         return null;
+    }
+
+    public static Type? UnwrappedReturnType(MethodInfo methodInfo)
+    {
+        ArgumentNullException.ThrowIfNull(methodInfo, nameof(methodInfo));
+
+        if (methodInfo.ReturnType.Name == "Task`1")
+            return UnwrappedReturnType(methodInfo.ReturnType.GenericTypeArguments.First());
+
+        if (methodInfo.ReturnType.Name == "ActionResult`1")
+            return methodInfo.ReturnType.GenericTypeArguments.First();
+
+        return null;
+    }
+
+    public static Type? UnwrappedReturnType(Type type)
+    {
+        if (type.Name == "ActionResult`1")
+            return type.GenericTypeArguments.First();
+
+        if (type.Name == "ActionResult")
+            return null;
+
+        return type;
     }
 
     public static Type[] UnwrappedParameters(MethodInfo methodInfo)
@@ -153,7 +186,16 @@ public static class TypeChecks
             .ToArray();
     }
 
-    private static Type? UnwrappedResult(Type type)
+    public static bool IsHttpAttribute(CustomAttributeData data)
+    {
+        var fullName = data.AttributeType.FullName;
+        if (string.IsNullOrWhiteSpace(fullName))
+            return false;
+
+        return _httpAttributes.Contains(fullName);
+    }
+
+    public static Type? UnwrappedResult(Type type)
     {
         if (type.Name == "ActionResult`1")
             return UnwrappedResult(type.GenericTypeArguments[0]);

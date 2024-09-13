@@ -9,6 +9,7 @@ namespace TypeContractor.Tests.Helpers
     public class TypeChecksTests
     {
 #pragma warning disable CS0649
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
         public string _regularString = "";
         public string? _nullableString;
         public decimal? _nullableDecimal;
@@ -18,6 +19,7 @@ namespace TypeContractor.Tests.Helpers
         internal MyEnum? _nullableEnum;
         internal MyRecord? _nullableRecord;
         internal MyRecord _regularRecordReference;
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 #pragma warning restore CS0649
 
         [Theory]
@@ -142,8 +144,8 @@ namespace TypeContractor.Tests.Helpers
         [InlineData(true, nameof(NestedController.GetNumber))]
         [InlineData(true, nameof(NestedController.FileStreamEndpoint))]
         [InlineData(true, nameof(NestedController.FileStreamEndpointAsync))]
-        [InlineData(false, nameof(NestedController.LegacyEndpointAsync))]
-        [InlineData(false, nameof(NestedController.LegacyEndpoint))]
+        [InlineData(true, nameof(NestedController.LegacyEndpointAsync))]
+        [InlineData(true, nameof(NestedController.LegacyEndpoint))]
         [InlineData(false, nameof(NestedController.WhatEvenIsThisAsync))]
         public void ReturnsActionResult_Returns_Correct_Value(bool expectedResult, string methodName)
         {
@@ -177,7 +179,7 @@ namespace TypeContractor.Tests.Helpers
             if (target is null)
                 Assert.Fail("Unable to find method " + methodName + " on controller");
 
-            var returnType = TypeChecks.UnwrappedReturnType(target);
+            var returnType = TypeChecks.FullyUnwrappedReturnType(target);
 
             returnType.Should().Be(expectedType);
         }
@@ -194,7 +196,7 @@ namespace TypeContractor.Tests.Helpers
             if (target is null)
                 Assert.Fail("Unable to find method " + methodName + " on controller");
 
-            var returnType = TypeChecks.UnwrappedReturnType(target);
+            var returnType = TypeChecks.FullyUnwrappedReturnType(target);
 
             returnType.Should().BeNull();
         }

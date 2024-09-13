@@ -99,15 +99,15 @@ public class TypeScriptConverter
         return outputProperties;
     }
 
-    private static string GetDestinationName(string name) => name.ToTypeScriptName();
+    public static string GetDestinationName(string name) => name.ToTypeScriptName();
 
-    private DestinationType GetDestinationType(in Type sourceType, IEnumerable<CustomAttributeData> customAttributes, bool isReadonly)
+    public DestinationType GetDestinationType(in Type sourceType, IEnumerable<CustomAttributeData> customAttributes, bool isReadonly)
     {
         if (_configuration.TypeMaps.TryGetValue(sourceType.FullName!, out string? destType))
-            return new DestinationType(destType, true, false, isReadonly, null);
+            return new DestinationType(destType, sourceType.FullName, true, false, isReadonly, null);
 
         if (CustomMappedTypes.TryGetValue(sourceType, out OutputType? customType))
-            return new DestinationType(customType.Name, false, false, isReadonly, null);
+            return new DestinationType(customType.Name, customType.FullName, false, false, isReadonly, null);
 
         if (TypeChecks.ImplementsIDictionary(sourceType))
         {
@@ -117,15 +117,15 @@ public class TypeScriptConverter
 
             var isBuiltin = keyType.IsBuiltin && valueDestinationType.IsBuiltin;
 
-            return new DestinationType($"{{ [key: {keyType.TypeName}]: {valueDestinationType.FullTypeName} }}", isBuiltin, false, isReadonly, valueType, valueDestinationType.ImportType);
+            return new DestinationType($"{{ [key: {keyType.TypeName}]: {valueDestinationType.FullTypeName} }}", valueDestinationType.FullName, isBuiltin, false, isReadonly, valueType, valueDestinationType.ImportType);
         }
 
         if (TypeChecks.ImplementsIEnumerable(sourceType))
         {
             var innerType = TypeChecks.GetGenericType(sourceType);
 
-            var (TypeName, _, IsBuiltin, _, IsReadonly, _) = GetDestinationType(innerType, customAttributes, isReadonly);
-            return new DestinationType(TypeName, IsBuiltin, true, IsReadonly, innerType);
+            var (TypeName, FullName, _, IsBuiltin, _, IsReadonly, _) = GetDestinationType(innerType, customAttributes, isReadonly);
+            return new DestinationType(TypeName, FullName, IsBuiltin, true, IsReadonly, innerType);
         }
 
         if (TypeChecks.IsValueTuple(sourceType))
@@ -137,7 +137,7 @@ public class TypeScriptConverter
             var argumentList = argumentDestinationTypes.Select((arg, idx) => $"item{idx + 1}: {arg.FullTypeName}");
             var typeName = $"{{ {string.Join(", ", argumentList)} }}";
 
-            return new DestinationType(typeName, isBuiltin, false, isReadonly, null);
+            return new DestinationType(typeName, sourceType.FullName, isBuiltin, false, isReadonly, null);
         }
 
         if (TypeChecks.IsNullable(sourceType))
@@ -146,12 +146,12 @@ public class TypeScriptConverter
         }
 
         if (customAttributes.Any(x => x.AttributeType.FullName == "System.Runtime.CompilerServices.DynamicAttribute"))
-            return new DestinationType(DestinationTypes.Dynamic, true, false, isReadonly, null);
+            return new DestinationType(DestinationTypes.Dynamic, null, true, false, isReadonly, null);
 
         // FIXME: Check if this is one of our types?
         var outputType = Convert(sourceType);
         CustomMappedTypes.Add(sourceType, outputType);
-        return new DestinationType(outputType.Name, false, false, isReadonly, null);
+        return new DestinationType(outputType.Name, outputType.FullName, false, false, isReadonly, null);
 
         // throw new ArgumentException($"Unexpected type: {sourceType}");
     }

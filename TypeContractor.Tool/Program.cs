@@ -14,6 +14,7 @@ var packsOptions = new Option<string>("--packs-path", () => @"C:\Program Files\d
 var dotnetVersionOptions = new Option<int>("--dotnet-version", () => 8, "Major version of dotnet to look for");
 var logLevelOptions = new Option<LogLevel>("--log-level", () => LogLevel.Info);
 var buildZodSchemasOptions = new Option<bool>("--build-zod-schemas", () => false, "Enable experimental support for Zod schemas alongside generated types.");
+var generateApiClientsOptions = new Option<bool>("--generate-api-clients", () => false, "Enable experimental support for auto-generating API clients for each endpoint.");
 assemblyOption.IsRequired = true;
 outputOption.IsRequired = true;
 
@@ -28,6 +29,7 @@ rootCommand.AddOption(packsOptions);
 rootCommand.AddOption(dotnetVersionOptions);
 rootCommand.AddOption(logLevelOptions);
 rootCommand.AddOption(buildZodSchemasOptions);
+rootCommand.AddOption(generateApiClientsOptions);
 
 rootCommand.SetHandler(async (context) =>
 {
@@ -42,6 +44,7 @@ rootCommand.SetHandler(async (context) =>
     var dotnetVersionValue = context.ParseResult.GetValueForOption(dotnetVersionOptions);
     var logLevelValue = context.ParseResult.GetValueForOption(logLevelOptions);
     var buildZodSchemasValue = context.ParseResult.GetValueForOption(buildZodSchemasOptions);
+    var generateApiClientsValue = context.ParseResult.GetValueForOption(generateApiClientsOptions);
 
     Log.Instance = new ConsoleLogger(logLevelValue);
     var generator = new Generator(assemblyOptionValue,
@@ -53,7 +56,8 @@ rootCommand.SetHandler(async (context) =>
                                   customMapsValue,
                                   packsPathValue,
                                   dotnetVersionValue,
-                                  buildZodSchemasValue);
+                                  buildZodSchemasValue,
+                                  generateApiClientsValue);
 
     context.ExitCode = await generator.Execute();
 });

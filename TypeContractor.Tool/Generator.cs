@@ -1,5 +1,7 @@
 using System.Reflection;
+using TypeContractor.Helpers;
 using TypeContractor.Logger;
+using TypeContractor.Output;
 using static TypeContractor.Helpers.TypeChecks;
 
 namespace TypeContractor.Tool;
@@ -27,7 +29,8 @@ internal class Generator
                      string[] customMaps,
                      string packsPath,
                      int dotnetVersion,
-                     bool buildZodSchemas)
+                     bool buildZodSchemas,
+                     bool generateApiClients)
     {
         _assemblyPath = assemblyPath;
         _output = output;
@@ -39,6 +42,7 @@ internal class Generator
         _packPath = packsPath;
         _dotnetVersion = dotnetVersion;
         _buildZodSchemas = buildZodSchemas;
+        _generateApiClients = generateApiClients;
     }
 
     public Task<int> Execute()
@@ -62,6 +66,7 @@ internal class Generator
             var assembly = context.LoadFromAssemblyPath(_assemblyPath);
             var controllers = assembly.GetTypes()
                 .Where(IsController).ToList();
+            var clients = new List<ApiClient>();
 
             if (controllers.Count == 0)
             {
@@ -77,12 +82,21 @@ internal class Generator
                     .Where(ReturnsActionResult).ToList();
 
                 var returnTypes = endpoints
-                    .Select(UnwrappedReturnType).Where(x => x != null)
+                    .Select(FullyUnwrappedReturnType).Where(x => x != null)
                     .Cast<Type>().ToList();
 
                 var parameterTypes = endpoints
                     .SelectMany(UnwrappedParameters).Where(x => x != null)
                     .Cast<Type>().ToList();
+
+                if (_generateApiClients)
+                {
+                    Log.Instance.LogDebug($"Generating endpoints for {controller.FullName}");
+                    var client = ApiHelpers.BuildApiClient(controller, endpoints);
+
+                    if (client.Endpoints.Any())
+                        clients.Add(client);
+                }
 
                 foreach (var returnType in returnTypes)
                 {
@@ -105,7 +119,7 @@ internal class Generator
                 return Task.FromResult(1);
             }
 
-            var contractor = GenerateContractor(typesToLoad);
+            var contractor = GenerateContractor(typesToLoad, clients);
 
             if (_cleanMethod == CleanMethod.Remove)
             {
@@ -130,7 +144,7 @@ internal class Generator
         return Task.FromResult(returnCode);
     }
 
-    private Contractor GenerateContractor(Dictionary<Assembly, HashSet<Type>> typesToLoad)
+    private Contractor GenerateContractor(Dictionary<Assembly, HashSet<Type>> typesToLoad, List<ApiClient> clients)
     {
         var configuration = new TypeContractorConfiguration()
                             .AddDefaultTypeMaps()

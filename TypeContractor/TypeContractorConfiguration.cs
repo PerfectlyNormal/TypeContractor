@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Reflection;
+using TypeContractor.Output;
 using TypeContractor.TypeScript;
 
 namespace TypeContractor;
@@ -16,6 +17,7 @@ public class TypeContractorConfiguration
     private string? _relativeRoot;
     private string? _outputPath;
     private bool _buildZodSchemas;
+    private List<ApiClient> _apiClients = [];
 
     public IReadOnlyDictionary<string, string> TypeMaps => _map;
     public IReadOnlyList<string> Suffixes => _suffixes.AsReadOnly();
@@ -25,6 +27,8 @@ public class TypeContractorConfiguration
     public string OutputPath => _outputPath ?? throw new InvalidOperationException("Output path is not configured");
     public string? RelativeRoot => _relativeRoot;
     public bool BuildZodSchemas => _buildZodSchemas;
+    public bool GenerateApiClients => _apiClients.Count != 0;
+    public IReadOnlyList<ApiClient> ApiClients => _apiClients.AsReadOnly();
 
     /// <summary>
     /// Set up a default configuration using <see cref="AddDefaultSuffixes"/> and <see cref="AddDefaultTypeMaps"/>
@@ -267,6 +271,22 @@ public class TypeContractorConfiguration
     public TypeContractorConfiguration EnableZodSchemas()
     {
         _buildZodSchemas = true;
+
+        return this;
+    }
+
+    /// <summary>
+    /// Enable generation of API clients for relevant endpoints.
+    /// 
+    /// <para>
+    /// If combined with <see cref="EnableZodSchemas"/>, the resulting
+    /// response will be validated against the relevant Zod schema, if
+    /// any.</para>
+    /// </summary>
+    /// <returns>The configuration object for continued chaining</returns>
+    public TypeContractorConfiguration AddApiClients(List<ApiClient> clients)
+    {
+        _apiClients = clients;
 
         return this;
     }

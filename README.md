@@ -24,6 +24,21 @@ TypeScript interfaces and enums
    cumbersome to work with, as well as *wrong*, since the serialization will
    (most likely) serialize `Money` as a `number`.
 
+4. Help validate responses from the API
+
+   Regular `response.json()` returns `any`, which means that any return type
+   we specify ourselves are just wishful thinking. It might match, it might
+   differ a bit, or it can differ a lot. Using [Zod](https://zod.dev/), we
+   generate schemas automatically that can be used for validating the
+   response and _knowing_ that we get the correct data back.
+
+5. Automatically generate API clients based on the controller endpoints.
+
+   Why bother creating a TypeScript API client where you have to manually
+   keep routes, parameters and everything in sync? We have the data, we have
+   the types, we have the schemas. Let's just make everything work together,
+   and let TypeContractor handle keeping those pesky API changes in sync.
+
 
 ## Setup and configuration
 
@@ -184,6 +199,21 @@ return PaymentsPerYearResponseSchema.parse(input);
 
 which will throw a `ZodError` if `input` fails to parse against the schema.
 Otherwise it returns a cleaned up version of `input`.
+
+## Automatic API client generation
+
+By running TypeContractor with the `--generate-api-clients` flag, every
+controller found will have an automatic client generated for each of the
+discovered endpoints.
+
+Should be combined with the `--root` flag for generating nice imports.
+For example `--root "~/api"` if you are writing files to `api` and have
+`~` defined as an alias in your bundler.
+
+If Zod integration is enabled, the return type for each API call will
+be automatically validated against the schema. If so, it expects
+the `Response` prototype to be extended with a `parseJson` method.
+An example implementation can be found in `tools/response.ts`.
 
 ## Future improvements
 

@@ -47,6 +47,10 @@ public class Contractor
         metadataLoadContext ??= BuildMetadataLoadContext();
         var toConvert = new List<ContractedType>();
         var generatedFiles = new List<string>();
+        var allTypes = new List<OutputType>();
+
+        var converter = new TypeScriptConverter(_configuration, metadataLoadContext);
+        var writer = new TypeScriptWriter(_configuration.OutputPath);
 
         foreach (var (assemblyName, assemblyPath) in _configuration.Assemblies)
         {
@@ -71,14 +75,13 @@ public class Contractor
                 toConvert.AddRange(items);
             }
 
-            var converter = new TypeScriptConverter(_configuration, metadataLoadContext);
-            var writer = new TypeScriptWriter(_configuration.OutputPath);
-
             var outputTypes = types
                 .Select(converter.Convert)
                 .ToList() // Needed so `converter.Convert` runs before we concat
                 .Concat(converter.CustomMappedTypes.Values)
                 .ToList();
+
+            allTypes.AddRange(outputTypes);
 
             foreach (var type in outputTypes)
             {
@@ -104,6 +107,26 @@ public class Contractor
                 catch (TypeScriptImportException ex)
                 {
                     Log.Instance.LogError(ex, $"Unable to generate typings for {type.Name} ({type.FullName})");
+
+                    returnCode = 1;
+                }
+            }
+        }
+
+        if (Configuration.GenerateApiClients)
+        {
+            var apiWriter = new ApiClientWriter(_configuration.OutputPath, _configuration.RelativeRoot);
+            foreach (var client in Configuration.ApiClients)
+            {
+                try
+                {
+                    var filePath = apiWriter.Write(client, allTypes, converter, Configuration.BuildZodSchemas);
+                    generatedFiles.Add(filePath);
+                }
+                catch (TypeScriptReferenceException ex)
+                {
+                    Log.Instance.LogError(ex,
+                        $"Unable to generate client for {client.Name} ({client.TypeName}):\n" + ex.Message);
 
                     returnCode = 1;
                 }

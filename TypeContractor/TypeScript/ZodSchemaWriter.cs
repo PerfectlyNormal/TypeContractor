@@ -46,6 +46,14 @@ namespace TypeContractor.TypeScript
             return $"{name}{suffix}";
         }
 
+        public static string? BuildImport(DestinationType returnType)
+        {
+            if (returnType.IsBuiltin)
+                return null;
+
+            return $"{returnType.ImportType}Schema";
+        }
+
         private static string GetImportType(Type? innerSourceType, Type sourceType)
         {
             if (innerSourceType is not null && TypeChecks.ImplementsIEnumerable(innerSourceType))
