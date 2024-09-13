@@ -93,7 +93,7 @@ internal class Generator
                 return Task.FromResult(1);
             }
 
-            var contractor = GenerateContractor(typesToLoad, _buildZodSchemas);
+            var contractor = GenerateContractor(typesToLoad);
 
             if (_cleanMethod == CleanMethod.Remove)
             {
@@ -118,15 +118,16 @@ internal class Generator
         return Task.FromResult(returnCode);
     }
 
-    private Contractor GenerateContractor(Dictionary<Assembly, HashSet<Type>> typesToLoad, bool buildZodSchemas)
+    private Contractor GenerateContractor(Dictionary<Assembly, HashSet<Type>> typesToLoad)
     {
         var configuration = new TypeContractorConfiguration()
                             .AddDefaultTypeMaps()
                             .AddAssemblies([.. typesToLoad.Keys])
                             .AddTypes(typesToLoad.Values.SelectMany(list => list.Select(t => t.FullName!)).ToArray())
+                            .AddApiClients(clients)
                             .SetOutputDirectory(_output!);
 
-        if (buildZodSchemas)
+        if (_buildZodSchemas)
             configuration = configuration.EnableZodSchemas();
 
         if (_strip is not null)
