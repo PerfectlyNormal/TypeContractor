@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Improve detection of FromRoute/FromQuery parameters in API clients
 - Make sure query parameters are stringified for API clients
+- Fix import paths for nested classes
 
 ## [0.12.0] - 2024-09-13
 
