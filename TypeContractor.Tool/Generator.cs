@@ -8,6 +8,7 @@ internal class Generator
 {
     private readonly string _assemblyPath;
     private readonly string _output;
+    private readonly string? _relativeRoot;
     private readonly CleanMethod _cleanMethod;
     private readonly string[] _replacements;
     private readonly string[] _strip;
@@ -15,11 +16,22 @@ internal class Generator
     private readonly string _packPath;
     private readonly int _dotnetVersion;
     private readonly bool _buildZodSchemas;
+    private readonly bool _generateApiClients;
 
-    public Generator(string assemblyPath, string output, CleanMethod cleanMethod, string[] replacements, string[] strip, string[] customMaps, string packsPath, int dotnetVersion, bool buildZodSchemas)
+    public Generator(string assemblyPath,
+                     string output,
+                     string? relativeRoot,
+                     CleanMethod cleanMethod,
+                     string[] replacements,
+                     string[] strip,
+                     string[] customMaps,
+                     string packsPath,
+                     int dotnetVersion,
+                     bool buildZodSchemas)
     {
         _assemblyPath = assemblyPath;
         _output = output;
+        _relativeRoot = relativeRoot;
         _cleanMethod = cleanMethod;
         _replacements = replacements;
         _strip = strip;
@@ -126,6 +138,9 @@ internal class Generator
                             .AddTypes(typesToLoad.Values.SelectMany(list => list.Select(t => t.FullName!)).ToArray())
                             .AddApiClients(clients)
                             .SetOutputDirectory(_output!);
+
+        if (!string.IsNullOrWhiteSpace(_relativeRoot))
+            configuration = configuration.SetRelativeRoot(_relativeRoot);
 
         if (_buildZodSchemas)
             configuration = configuration.EnableZodSchemas();

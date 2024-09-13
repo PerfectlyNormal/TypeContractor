@@ -13,6 +13,7 @@ public class TypeContractorConfiguration
     private readonly Dictionary<string, string> _map = [];
     private readonly Dictionary<string, string> _assemblies = [];
     private readonly Dictionary<string, string> _replacements = [];
+    private string? _relativeRoot;
     private string? _outputPath;
     private bool _buildZodSchemas;
 
@@ -22,6 +23,7 @@ public class TypeContractorConfiguration
     public IReadOnlyDictionary<string, string> Assemblies => _assemblies;
     public IReadOnlyDictionary<string, string> Replacements => _replacements;
     public string OutputPath => _outputPath ?? throw new InvalidOperationException("Output path is not configured");
+    public string? RelativeRoot => _relativeRoot;
     public bool BuildZodSchemas => _buildZodSchemas;
 
     /// <summary>
@@ -231,6 +233,29 @@ public class TypeContractorConfiguration
     public TypeContractorConfiguration SetOutputDirectory(string outputDirectory)
     {
         _outputPath = outputDirectory;
+
+        return this;
+    }
+
+    /// <summary>
+    /// Set the relative root for locating the output directory inside a source file.
+    /// 
+    /// <example>
+    /// For example:
+    /// 
+    /// <code>
+    /// .SetRelativeRoot("~/api");
+    /// </code>
+    /// 
+    /// when webpack (or similar) have been configured to alias <c>~</c> to <c>src</c>
+    /// and the output is being written to <c>src/api/</c>.
+    /// </example>
+    /// </summary>
+    /// <param name="outputDirectory"></param>
+    /// <returns>The configuration object for continued chaining</returns>
+    public TypeContractorConfiguration SetRelativeRoot(string relativeRoot)
+    {
+        _relativeRoot = relativeRoot;
 
         return this;
     }
