@@ -104,7 +104,7 @@ public class TypeScriptConverter
     public DestinationType GetDestinationType(in Type sourceType, IEnumerable<CustomAttributeData> customAttributes, bool isReadonly)
     {
         if (_configuration.TypeMaps.TryGetValue(sourceType.FullName!, out string? destType))
-            return new DestinationType(destType, sourceType.FullName, true, false, isReadonly, null);
+            return new DestinationType(destType.Replace("[]", string.Empty), sourceType.FullName, true, destType.Contains("[]"), isReadonly, null);
 
         if (CustomMappedTypes.TryGetValue(sourceType, out OutputType? customType))
             return new DestinationType(customType.Name, customType.FullName, false, false, isReadonly, null);

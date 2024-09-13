@@ -1,3 +1,4 @@
+using System.Reflection.Metadata;
 using System.Text;
 using TypeContractor.Helpers;
 using TypeContractor.Output;
@@ -84,15 +85,31 @@ public class ApiClientWriter(string outputPath, string? relativeRoot)
                                   method,
                                   requiresBody ? $"{bodyParameter}, " : "");
 
-            if (endpoint.UnwrappedReturnType is null)
+            if (endpoint.UnwrappedReturnType is null && endpoint.ReturnType is null)
                 _builder.AppendLine("    return response;");
             else if (buildZodSchema)
-                _builder.AppendFormat("    return await response.parseJson<{0}{1}>({0}Schema{2});\r\n",
-                                      endpoint.UnwrappedReturnType.Name,
-                                      endpoint.EnumerableReturnType ? "[]" : "",
-                                      endpoint.EnumerableReturnType ? ".array()" : "");
+            {
+                if (endpoint.UnwrappedReturnType is not null)
+                {
+                    _builder.AppendFormat("    return await response.parseJson<{0}{1}>({0}Schema{2});\r\n",
+                                          endpoint.UnwrappedReturnType.Name,
+                                          endpoint.EnumerableReturnType ? "[]" : "",
+                                          endpoint.EnumerableReturnType ? ".array()" : "");
+                }
+                else if (endpoint.ReturnType is not null)
+                {
+                    var targetType = converter.GetDestinationType(endpoint.ReturnType, endpoint.ReturnType.CustomAttributes, false);
+                    if (targetType is null)
+                        _builder.AppendLine("    return response;");
+                    else
+                    {
+                        _builder.AppendFormat("    return await response.parseJson(z.{0}(){1});\r\n", targetType.TypeName, targetType.IsArray ? ".array()" : "");
+                    }
+                }
+            }
             else
                 _builder.AppendLine("    return await response.json();");
+
             _builder.AppendLine("  }");
         }
 
@@ -137,6 +154,7 @@ public class ApiClientWriter(string outputPath, string? relativeRoot)
     private List<string> BuildImports(IEnumerable<ApiClientEndpoint> endpoints, IEnumerable<OutputType> allTypes, TypeScriptConverter converter, bool buildZodSchema)
     {
         var imports = new List<string>();
+        var needZodLibrary = false;
 
         foreach (var endpoint in endpoints)
         {
@@ -144,12 +162,15 @@ public class ApiClientWriter(string outputPath, string? relativeRoot)
                 ? null
                 : converter.GetDestinationType(endpoint.ReturnType, endpoint.ReturnType.CustomAttributes, false);
 
-            if (returnType is not null && !returnType.IsBuiltin)
+            if (returnType is not null && returnType.IsBuiltin)
+                needZodLibrary = true;
+            else if (returnType is not null && !returnType.IsBuiltin)
             {
                 var importTypes = new List<string> { returnType.ImportType };
                 if (buildZodSchema)
                 {
                     var zodImport = ZodSchemaWriter.BuildImport(returnType);
+
                     if (!string.IsNullOrWhiteSpace(zodImport))
                         importTypes.Add(zodImport);
                 }
@@ -172,6 +193,9 @@ public class ApiClientWriter(string outputPath, string? relativeRoot)
                 imports.Add(parameterImport);
             }
         }
+
+        if (needZodLibrary)
+            imports.Insert(0, ZodSchemaWriter.LibraryImport);
 
         return imports.Distinct().ToList();
     }
