@@ -74,7 +74,7 @@ public class ApiClientWriter(string outputPath, string? relativeRoot)
 
             var queryParams = endpoint.Parameters.Where(x => x.FromQuery);
             foreach (var queryParam in queryParams)
-                _builder.AppendFormat("    url.searchParams.append('{0}', {0});\r\n", queryParam.Name);
+                _builder.AppendFormat("    url.searchParams.append('{0}', {0}.toString());\r\n", queryParam.Name);
 
             var requiresBody = endpoint.Method == EndpointMethod.POST || endpoint.Method == EndpointMethod.PUT || endpoint.Method == EndpointMethod.PATCH;
             var body = endpoint.Parameters.FirstOrDefault(p => p.FromBody || (!p.FromRoute && !p.FromQuery));

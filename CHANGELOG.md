@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Fixed
+
+- Improve detection of FromRoute/FromQuery parameters in API clients
+- Make sure query parameters are stringified for API clients
+
 ## [0.12.0] - 2024-09-13
 
 ### Added
