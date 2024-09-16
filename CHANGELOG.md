@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Fixed
+
+- Handle nullable parameters to API clients better. Only send query parameters if we have a value
+
 ## [0.12.2] - 2024-09-16
 
 ### Fixed

@@ -53,10 +53,10 @@ public class ApiClientWriter(string outputPath, string? relativeRoot)
             _builder.AppendDeprecationComment(endpoint.Obsolete);
 
             var parameters = endpoint.Parameters.Select(x => MapParameter(x, converter)).ToList();
-            var parameterMap = string.Join(", ", parameters.Select(x => $"{x.ParameterName}: {x.Type?.FullTypeName ?? "any"}").ToList());
+            var parameterMap = string.Join(", ", parameters.Select(x => $"{x.ParameterName}{(x.Type?.IsNullable ?? false ? "?" : "")}: {x.Type?.FullTypeName ?? "any"}").ToList());
             var returnType = endpoint.ReturnType is null
                 ? null
-                : converter.GetDestinationType(endpoint.ReturnType, endpoint.ReturnType.CustomAttributes, false);
+                : converter.GetDestinationType(endpoint.ReturnType, endpoint.ReturnType.CustomAttributes, false, TypeChecks.IsNullable(endpoint.ReturnType));
 
             _builder.AppendFormat("  public async {0}({1}cancellationToken: AbortSignal = null): Promise<{2}> {{\r\n",
                                   endpoint.Name,
@@ -75,7 +75,12 @@ public class ApiClientWriter(string outputPath, string? relativeRoot)
 
             var queryParams = endpoint.Parameters.Where(x => x.FromQuery);
             foreach (var queryParam in queryParams)
+            {
+                var destinationType = converter.GetDestinationType(queryParam.ParameterType, queryParam.ParameterType.CustomAttributes, false, TypeChecks.IsNullable(queryParam.ParameterType));
+                if (destinationType is not null && destinationType.IsNullable)
+                    _builder.AppendFormat("    if (!!{0})\r\n  ", queryParam.Name);
                 _builder.AppendFormat("    url.searchParams.append('{0}', {0}.toString());\r\n", queryParam.Name);
+            }
 
             var requiresBody = endpoint.Method == EndpointMethod.POST || endpoint.Method == EndpointMethod.PUT || endpoint.Method == EndpointMethod.PATCH;
             var body = endpoint.Parameters.FirstOrDefault(p => p.FromBody || (!p.FromRoute && !p.FromQuery));
@@ -98,7 +103,7 @@ public class ApiClientWriter(string outputPath, string? relativeRoot)
                 }
                 else if (endpoint.ReturnType is not null)
                 {
-                    var targetType = converter.GetDestinationType(endpoint.ReturnType, endpoint.ReturnType.CustomAttributes, false);
+                    var targetType = converter.GetDestinationType(endpoint.ReturnType, endpoint.ReturnType.CustomAttributes, false, TypeChecks.IsNullable(endpoint.ReturnType));
                     if (targetType is null)
                         _builder.AppendLine("    return response;");
                     else
@@ -144,7 +149,7 @@ public class ApiClientWriter(string outputPath, string? relativeRoot)
     {
         Logger.Log.Instance.LogDebug($"Mapping parameter {parameter.Name} ({parameter.ParameterType.Name})");
 
-        var targetType = converter.GetDestinationType(parameter.ParameterType, parameter.ParameterType.CustomAttributes, false);
+        var targetType = converter.GetDestinationType(parameter.ParameterType, parameter.ParameterType.CustomAttributes, false, TypeChecks.IsNullable(parameter.ParameterType));
         if (targetType is not null)
             return (parameter.Name, targetType);
 
@@ -160,7 +165,7 @@ public class ApiClientWriter(string outputPath, string? relativeRoot)
         {
             var returnType = endpoint.ReturnType is null
                 ? null
-                : converter.GetDestinationType(endpoint.ReturnType, endpoint.ReturnType.CustomAttributes, false);
+                : converter.GetDestinationType(endpoint.ReturnType, endpoint.ReturnType.CustomAttributes, false, TypeChecks.IsNullable(endpoint.ReturnType));
 
             if (returnType is not null && returnType.IsBuiltin)
                 needZodLibrary = true;

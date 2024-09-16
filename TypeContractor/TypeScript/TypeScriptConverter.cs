@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Reflection;
 using TypeContractor.Helpers;
 using TypeContractor.Output;
@@ -79,7 +78,7 @@ public class TypeScriptConverter
             var isReadonly = !property.CanWrite || setter is null;
 
             var destinationName = GetDestinationName(property.Name);
-            var destinationType = GetDestinationType(property.PropertyType, property.CustomAttributes, isReadonly);
+            var destinationType = GetDestinationType(property.PropertyType, property.CustomAttributes, isReadonly, TypeChecks.IsNullable(property.PropertyType));
             var outputProperty = new OutputProperty(property.Name, property.PropertyType, destinationType.InnerType, destinationName, destinationType.TypeName, destinationType.ImportType, destinationType.IsBuiltin, destinationType.IsArray, TypeChecks.IsNullable(property), destinationType.IsReadonly);
 
             var obsolete = property.CustomAttributes.FirstOrDefault(x => x.AttributeType.FullName == "System.ObsoleteAttribute");
@@ -101,57 +100,57 @@ public class TypeScriptConverter
 
     public static string GetDestinationName(string name) => name.ToTypeScriptName();
 
-    public DestinationType GetDestinationType(in Type sourceType, IEnumerable<CustomAttributeData> customAttributes, bool isReadonly)
+    public DestinationType GetDestinationType(in Type sourceType, IEnumerable<CustomAttributeData> customAttributes, bool isReadonly, bool isNullable)
     {
         if (_configuration.TypeMaps.TryGetValue(sourceType.FullName!, out string? destType))
-            return new DestinationType(destType.Replace("[]", string.Empty), sourceType.FullName, true, destType.Contains("[]"), isReadonly, null);
+            return new DestinationType(destType.Replace("[]", string.Empty), sourceType.FullName, true, destType.Contains("[]"), isReadonly, isNullable || TypeChecks.IsNullable(sourceType), null);
 
         if (CustomMappedTypes.TryGetValue(sourceType, out OutputType? customType))
-            return new DestinationType(customType.Name, customType.FullName, false, false, isReadonly, null);
+            return new DestinationType(customType.Name, customType.FullName, false, false, isReadonly, TypeChecks.IsNullable(sourceType), null);
 
         if (TypeChecks.ImplementsIDictionary(sourceType))
         {
-            var keyType = GetDestinationType(TypeChecks.GetGenericType(sourceType, 0), customAttributes, isReadonly);
+            var keyType = GetDestinationType(TypeChecks.GetGenericType(sourceType, 0), customAttributes, isReadonly, false);
             var valueType = TypeChecks.GetGenericType(sourceType, 1);
-            var valueDestinationType = GetDestinationType(valueType, customAttributes, isReadonly);
+            var valueDestinationType = GetDestinationType(valueType, customAttributes, isReadonly, TypeChecks.IsNullable(valueType));
 
             var isBuiltin = keyType.IsBuiltin && valueDestinationType.IsBuiltin;
 
-            return new DestinationType($"{{ [key: {keyType.TypeName}]: {valueDestinationType.FullTypeName} }}", valueDestinationType.FullName, isBuiltin, false, isReadonly, valueType, valueDestinationType.ImportType);
+            return new DestinationType($"{{ [key: {keyType.TypeName}]: {valueDestinationType.FullTypeName} }}", valueDestinationType.FullName, isBuiltin, false, isReadonly, valueDestinationType.IsNullable, valueType, valueDestinationType.ImportType);
         }
 
         if (TypeChecks.ImplementsIEnumerable(sourceType))
         {
             var innerType = TypeChecks.GetGenericType(sourceType);
 
-            var (TypeName, FullName, _, IsBuiltin, _, IsReadonly, _) = GetDestinationType(innerType, customAttributes, isReadonly);
-            return new DestinationType(TypeName, FullName, IsBuiltin, true, IsReadonly, innerType);
+            var (TypeName, FullName, _, IsBuiltin, _, IsReadonly, IsNullable, _) = GetDestinationType(innerType, customAttributes, isReadonly, isNullable);
+            return new DestinationType(TypeName, FullName, IsBuiltin, true, IsReadonly, IsNullable, innerType);
         }
 
         if (TypeChecks.IsValueTuple(sourceType))
         {
             var arguments = sourceType.GenericTypeArguments;
-            var argumentDestinationTypes = arguments.Select(arg => GetDestinationType(arg, customAttributes, isReadonly));
+            var argumentDestinationTypes = arguments.Select(arg => GetDestinationType(arg, customAttributes, isReadonly, isNullable));
             var isBuiltin = argumentDestinationTypes.All(arg => arg.IsBuiltin);
 
             var argumentList = argumentDestinationTypes.Select((arg, idx) => $"item{idx + 1}: {arg.FullTypeName}");
             var typeName = $"{{ {string.Join(", ", argumentList)} }}";
 
-            return new DestinationType(typeName, sourceType.FullName, isBuiltin, false, isReadonly, null);
+            return new DestinationType(typeName, sourceType.FullName, isBuiltin, false, isReadonly, false, null);
         }
 
         if (TypeChecks.IsNullable(sourceType))
         {
-            return GetDestinationType(sourceType.GenericTypeArguments.First(), customAttributes, isReadonly);
+            return GetDestinationType(sourceType.GenericTypeArguments.First(), customAttributes, isReadonly, true);
         }
 
         if (customAttributes.Any(x => x.AttributeType.FullName == "System.Runtime.CompilerServices.DynamicAttribute"))
-            return new DestinationType(DestinationTypes.Dynamic, null, true, false, isReadonly, null);
+            return new DestinationType(DestinationTypes.Dynamic, null, true, false, isReadonly, true, null);
 
         // FIXME: Check if this is one of our types?
         var outputType = Convert(sourceType);
         CustomMappedTypes.Add(sourceType, outputType);
-        return new DestinationType(outputType.Name, outputType.FullName, false, false, isReadonly, null);
+        return new DestinationType(outputType.Name, outputType.FullName, false, false, isReadonly, isNullable || TypeChecks.IsNullable(sourceType), null);
 
         // throw new ArgumentException($"Unexpected type: {sourceType}");
     }
