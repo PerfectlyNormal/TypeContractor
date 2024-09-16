@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Fixed
+
+- Handle enumerable parameters in API clients
+
 ## [0.12.1] - 2024-09-13
 
 ### Fixed

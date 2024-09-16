@@ -53,7 +53,7 @@ public class ApiClientWriter(string outputPath, string? relativeRoot)
             _builder.AppendDeprecationComment(endpoint.Obsolete);
 
             var parameters = endpoint.Parameters.Select(x => MapParameter(x, converter)).ToList();
-            var parameterMap = string.Join(", ", parameters.Select(x => $"{x.ParameterName}: {x.Type?.TypeName ?? "any"}").ToList());
+            var parameterMap = string.Join(", ", parameters.Select(x => $"{x.ParameterName}: {x.Type?.FullTypeName ?? "any"}").ToList());
             var returnType = endpoint.ReturnType is null
                 ? null
                 : converter.GetDestinationType(endpoint.ReturnType, endpoint.ReturnType.CustomAttributes, false);
