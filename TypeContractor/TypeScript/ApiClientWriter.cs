@@ -1,6 +1,7 @@
 using System.Reflection.Metadata;
 using System.Text;
 using TypeContractor.Helpers;
+using TypeContractor.Logger;
 using TypeContractor.Output;
 
 namespace TypeContractor.TypeScript;
@@ -77,9 +78,28 @@ public class ApiClientWriter(string outputPath, string? relativeRoot)
             foreach (var queryParam in queryParams)
             {
                 var destinationType = converter.GetDestinationType(queryParam.ParameterType, queryParam.ParameterType.CustomAttributes, false, TypeChecks.IsNullable(queryParam.ParameterType));
-                if (destinationType is not null && destinationType.IsNullable)
-                    _builder.AppendFormat("    if (!!{0})\r\n  ", queryParam.Name);
-                _builder.AppendFormat("    url.searchParams.append('{0}', {0}.toString());\r\n", queryParam.Name);
+                if (destinationType.IsBuiltin)
+                {
+                    if (destinationType is not null && destinationType.IsNullable)
+                        _builder.AppendFormat("    if (!!{0})\r\n  ", queryParam.Name);
+                    _builder.AppendFormat("    url.searchParams.append('{0}', {0}.toString());\r\n", queryParam.Name);
+                }
+                else
+                {
+                    var outputType = allTypes.FirstOrDefault(x => x.FullName == destinationType.FullName);
+                    if (outputType is null)
+                    {
+                        Log.Instance.LogWarning($"Unable to find {destinationType.FullName} in the converted types. Skipping!");
+                        continue;
+                    }
+
+                    foreach (var property in outputType.Properties ?? [])
+                    {
+                        if (property.IsNullable)
+                            _builder.AppendFormat("    if (!!{0})\r\n  ", property.DestinationName);
+                        _builder.AppendFormat("    url.searchParams.append('{0}', {0}.toString());\r\n", property.DestinationName);
+                    }
+                }
             }
 
             var requiresBody = endpoint.Method == EndpointMethod.POST || endpoint.Method == EndpointMethod.PUT || endpoint.Method == EndpointMethod.PATCH;
