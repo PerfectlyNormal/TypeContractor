@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.12.5] - 2024-09-18
+
 ### Fixed
 
 - Slice of the initial slash in API client URLs.
@@ -254,7 +256,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[unreleased]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.12.4...HEAD
+[unreleased]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.12.5...HEAD
+[0.12.5]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.12.5...v0.12.4
 [0.12.4]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.12.4...v0.12.3
 [0.12.3]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.12.3...v0.12.2
 [0.12.2]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.12.2...v0.12.1
