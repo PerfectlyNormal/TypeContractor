@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Slice of the initial slash in API client URLs.
+- Fix formatting for arrays as query strings
 
 ## [0.12.4] - 2024-09-18
 

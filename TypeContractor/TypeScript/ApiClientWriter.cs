@@ -82,7 +82,11 @@ public class ApiClientWriter(string outputPath, string? relativeRoot)
                 {
                     if (destinationType is not null && destinationType.IsNullable)
                         _builder.AppendFormat("    if (!!{0})\r\n  ", queryParam.Name);
-                    _builder.AppendFormat("    url.searchParams.append('{0}', {0}.toString());\r\n", queryParam.Name);
+
+                    if (destinationType is not null && destinationType.IsArray)
+                        _builder.AppendFormat("    {0}.forEach((val, i) => url.searchParams.append(`{0}[${{i}}]`, val.toString()));\r\n", queryParam.Name);
+                    else
+                        _builder.AppendFormat("    url.searchParams.append('{0}', {0}.toString());\r\n", queryParam.Name);
                 }
                 else
                 {
