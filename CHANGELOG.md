@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Fixed
+
+- Use the correct variable reference when unpacking query parameters (Really fix #68)
+
 ## [0.12.3] - 2024-09-17
 
 ### Fixed

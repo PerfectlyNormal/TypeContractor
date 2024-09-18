@@ -97,7 +97,9 @@ public class ApiClientWriter(string outputPath, string? relativeRoot)
                     {
                         if (property.IsNullable)
                             _builder.AppendFormat("    if (!!{0})\r\n  ", property.DestinationName);
-                        _builder.AppendFormat("    url.searchParams.append('{0}', {0}.toString());\r\n", property.DestinationName);
+                        _builder.AppendFormat("    url.searchParams.append('{0}', {1}.toString());\r\n",
+                                              property.DestinationName,
+                                              $"{queryParam.Name}.{property.DestinationName}");
                     }
                 }
             }
