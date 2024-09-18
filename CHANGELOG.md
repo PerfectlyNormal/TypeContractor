@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.12.4] - 2024-09-18
+
 ### Fixed
 
 - Use the correct variable reference when unpacking query parameters (Really fix #68)
@@ -247,7 +249,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[unreleased]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.12.3...HEAD
+[unreleased]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.12.4...HEAD
+[0.12.4]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.12.4...v0.12.3
 [0.12.3]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.12.3...v0.12.2
 [0.12.2]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.12.2...v0.12.1
 [0.12.1]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.12.1...v0.12.0
