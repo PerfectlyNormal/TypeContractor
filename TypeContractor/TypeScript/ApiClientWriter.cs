@@ -108,7 +108,7 @@ public class ApiClientWriter(string outputPath, string? relativeRoot)
             var body = endpoint.Parameters.FirstOrDefault(p => p.FromBody || (!p.FromRoute && !p.FromQuery));
             var bodyParameter = body is not null ? $"json({body.Name})" : "null";
 
-            _builder.AppendFormat("    const response = await this.http.{0}(`${{url.pathname}}${{url.search}}`, {1}{{ signal: cancellationToken }});\r\n",
+            _builder.AppendFormat("    const response = await this.http.{0}(`${{url.pathname}}${{url.search}}`.slice(1), {1}{{ signal: cancellationToken }});\r\n",
                                   method,
                                   requiresBody ? $"{bodyParameter}, " : "");
 

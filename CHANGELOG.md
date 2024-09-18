@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Fixed
+
+- Slice of the initial slash in API client URLs.
+
 ## [0.12.4] - 2024-09-18
 
 ### Fixed
