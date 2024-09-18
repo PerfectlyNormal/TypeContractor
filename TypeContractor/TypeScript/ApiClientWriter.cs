@@ -44,9 +44,9 @@ public class ApiClientWriter(string outputPath, string? relativeRoot)
         foreach (var endpoint in apiClient.Endpoints)
         {
             Logger.Log.Instance.LogDebug($"  Processing endpoint {endpoint.Name}");
-            var url = !string.IsNullOrWhiteSpace(apiClient.Prefix) && !endpoint.Route.StartsWith('/')
+            var url = !string.IsNullOrWhiteSpace(apiClient.Prefix) && !endpoint.Route.StartsWith('/') && !endpoint.Route.StartsWith("~/", StringComparison.Ordinal)
                 ? $"{apiClient.Prefix}/{endpoint.Route}"
-                : endpoint.Route;
+                : endpoint.Route.Replace("~/", string.Empty);
             if (!_httpMethods.TryGetValue(endpoint.Method, out var method))
                 throw new NotImplementedException($"No mapping exists for {endpoint.Method}");
 

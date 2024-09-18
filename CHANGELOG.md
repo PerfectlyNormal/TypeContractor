@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Fixed
+
+- Don't blindly append controller prefix to API client URLs (#76)
+
 ## [0.12.5] - 2024-09-18
 
 ### Fixed
