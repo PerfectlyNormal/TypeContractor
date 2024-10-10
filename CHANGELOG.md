@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Fixed
+
+- Only import Zod in generated API clients if we actually want it
+
 ## [0.12.6] - 2024-09-18
 
 ### Fixed
