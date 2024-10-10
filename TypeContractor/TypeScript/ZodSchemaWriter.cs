@@ -7,7 +7,7 @@ namespace TypeContractor.TypeScript
 {
     public static class ZodSchemaWriter
     {
-        public const string LibraryImport = "import { z } from \"zod\";";
+        public const string LibraryImport = "import { z } from 'zod';";
 
         public static void Write(OutputType type, IEnumerable<OutputType> allTypes, StringBuilder builder)
         {

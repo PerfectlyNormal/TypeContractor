@@ -39,7 +39,7 @@ public sealed class ApiClientWriterTests : IDisposable
         var file = File.ReadAllText(result).Trim();
         file.Should()
             .NotBeEmpty()
-            .And.NotContain("import { z } from \"zod\";")
+            .And.NotContain("import { z } from 'zod';")
             .And.Contain("export class TestClient {")
             .And.Contain("public async getLatestId(cancellationToken: AbortSignal = null): Promise<string> {")
             .And.Contain("const url = new URL('test/latest', window.location.origin);")
@@ -61,7 +61,7 @@ public sealed class ApiClientWriterTests : IDisposable
         var file = File.ReadAllText(result).Trim();
         file.Should()
             .NotBeEmpty()
-            .And.Contain("import { z } from \"zod\";")
+            .And.Contain("import { z } from 'zod';")
             .And.Contain("export class TestClient {")
             .And.Contain("public async getLatestId(cancellationToken: AbortSignal = null): Promise<string> {")
             .And.Contain("const url = new URL('test/latest', window.location.origin);")
@@ -83,7 +83,7 @@ public sealed class ApiClientWriterTests : IDisposable
         var file = File.ReadAllText(result).Trim();
         file.Should()
             .NotBeEmpty()
-            .And.Contain("import { z } from \"zod\";")
+            .And.Contain("import { z } from 'zod';")
             .And.Contain("export class TestClient {")
             .And.Contain("public async getLatestId(cancellationToken: AbortSignal = null): Promise<string> {")
             .And.Contain("const url = new URL('test/latest', window.location.origin);")
@@ -105,7 +105,7 @@ public sealed class ApiClientWriterTests : IDisposable
         var file = File.ReadAllText(result).Trim();
         file.Should()
             .NotBeEmpty()
-            .And.Contain("import { z } from \"zod\";")
+            .And.Contain("import { z } from 'zod';")
             .And.Contain("export class TestClient {")
             .And.Contain("public async getLatestId(year: number, cancellationToken: AbortSignal = null): Promise<string> {")
             .And.Contain("const url = new URL('test/latest', window.location.origin);")
@@ -127,7 +127,7 @@ public sealed class ApiClientWriterTests : IDisposable
         var file = File.ReadAllText(result).Trim();
         file.Should()
             .NotBeEmpty()
-            .And.Contain("import { z } from \"zod\";")
+            .And.Contain("import { z } from 'zod';")
             .And.Contain("export class TestClient {")
             .And.Contain("public async getLatestId(year: number, cancellationToken: AbortSignal = null): Promise<string> {")
             .And.Contain("const url = new URL('test/latest', window.location.origin);")
@@ -148,7 +148,7 @@ public sealed class ApiClientWriterTests : IDisposable
         var file = File.ReadAllText(result).Trim();
         file.Should()
             .NotBeEmpty()
-            .And.Contain("import { z } from \"zod\";")
+            .And.Contain("import { z } from 'zod';")
             .And.Contain("export class TestClient {")
             .And.Contain("public async getLatestId(year: number, cancellationToken: AbortSignal = null): Promise<string> {")
             .And.Contain("const url = new URL(`test/latest/${year}`, window.location.origin);")
@@ -174,7 +174,7 @@ public sealed class ApiClientWriterTests : IDisposable
         var file = File.ReadAllText(result).Trim();
         file.Should()
             .NotBeEmpty()
-            .And.Contain("import { z } from \"zod\";")
+            .And.Contain("import { z } from 'zod';")
             .And.Contain("import { PaginatedRequest }")
             .And.Contain("export class TestClient {")
             .And.Contain("public async getLatestId(request: PaginatedRequest, cancellationToken: AbortSignal = null): Promise<string> {")

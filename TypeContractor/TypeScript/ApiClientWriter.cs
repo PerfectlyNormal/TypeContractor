@@ -208,7 +208,7 @@ public class ApiClientWriter(string outputPath, string? relativeRoot)
 
                 var outputType = allTypes.First(x => x.FullName == (returnType.InnerType?.FullName ?? returnType.FullName));
                 var importPath = $"{relativeRoot}/{outputType.ContractedType.Folder.Path.Replace('\\', '/')}/{outputType.Name}";
-                var returnImport = $"import {{ {string.Join(", ", importTypes)} }} from \"{importPath}\";";
+                var returnImport = $"import {{ {string.Join(", ", importTypes)} }} from '{importPath}';";
                 imports.Add(returnImport);
             }
 
@@ -220,7 +220,7 @@ public class ApiClientWriter(string outputPath, string? relativeRoot)
 
                 var outputType = allTypes.First(x => x.FullName == (parameter.Type.InnerType?.FullName ?? parameter.Type.FullName));
                 var importPath = $"{relativeRoot}/{outputType.ContractedType.Folder.Path.Replace('\\', '/')}/{outputType.Name}";
-                var parameterImport = $"import {{ {parameter.Type.ImportType} }} from \"{importPath}\"";
+                var parameterImport = $"import {{ {parameter.Type.ImportType} }} from '{importPath}'";
                 imports.Add(parameterImport);
             }
         }

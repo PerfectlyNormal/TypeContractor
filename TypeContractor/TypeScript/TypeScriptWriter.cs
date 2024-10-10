@@ -84,7 +84,7 @@ public class TypeScriptWriter(string outputPath)
                             importTypes.Add(zodImport);
                     }
 
-                    _builder.AppendLine($"import {{ {string.Join(", ", importTypes)} }} from \"{importPath}\";");
+                    _builder.AppendLine($"import {{ {string.Join(", ", importTypes)} }} from '{importPath}';");
                 }
                 catch (ArgumentException ex)
                 {

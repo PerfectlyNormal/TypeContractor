@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Only import Zod in generated API clients if we actually want it
 
+### Changed
+
+- Standardize on single quotes for imports
+
 ## [0.12.6] - 2024-09-18
 
 ### Fixed

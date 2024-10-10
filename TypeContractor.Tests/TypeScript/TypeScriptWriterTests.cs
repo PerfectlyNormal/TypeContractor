@@ -61,7 +61,7 @@ public class TypeScriptWriterTests : IDisposable
         var file = File.ReadAllText(result);
         file.Should()
             .NotBeEmpty()
-            .And.Contain("import { FormulaDto } from \"./FormulaDto\";")
+            .And.Contain("import { FormulaDto } from './FormulaDto';")
             .And.Contain("formulas: { [key: string]: FormulaDto[] };");
     }
 
@@ -78,7 +78,7 @@ public class TypeScriptWriterTests : IDisposable
         var file = File.ReadAllText(result);
         file.Should()
             .NotBeEmpty()
-            .And.Contain("import { FormulaDto } from \"./FormulaDto\";")
+            .And.Contain("import { FormulaDto } from './FormulaDto';")
             .And.Contain("formulas: { [key: string]: { [key: string]: FormulaDto[] } };");
     }
 
@@ -139,7 +139,7 @@ public class TypeScriptWriterTests : IDisposable
         var topLevelFile = File.ReadAllText(topLevelResult);
         topLevelFile.Should()
             .NotBeEmpty()
-            .And.Contain("import { SecondStoryRecord } from \"./SecondStoryRecord\";")
+            .And.Contain("import { SecondStoryRecord } from './SecondStoryRecord';")
             .And.Contain("export interface TopLevelRecord {")
             .And.Contain("  name: string;")
             .And.Contain("  secondStoryRecord?: SecondStoryRecord;")
@@ -148,7 +148,7 @@ public class TypeScriptWriterTests : IDisposable
         var secondStoryFile = File.ReadAllText(secondStoryResult);
         secondStoryFile.Should()
             .NotBeEmpty()
-            .And.Contain("import { SomeOtherDeeplyNestedRecord } from \"./SomeOtherDeeplyNestedRecord\";")
+            .And.Contain("import { SomeOtherDeeplyNestedRecord } from './SomeOtherDeeplyNestedRecord';")
             .And.Contain("export interface SecondStoryRecord {")
             .And.Contain("  description: string;")
             .And.Contain("  someOtherDeeplyNestedRecord?: SomeOtherDeeplyNestedRecord;")
@@ -176,7 +176,7 @@ public class TypeScriptWriterTests : IDisposable
         // Assert
         file.Should()
             .NotBeEmpty()
-            .And.Contain("import { z } from \"zod\";")
+            .And.Contain("import { z } from 'zod';")
             .And.Contain("export const SimpleTypesSchema = z.object({")
             .And.Contain("  stringProperty: z.string(),")
             .And.Contain("  numberProperty: z.number().nullable(),")
@@ -200,8 +200,8 @@ public class TypeScriptWriterTests : IDisposable
         // Assert
         file.Should()
             .NotBeEmpty()
-            .And.Contain("import { z } from \"zod\";")
-            .And.Contain("import { SimpleTypes, SimpleTypesSchema } from \"./SimpleTypes\";")
+            .And.Contain("import { z } from 'zod';")
+            .And.Contain("import { SimpleTypes, SimpleTypesSchema } from './SimpleTypes';")
             .And.Contain("export const ReferenceTypeSchema = z.object({")
             .And.Contain("  name: z.string().nullable(),")
             .And.Contain("  simpleReference: SimpleTypesSchema,")
@@ -221,8 +221,8 @@ public class TypeScriptWriterTests : IDisposable
         // Assert
         file.Should()
             .NotBeEmpty()
-            .And.Contain("import { z } from \"zod\";")
-            .And.Contain("import { ObsoleteEnum } from \"./ObsoleteEnum\";")
+            .And.Contain("import { z } from 'zod';")
+            .And.Contain("import { ObsoleteEnum } from './ObsoleteEnum';")
             .And.Contain("export const TypeWithEnumSchema = z.object({")
             .And.Contain("  status: z.nativeEnum(ObsoleteEnum),")
             .And.Contain("});");
@@ -241,8 +241,8 @@ public class TypeScriptWriterTests : IDisposable
         // Assert
         file.Should()
             .NotBeEmpty()
-            .And.Contain("import { z } from \"zod\";")
-            .And.Contain("import { ReferenceType, ReferenceTypeSchema } from \"./ReferenceType\";")
+            .And.Contain("import { z } from 'zod';")
+            .And.Contain("import { ReferenceType, ReferenceTypeSchema } from './ReferenceType';")
             .And.Contain("export const TypeWithCustomDictionaryValuesSchema = z.object({")
             .And.Contain("  references: z.record(z.string(), ReferenceTypeSchema),")
             .And.Contain("});");
@@ -261,8 +261,8 @@ public class TypeScriptWriterTests : IDisposable
         // Assert
         file.Should()
             .NotBeEmpty()
-            .And.Contain("import { z } from \"zod\";")
-            .And.Contain("import { ReferenceType, ReferenceTypeSchema } from \"./ReferenceType\";")
+            .And.Contain("import { z } from 'zod';")
+            .And.Contain("import { ReferenceType, ReferenceTypeSchema } from './ReferenceType';")
             .And.Contain("export const TypeWithCustomEnumerableDictionaryValuesSchema = z.object({")
             .And.Contain("  references: z.record(z.string(), z.array(ReferenceTypeSchema)),")
             .And.Contain("});");
@@ -283,7 +283,7 @@ public class TypeScriptWriterTests : IDisposable
         var topLevelFile = File.ReadAllText(topLevelResult);
         topLevelFile.Should()
             .NotBeEmpty()
-            .And.Contain("import { SecondStoryRecord, SecondStoryRecordSchema } from \"./SecondStoryRecord\";")
+            .And.Contain("import { SecondStoryRecord, SecondStoryRecordSchema } from './SecondStoryRecord';")
             .And.Contain("export const TopLevelRecordSchema = z.object({")
             .And.Contain("  name: z.string(),")
             .And.Contain("  secondStoryRecord: SecondStoryRecordSchema.nullable(),")
@@ -292,7 +292,7 @@ public class TypeScriptWriterTests : IDisposable
         var secondStoryFile = File.ReadAllText(secondStoryResult);
         secondStoryFile.Should()
             .NotBeEmpty()
-            .And.Contain("import { SomeOtherDeeplyNestedRecord, SomeOtherDeeplyNestedRecordSchema } from \"./SomeOtherDeeplyNestedRecord\";")
+            .And.Contain("import { SomeOtherDeeplyNestedRecord, SomeOtherDeeplyNestedRecordSchema } from './SomeOtherDeeplyNestedRecord';")
             .And.Contain("export const SecondStoryRecordSchema = z.object({")
             .And.Contain("  description: z.string(),")
             .And.Contain("  someOtherDeeplyNestedRecord: SomeOtherDeeplyNestedRecordSchema.nullable(),")
