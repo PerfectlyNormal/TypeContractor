@@ -229,6 +229,26 @@ public class TypeScriptWriterTests : IDisposable
     }
 
     [Fact]
+    public void Writes_Zod_Schema_With_Nullable_Enum()
+    {
+        // Arrange
+        var outputTypes = BuildOutputTypes(typeof(TypeWithNullableEnum));
+
+        // Act
+        var result = Sut.Write(outputTypes.First(), outputTypes, true);
+        var file = File.ReadAllText(result);
+
+        // Assert
+        file.Should()
+            .NotBeEmpty()
+            .And.Contain("import { z } from 'zod';")
+            .And.Contain("import { ObsoleteEnum } from './ObsoleteEnum';")
+            .And.Contain("export const TypeWithNullableEnumSchema = z.object({")
+            .And.Contain("  status: z.nativeEnum(ObsoleteEnum).nullable(),")
+            .And.Contain("});");
+    }
+
+    [Fact]
     public void Writes_Zod_Schema_With_Custom_Types_In_Dictionaries()
     {
         // Arrange
@@ -341,6 +361,12 @@ public class TypeScriptWriterTests : IDisposable
     private class TypeWithEnum
     {
         public ObsoleteEnum Status { get; set; }
+    }
+
+    private class TypeWithNullableEnum
+    {
+        public DateTime SubmittedDateTimeUtc { get; set; }
+        public ObsoleteEnum? Status { get; set; }
     }
 
     private class TypeWithCustomDictionaryValues

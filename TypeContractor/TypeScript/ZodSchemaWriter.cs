@@ -71,7 +71,7 @@ namespace TypeContractor.TypeScript
             {
                 var sourceType = TypeChecks.GetGenericType(property.SourceType);
                 if (sourceType.IsEnum)
-                    return $"z.nativeEnum({sourceType.Name}).optional()";
+                    return $"z.nativeEnum({sourceType.Name}).nullable()";
             }
 
             string? output;

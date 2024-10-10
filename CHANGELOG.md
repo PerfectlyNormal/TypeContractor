@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Only import Zod in generated API clients if we actually want it
+- Set nullable enums as `.nullable()`, not `.optional()` in Zod schema (#82)
 
 ### Changed
 
