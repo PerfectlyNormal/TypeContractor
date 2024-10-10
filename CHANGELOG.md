@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.12.7] - 2024-10-10
+
 ### Fixed
 
 - Only import Zod in generated API clients if we actually want it
@@ -271,7 +273,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[unreleased]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.12.6...HEAD
+[unreleased]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.12.7...HEAD
+[0.12.7]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.12.7...v0.12.6
 [0.12.6]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.12.6...v0.12.5
 [0.12.5]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.12.5...v0.12.4
 [0.12.4]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.12.4...v0.12.3
