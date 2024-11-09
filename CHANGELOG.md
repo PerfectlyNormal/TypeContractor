@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.13.0] - 2024-11-09
+
 ### Added
 
 - Generate API clients using Handlebars templates, with an option to provide custom templates (#75)
@@ -281,7 +283,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[unreleased]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.12.7...HEAD
+[unreleased]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.13.0...HEAD
+[0.13.0]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.13.0...v0.12.7
 [0.12.7]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.12.7...v0.12.6
 [0.12.6]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.12.6...v0.12.5
 [0.12.5]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.12.5...v0.12.4
