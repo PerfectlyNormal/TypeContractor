@@ -52,6 +52,8 @@ public class ApiClientWriter(string outputPath, string? relativeRoot)
                 foreach (var param in routeParams)
                     url = url.Replace($"{{{param.Name}}}", $"${{{param.Name}}}");
             }
+            if (url.EndsWith('/'))
+                url = url[..^1];
 
             var queryParams = endpoint.Parameters.Where(x => x.FromQuery).ToList();
             var queryParamsDto = new List<QueryParameterTemplateDto>(queryParams.Count);

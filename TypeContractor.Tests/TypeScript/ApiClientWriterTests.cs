@@ -55,6 +55,28 @@ public sealed class ApiClientWriterTests : IDisposable
     }
 
     [Fact]
+    public void Strips_Trailing_Slash()
+    {
+        // Arrange
+        var apiClient = new ApiClient("TestClient", "TestController", "test", null);
+        apiClient.AddEndpoint(new ApiClientEndpoint("getLatestId", "", EndpointMethod.GET, typeof(Guid), typeof(Guid), false, [], null));
+
+        // Act
+        var result = Sut.Write(apiClient, [], _converter, false, _templateFn);
+
+        // Assert
+        var file = File.ReadAllText(result).Trim();
+        file.Should()
+            .NotBeEmpty()
+            .And.NotContain("import { z } from 'zod';")
+            .And.Contain("export class TestClient {")
+            .And.Contain("public async getLatestId(cancellationToken: AbortSignal = null): Promise<string> {")
+            .And.Contain("const url = new URL('test', window.location.origin);")
+            .And.Contain("const response = await this.http.get(`${url.pathname}${url.search}`.slice(1), { signal: cancellationToken });")
+            .And.Contain("return await response.json();");
+    }
+
+    [Fact]
     public void Can_Write_Basic_Client_With_Schema()
     {
         // Arrange
