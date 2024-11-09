@@ -1,3 +1,4 @@
+using HandlebarsDotNet;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using TypeContractor.Output;
@@ -10,6 +11,7 @@ public sealed class ApiClientWriterTests : IDisposable
     private readonly DirectoryInfo _outputDirectory;
     private readonly TypeContractorConfiguration _configuration;
     private readonly TypeScriptConverter _converter;
+    private readonly HandlebarsTemplate<object, object> _templateFn;
 
     public ApiClientWriter Sut { get; }
 
@@ -23,6 +25,11 @@ public sealed class ApiClientWriterTests : IDisposable
             .SetOutputDirectory(_outputDirectory.FullName);
         _converter = new TypeScriptConverter(_configuration, BuildMetadataLoadContext());
         Sut = new ApiClientWriter(_configuration.OutputPath, "~");
+
+        var embed = typeof(ApiClientWriter).Assembly.GetManifestResourceStream("TypeContractor.Templates.aurelia.hbs");
+        using var sr = new StreamReader(embed!);
+        var template = sr.ReadToEnd();
+        _templateFn = Handlebars.Compile(template);
     }
 
     [Fact]
@@ -33,7 +40,7 @@ public sealed class ApiClientWriterTests : IDisposable
         apiClient.AddEndpoint(new ApiClientEndpoint("getLatestId", "latest", EndpointMethod.GET, typeof(Guid), typeof(Guid), false, [], null));
 
         // Act
-        var result = Sut.Write(apiClient, [], _converter, false);
+        var result = Sut.Write(apiClient, [], _converter, false, _templateFn);
 
         // Assert
         var file = File.ReadAllText(result).Trim();
@@ -55,7 +62,7 @@ public sealed class ApiClientWriterTests : IDisposable
         apiClient.AddEndpoint(new ApiClientEndpoint("getLatestId", "latest", EndpointMethod.GET, null, typeof(Guid), false, [], null));
 
         // Act
-        var result = Sut.Write(apiClient, [], _converter, true);
+        var result = Sut.Write(apiClient, [], _converter, true, _templateFn);
 
         // Assert
         var file = File.ReadAllText(result).Trim();
@@ -77,7 +84,7 @@ public sealed class ApiClientWriterTests : IDisposable
         apiClient.AddEndpoint(new ApiClientEndpoint("getLatestId", "latest", EndpointMethod.POST, null, typeof(Guid), false, [], null));
 
         // Act
-        var result = Sut.Write(apiClient, [], _converter, true);
+        var result = Sut.Write(apiClient, [], _converter, true, _templateFn);
 
         // Assert
         var file = File.ReadAllText(result).Trim();
@@ -99,7 +106,7 @@ public sealed class ApiClientWriterTests : IDisposable
         apiClient.AddEndpoint(new ApiClientEndpoint("getLatestId", "latest", EndpointMethod.POST, null, typeof(Guid), false, [new EndpointParameter("year", typeof(int), null, false, true, false, false, false, false, false)], null));
 
         // Act
-        var result = Sut.Write(apiClient, [], _converter, true);
+        var result = Sut.Write(apiClient, [], _converter, true, _templateFn);
 
         // Assert
         var file = File.ReadAllText(result).Trim();
@@ -121,7 +128,7 @@ public sealed class ApiClientWriterTests : IDisposable
         apiClient.AddEndpoint(new ApiClientEndpoint("getLatestId", "latest", EndpointMethod.GET, null, typeof(Guid), false, [new EndpointParameter("year", typeof(int), null, false, false, false, true, false, false, false)], null));
 
         // Act
-        var result = Sut.Write(apiClient, [], _converter, true);
+        var result = Sut.Write(apiClient, [], _converter, true, _templateFn);
 
         // Assert
         var file = File.ReadAllText(result).Trim();
@@ -142,7 +149,7 @@ public sealed class ApiClientWriterTests : IDisposable
         apiClient.AddEndpoint(new ApiClientEndpoint("getLatestId", "latest/{year}", EndpointMethod.GET, null, typeof(Guid), false, [new EndpointParameter("year", typeof(int), null, false, false, true, false, false, false, false)], null));
 
         // Act
-        var result = Sut.Write(apiClient, [], _converter, true);
+        var result = Sut.Write(apiClient, [], _converter, true, _templateFn);
 
         // Assert
         var file = File.ReadAllText(result).Trim();
@@ -168,7 +175,7 @@ public sealed class ApiClientWriterTests : IDisposable
         apiClient.AddEndpoint(new ApiClientEndpoint("getLatestId", "latest", EndpointMethod.GET, null, typeof(Guid), false, [new EndpointParameter("request", typeof(PaginatedRequest), null, false, false, false, true, false, false, false)], null));
 
         // Act
-        var result = Sut.Write(apiClient, outputTypes, _converter, true);
+        var result = Sut.Write(apiClient, outputTypes, _converter, true, _templateFn);
 
         // Assert
         var file = File.ReadAllText(result).Trim();

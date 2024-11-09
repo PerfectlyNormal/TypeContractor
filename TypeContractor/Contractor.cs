@@ -1,3 +1,4 @@
+using HandlebarsDotNet;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using TypeContractor.Logger;
@@ -115,12 +116,16 @@ public class Contractor
 
         if (Configuration.GenerateApiClients)
         {
+            var embed = typeof(ApiClientWriter).Assembly.GetManifestResourceStream("TypeContractor.Templates.aurelia.hbs");
+            using var sr = new StreamReader(embed!);
+            var template = sr.ReadToEnd();
+            var templateFn = Handlebars.Compile(template);
             var apiWriter = new ApiClientWriter(_configuration.OutputPath, _configuration.RelativeRoot);
             foreach (var client in Configuration.ApiClients)
             {
                 try
                 {
-                    var filePath = apiWriter.Write(client, allTypes, converter, Configuration.BuildZodSchemas);
+                    var filePath = apiWriter.Write(client, allTypes, converter, Configuration.BuildZodSchemas, templateFn);
                     generatedFiles.Add(filePath);
                 }
                 catch (TypeScriptReferenceException ex)

@@ -18,7 +18,7 @@ public class ApiClientWriter(string outputPath, string? relativeRoot)
         { EndpointMethod.DELETE, "delete" },
     };
 
-    public string Write(ApiClient apiClient, IEnumerable<OutputType> allTypes, TypeScriptConverter converter, bool buildZodSchema)
+    public string Write(ApiClient apiClient, IEnumerable<OutputType> allTypes, TypeScriptConverter converter, bool buildZodSchema, HandlebarsTemplate<object, ApiClientTemplateDto> template)
     {
         var _builder = new StringBuilder();
         ArgumentNullException.ThrowIfNull(apiClient);
@@ -27,10 +27,6 @@ public class ApiClientWriter(string outputPath, string? relativeRoot)
 
         var directory = Path.Combine(outputPath, "clients");
         var filePath = Path.Combine(directory, $"{apiClient.Name}.ts");
-
-        var embed = typeof(ApiClientWriter).Assembly.GetManifestResourceStream("TypeContractor.Templates.aurelia.hbs");
-        using var sr = new StreamReader(embed!);
-        var template = Handlebars.Compile(sr.ReadToEnd());
 
         // Handle endpoints
         var endpoints = new List<EndpointTemplateDto>(apiClient.Endpoints.Count());
