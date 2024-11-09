@@ -15,6 +15,7 @@ var dotnetVersionOptions = new Option<int>("--dotnet-version", () => 8, "Major v
 var logLevelOptions = new Option<LogLevel>("--log-level", () => LogLevel.Info);
 var buildZodSchemasOptions = new Option<bool>("--build-zod-schemas", () => false, "Enable experimental support for Zod schemas alongside generated types.");
 var generateApiClientsOptions = new Option<bool>("--generate-api-clients", () => false, "Enable experimental support for auto-generating API clients for each endpoint.");
+var apiClientsTemplateOptions = new Option<string>("--api-client-template", () => "aurelia", "Template to use for API clients. Either 'aurelia' (built-in) or a path to a Handlebars file, including extension");
 assemblyOption.IsRequired = true;
 outputOption.IsRequired = true;
 
@@ -30,6 +31,27 @@ rootCommand.AddOption(dotnetVersionOptions);
 rootCommand.AddOption(logLevelOptions);
 rootCommand.AddOption(buildZodSchemasOptions);
 rootCommand.AddOption(generateApiClientsOptions);
+rootCommand.AddOption(apiClientsTemplateOptions);
+
+apiClientsTemplateOptions.AddValidator(result =>
+{
+    var value = result.GetValueForOption(apiClientsTemplateOptions)!;
+    if (value.Equals("aurelia", StringComparison.CurrentCultureIgnoreCase))
+        return;
+
+    var generateClients = result.GetValueForOption(generateApiClientsOptions);
+    if (!generateClients)
+    {
+        result.ErrorMessage = $"Must generate API clients for --{apiClientsTemplateOptions.Name} to have any effect.";
+        return;
+    }
+
+    if (!File.Exists(value))
+    {
+        result.ErrorMessage = $"The template specified does not exist or is not readable. Searched for {Path.GetFullPath(Path.Join(Directory.GetCurrentDirectory(), value))}.";
+        return;
+    }
+});
 
 rootCommand.SetHandler(async (context) =>
 {
@@ -45,6 +67,7 @@ rootCommand.SetHandler(async (context) =>
     var logLevelValue = context.ParseResult.GetValueForOption(logLevelOptions);
     var buildZodSchemasValue = context.ParseResult.GetValueForOption(buildZodSchemasOptions);
     var generateApiClientsValue = context.ParseResult.GetValueForOption(generateApiClientsOptions);
+    var apiClientsTemplateValue = context.ParseResult.GetValueForOption(apiClientsTemplateOptions)!;
 
     Log.Instance = new ConsoleLogger(logLevelValue);
     var generator = new Generator(assemblyOptionValue,
@@ -57,7 +80,8 @@ rootCommand.SetHandler(async (context) =>
                                   packsPathValue,
                                   dotnetVersionValue,
                                   buildZodSchemasValue,
-                                  generateApiClientsValue);
+                                  generateApiClientsValue,
+                                  apiClientsTemplateValue);
 
     context.ExitCode = await generator.Execute();
 });

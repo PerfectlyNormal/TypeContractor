@@ -19,6 +19,7 @@ internal class Generator
     private readonly int _dotnetVersion;
     private readonly bool _buildZodSchemas;
     private readonly bool _generateApiClients;
+    private readonly string _apiClientTemplate;
 
     public Generator(string assemblyPath,
                      string output,
@@ -30,7 +31,8 @@ internal class Generator
                      string packsPath,
                      int dotnetVersion,
                      bool buildZodSchemas,
-                     bool generateApiClients)
+                     bool generateApiClients,
+                     string apiClientTemplate)
     {
         _assemblyPath = assemblyPath;
         _output = output;
@@ -43,6 +45,7 @@ internal class Generator
         _dotnetVersion = dotnetVersion;
         _buildZodSchemas = buildZodSchemas;
         _generateApiClients = generateApiClients;
+        _apiClientTemplate = apiClientTemplate;
     }
 
     public Task<int> Execute()
@@ -150,7 +153,7 @@ internal class Generator
                             .AddDefaultTypeMaps()
                             .AddAssemblies([.. typesToLoad.Keys])
                             .AddTypes(typesToLoad.Values.SelectMany(list => list.Select(t => t.FullName!)).ToArray())
-                            .AddApiClients(clients)
+                            .AddApiClients(clients, _apiClientTemplate)
                             .SetOutputDirectory(_output!);
 
         if (!string.IsNullOrWhiteSpace(_relativeRoot))

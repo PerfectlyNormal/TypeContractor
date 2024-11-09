@@ -116,9 +116,18 @@ public class Contractor
 
         if (Configuration.GenerateApiClients)
         {
-            var embed = typeof(ApiClientWriter).Assembly.GetManifestResourceStream("TypeContractor.Templates.aurelia.hbs");
-            using var sr = new StreamReader(embed!);
-            var template = sr.ReadToEnd();
+            string template;
+            if (Configuration.ApiClientTemplate == "aurelia")
+            {
+                var embed = typeof(ApiClientWriter).Assembly.GetManifestResourceStream("TypeContractor.Templates.aurelia.hbs");
+                using var sr = new StreamReader(embed!);
+                template = sr.ReadToEnd();
+            }
+            else
+            {
+                template = File.ReadAllText(Configuration.ApiClientTemplate);
+            }
+
             var templateFn = Handlebars.Compile(template);
             var apiWriter = new ApiClientWriter(_configuration.OutputPath, _configuration.RelativeRoot);
             foreach (var client in Configuration.ApiClients)

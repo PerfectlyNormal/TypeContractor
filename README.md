@@ -215,6 +215,12 @@ be automatically validated against the schema. If so, it expects
 the `Response` prototype to be extended with a `parseJson` method.
 An example implementation can be found in `tools/response.ts`.
 
+To provide a custom template instead of using the built-in Aurelia one,
+provide `--api-client-template` with the path to a Handlebars template
+that does what you want. The available data model can be found in
+`TypeContractor/Templates/ApiClientTemplateDto.cs` and an example
+template is `TypeContractor/Templates/aurelia.hbs`.
+
 ## Future improvements
 
 * Kebab-case output files and directories

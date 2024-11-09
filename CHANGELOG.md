@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Generate API clients using Handlebars templates (#75)
+- Generate API clients using Handlebars templates, with an option to provide custom templates (#75)
 
 ## [0.12.7] - 2024-10-10
 

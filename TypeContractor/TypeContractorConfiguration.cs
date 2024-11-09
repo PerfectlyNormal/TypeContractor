@@ -18,6 +18,7 @@ public class TypeContractorConfiguration
     private string? _outputPath;
     private bool _buildZodSchemas;
     private List<ApiClient> _apiClients = [];
+    private string? _apiClientTemplate;
 
     public IReadOnlyDictionary<string, string> TypeMaps => _map;
     public IReadOnlyList<string> Suffixes => _suffixes.AsReadOnly();
@@ -29,6 +30,7 @@ public class TypeContractorConfiguration
     public bool BuildZodSchemas => _buildZodSchemas;
     public bool GenerateApiClients => _apiClients.Count != 0;
     public IReadOnlyList<ApiClient> ApiClients => _apiClients.AsReadOnly();
+    public string ApiClientTemplate => _apiClientTemplate ?? "aurelia";
 
     /// <summary>
     /// Set up a default configuration using <see cref="AddDefaultSuffixes"/> and <see cref="AddDefaultTypeMaps"/>
@@ -283,10 +285,12 @@ public class TypeContractorConfiguration
     /// response will be validated against the relevant Zod schema, if
     /// any.</para>
     /// </summary>
+    /// <param name="apiClientTemplate"></param>
     /// <returns>The configuration object for continued chaining</returns>
-    public TypeContractorConfiguration AddApiClients(List<ApiClient> clients)
+    public TypeContractorConfiguration AddApiClients(List<ApiClient> clients, string apiClientTemplate)
     {
         _apiClients = clients;
+        _apiClientTemplate = apiClientTemplate;
 
         return this;
     }
