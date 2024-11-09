@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Added
+
+- Generate API clients using Handlebars templates (#75)
+
 ## [0.12.7] - 2024-10-10
 
 ### Fixed

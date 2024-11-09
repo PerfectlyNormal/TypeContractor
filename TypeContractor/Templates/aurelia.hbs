@@ -1,0 +1,73 @@
+import { autoinject } from 'aurelia-framework';
+import { HttpClient{{#if HasJsonParameter}}, json{{/if}} } from 'aurelia-fetch-client';
+{{#each Imports}}
+{{this}}
+{{/each}}
+
+{{#if IsObsolete}}
+/**
+ * @deprecated {{ObsoleteReason}}
+ */
+{{/if}}
+@autoinject()
+export class {{Name}} {
+  constructor(private http: HttpClient) {}
+  {{#each Endpoints}}
+
+  {{#if IsObsolete}}
+  /**
+   * @deprecated {{ObsoleteReason}}
+   */
+  {{/if}}
+  public async {{Name}}({{#each Parameters}}{{this}}, {{/each}}cancellationToken: AbortSignal = null): Promise<{{ReturnType}}> {
+    {{#if DynamicUrl}}
+    const url = new URL(`{{Url}}`, window.location.origin);
+    {{else}}
+    const url = new URL('{{Url}}', window.location.origin);
+    {{/if}}
+    {{#each QueryParameters}}
+    {{#if IsBuiltin}}
+    {{#if IsNullable}}
+    if (!!{{Name}})
+    {{#if IsArray}}
+    {{Name}}.forEach((val, i) => url.searchParams.append(`{{Name}}[${i}]`, val.toString()));
+    {{else}}
+    url.searchParams.append('{{Name}}', {{Name}}.toString());
+    {{/if}}
+    {{else}}
+    {{#if IsArray}}
+    {{Name}}.forEach((val, i) => url.searchParams.append(`{{Name}}[${i}]`, val.toString()));
+    {{else}}
+    url.searchParams.append('{{Name}}', {{Name}}.toString());
+    {{/if}}
+    {{/if}}
+    {{else}}
+    {{#if IsNullable}}
+      if (!!{{DestinationName}})
+        url.searchParams.append('{{DestinationName}}', {{Name}}.{{DestinationName}}.toString());
+    {{else}}
+    url.searchParams.append('{{DestinationName}}', {{Name}}.{{DestinationName}}.toString());
+    {{/if}}
+    {{/if}}
+    {{/each}}
+    const response = await this.http.{{HttpMethod}}(`${url.pathname}${url.search}`.slice(1), {{#if RequiresBody}}{{#if BodyParameter}}json({{BodyParameter}}){{else}}null{{/if}}, {{/if}}{ signal: cancellationToken });
+    {{#if ../BuildZodSchema}}
+    {{#if UnwrappedReturnType}}
+    return await response.parseJson<{{UnwrappedReturnType}}{{#if EnumerableReturnType}}[]{{/if}}>({{UnwrappedReturnType}}Schema{{#if EnumerableReturnType}}.array(){{/if}});
+    {{else}}
+    {{#if MappedReturnType}}
+    return await response.parseJson(z.{{MappedReturnType}}(){{#if EnumerableMappedReturnType}}.array(){{/if}});
+    {{else}}
+    return response;
+    {{/if}}
+    {{/if}}
+    {{else}}
+    {{#if ReturnUnparsedResponse}}
+    return response;
+    {{else}}
+    return await response.json();
+    {{/if}}
+    {{/if}}
+  }
+  {{/each}}
+}

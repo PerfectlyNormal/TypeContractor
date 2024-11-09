@@ -8,6 +8,13 @@
 		<PackageId>TypeContractor.Lib</PackageId>
 	</PropertyGroup>
 	<ItemGroup>
+	  <None Remove="Templates\aurelia.hbs" />
+	</ItemGroup>
+	<ItemGroup>
+	  <EmbeddedResource Include="Templates\aurelia.hbs" />
+	</ItemGroup>
+	<ItemGroup>
+	  <PackageReference Include="Handlebars.Net" Version="2.1.6" />
 	  <PackageReference Include="System.Reflection.MetadataLoadContext" Version="8.0.0" />
 	</ItemGroup>
 </Project>

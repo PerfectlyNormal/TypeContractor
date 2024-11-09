@@ -1,15 +1,14 @@
-using System.Reflection.Metadata;
+using HandlebarsDotNet;
 using System.Text;
 using TypeContractor.Helpers;
 using TypeContractor.Logger;
 using TypeContractor.Output;
+using TypeContractor.Templates;
 
 namespace TypeContractor.TypeScript;
 
-#pragma warning disable CA1305 // Specify IFormatProvider
 public class ApiClientWriter(string outputPath, string? relativeRoot)
 {
-    private readonly StringBuilder _builder = new();
     private static readonly Dictionary<EndpointMethod, string> _httpMethods = new()
     {
         { EndpointMethod.GET, "get" },
@@ -21,72 +20,51 @@ public class ApiClientWriter(string outputPath, string? relativeRoot)
 
     public string Write(ApiClient apiClient, IEnumerable<OutputType> allTypes, TypeScriptConverter converter, bool buildZodSchema)
     {
+        var _builder = new StringBuilder();
         ArgumentNullException.ThrowIfNull(apiClient);
 
-        Logger.Log.Instance.LogDebug($"Processing controller {apiClient.Name}");
-        _builder.Clear();
+        Log.Instance.LogDebug($"Processing controller {apiClient.Name}");
 
         var directory = Path.Combine(outputPath, "clients");
         var filePath = Path.Combine(directory, $"{apiClient.Name}.ts");
 
-        // Write header
-        WriteHeader(apiClient);
-        WriteImports(apiClient, allTypes, converter, buildZodSchema);
-
-        // Build class
-        _builder.AppendLine("");
-        _builder.AppendDeprecationComment(apiClient.Obsolete, 0);
-        _builder.AppendLine("@autoinject()");
-        _builder.AppendFormat("export class {0} {{\r\n", apiClient.Name);
-        _builder.AppendLine("  constructor(private http: HttpClient) {}");
+        var embed = typeof(ApiClientWriter).Assembly.GetManifestResourceStream("TypeContractor.Templates.aurelia.hbs");
+        using var sr = new StreamReader(embed!);
+        var template = Handlebars.Compile(sr.ReadToEnd());
 
         // Handle endpoints
+        var endpoints = new List<EndpointTemplateDto>(apiClient.Endpoints.Count());
         foreach (var endpoint in apiClient.Endpoints)
         {
-            Logger.Log.Instance.LogDebug($"  Processing endpoint {endpoint.Name}");
+            Log.Instance.LogDebug($"  Processing endpoint {endpoint.Name}");
             var url = !string.IsNullOrWhiteSpace(apiClient.Prefix) && !endpoint.Route.StartsWith('/') && !endpoint.Route.StartsWith("~/", StringComparison.Ordinal)
                 ? $"{apiClient.Prefix}/{endpoint.Route}"
                 : endpoint.Route.Replace("~/", string.Empty);
             if (!_httpMethods.TryGetValue(endpoint.Method, out var method))
                 throw new NotImplementedException($"No mapping exists for {endpoint.Method}");
 
-            _builder.AppendLine("");
-            _builder.AppendDeprecationComment(endpoint.Obsolete);
-
             var parameters = endpoint.Parameters.Select(x => MapParameter(x, converter)).ToList();
-            var parameterMap = string.Join(", ", parameters.Select(x => $"{x.ParameterName}{(x.Type?.IsNullable ?? false ? "?" : "")}: {x.Type?.FullTypeName ?? "any"}").ToList());
-            var returnType = endpoint.ReturnType is null
-                ? null
-                : converter.GetDestinationType(endpoint.ReturnType, endpoint.ReturnType.CustomAttributes, false, TypeChecks.IsNullable(endpoint.ReturnType));
-
-            _builder.AppendFormat("  public async {0}({1}cancellationToken: AbortSignal = null): Promise<{2}> {{\r\n",
-                                  endpoint.Name,
-                                  parameterMap.Length > 0 ? $"{parameterMap}, " : "",
-                                  returnType?.FullTypeName ?? "Response");
+            var parameterMap = parameters.Select(x => $"{x.ParameterName}{(x.Type?.IsNullable ?? false ? "?" : "")}: {x.Type?.FullTypeName ?? "any"}").ToList();
+            var returnType = (endpoint.ReturnType is null
+                    ? null
+                    : converter.GetDestinationType(endpoint.ReturnType, endpoint.ReturnType.CustomAttributes, false, TypeChecks.IsNullable(endpoint.ReturnType))?.FullTypeName) ?? "Response";
 
             var routeParams = endpoint.Parameters.Where(x => x.FromRoute).ToList();
-            if (routeParams.Count == 0)
-                _builder.AppendFormat("    const url = new URL('{0}', window.location.origin);\r\n", url);
-            else
+            var dynamicUrl = routeParams.Count > 0;
+            if (dynamicUrl)
             {
                 foreach (var param in routeParams)
                     url = url.Replace($"{{{param.Name}}}", $"${{{param.Name}}}");
-                _builder.AppendFormat("    const url = new URL(`{0}`, window.location.origin);\r\n", url);
             }
 
-            var queryParams = endpoint.Parameters.Where(x => x.FromQuery);
+            var queryParams = endpoint.Parameters.Where(x => x.FromQuery).ToList();
+            var queryParamsDto = new List<QueryParameterTemplateDto>(queryParams.Count);
             foreach (var queryParam in queryParams)
             {
                 var destinationType = converter.GetDestinationType(queryParam.ParameterType, queryParam.ParameterType.CustomAttributes, false, TypeChecks.IsNullable(queryParam.ParameterType));
                 if (destinationType.IsBuiltin)
                 {
-                    if (destinationType is not null && destinationType.IsNullable)
-                        _builder.AppendFormat("    if (!!{0})\r\n  ", queryParam.Name);
-
-                    if (destinationType is not null && destinationType.IsArray)
-                        _builder.AppendFormat("    {0}.forEach((val, i) => url.searchParams.append(`{0}[${{i}}]`, val.toString()));\r\n", queryParam.Name);
-                    else
-                        _builder.AppendFormat("    url.searchParams.append('{0}', {0}.toString());\r\n", queryParam.Name);
+                    queryParamsDto.Add(new QueryParameterTemplateDto(queryParam.Name, destinationType.IsBuiltin, destinationType.IsNullable, destinationType.IsArray, null));
                 }
                 else
                 {
@@ -99,81 +77,66 @@ public class ApiClientWriter(string outputPath, string? relativeRoot)
 
                     foreach (var property in outputType.Properties ?? [])
                     {
-                        if (property.IsNullable)
-                            _builder.AppendFormat("    if (!!{0})\r\n  ", property.DestinationName);
-                        _builder.AppendFormat("    url.searchParams.append('{0}', {1}.toString());\r\n",
-                                              property.DestinationName,
-                                              $"{queryParam.Name}.{property.DestinationName}");
+                        queryParamsDto.Add(new QueryParameterTemplateDto(queryParam.Name, false, property.IsNullable, false, property.DestinationName));
                     }
                 }
             }
 
             var requiresBody = endpoint.Method == EndpointMethod.POST || endpoint.Method == EndpointMethod.PUT || endpoint.Method == EndpointMethod.PATCH;
             var body = endpoint.Parameters.FirstOrDefault(p => p.FromBody || (!p.FromRoute && !p.FromQuery));
-            var bodyParameter = body is not null ? $"json({body.Name})" : "null";
 
-            _builder.AppendFormat("    const response = await this.http.{0}(`${{url.pathname}}${{url.search}}`.slice(1), {1}{{ signal: cancellationToken }});\r\n",
-                                  method,
-                                  requiresBody ? $"{bodyParameter}, " : "");
+            var returnUnparsedResponse = endpoint.UnwrappedReturnType is null && endpoint.ReturnType is null;
+            var targetType = buildZodSchema && endpoint.ReturnType is not null
+                ? converter.GetDestinationType(endpoint.ReturnType, endpoint.ReturnType.CustomAttributes, false, TypeChecks.IsNullable(endpoint.ReturnType))
+                : null;
 
-            if (endpoint.UnwrappedReturnType is null && endpoint.ReturnType is null)
-                _builder.AppendLine("    return response;");
-            else if (buildZodSchema)
-            {
-                if (endpoint.UnwrappedReturnType is not null)
-                {
-                    _builder.AppendFormat("    return await response.parseJson<{0}{1}>({0}Schema{2});\r\n",
-                                          endpoint.UnwrappedReturnType.Name,
-                                          endpoint.EnumerableReturnType ? "[]" : "",
-                                          endpoint.EnumerableReturnType ? ".array()" : "");
-                }
-                else if (endpoint.ReturnType is not null)
-                {
-                    var targetType = converter.GetDestinationType(endpoint.ReturnType, endpoint.ReturnType.CustomAttributes, false, TypeChecks.IsNullable(endpoint.ReturnType));
-                    if (targetType is null)
-                        _builder.AppendLine("    return response;");
-                    else
-                    {
-                        _builder.AppendFormat("    return await response.parseJson(z.{0}(){1});\r\n", targetType.TypeName, targetType.IsArray ? ".array()" : "");
-                    }
-                }
-            }
-            else
-                _builder.AppendLine("    return await response.json();");
-
-            _builder.AppendLine("  }");
+            endpoints.Add(new EndpointTemplateDto(
+                endpoint.Name,
+                endpoint.Obsolete is not null,
+                endpoint.Obsolete?.Reason ?? "",
+                method,
+                returnType,
+                endpoint.UnwrappedReturnType?.Name,
+                endpoint.EnumerableReturnType,
+                targetType?.TypeName,
+                targetType?.IsArray,
+                url,
+                dynamicUrl,
+                parameterMap,
+                queryParamsDto,
+                requiresBody,
+                body?.Name,
+                returnUnparsedResponse
+                ));
         }
 
-        _builder.AppendLine("}");
+        var hasJsonParameter = apiClient.Endpoints.Any(x => x.Parameters.Any(p => p.FromBody || (!p.FromRoute && !p.FromQuery)));
+        var data = new ApiClientTemplateDto(
+            apiClient.Name,
+            hasJsonParameter,
+            BuildImports(apiClient.Endpoints, allTypes, converter, buildZodSchema),
+            apiClient.Obsolete is not null,
+            apiClient.Obsolete?.Reason ?? "",
+            endpoints,
+            buildZodSchema
+            );
+
+        var result = template(data);
 
         // Create directory if needed
         if (!Directory.Exists(directory))
             Directory.CreateDirectory(directory);
 
         // Write file
-        File.WriteAllText(filePath, _builder.ToString());
+        File.WriteAllText(filePath, result);
 
         // Return the path we wrote to
         return filePath;
     }
 
-    private void WriteHeader(ApiClient apiClient)
-    {
-        var needJson = apiClient.Endpoints.Any(x => x.Parameters.Any(p => p.FromBody || (!p.FromRoute && !p.FromQuery)));
-        _builder.AppendLine("import { autoinject } from 'aurelia-framework';");
-        _builder.AppendFormat("import {{ HttpClient{0} }} from 'aurelia-fetch-client';\r\n", needJson ? ", json" : "");
-    }
-
-    private void WriteImports(ApiClient apiClient, IEnumerable<OutputType> allTypes, TypeScriptConverter converter, bool buildZodSchema)
-    {
-        var imports = BuildImports(apiClient.Endpoints, allTypes, converter, buildZodSchema);
-        foreach (var import in imports)
-            _builder.AppendLine(import);
-    }
-
     private static (string ParameterName, DestinationType? Type) MapParameter(EndpointParameter parameter, TypeScriptConverter converter)
     {
-        Logger.Log.Instance.LogDebug($"Mapping parameter {parameter.Name} ({parameter.ParameterType.Name})");
+        Log.Instance.LogDebug($"Mapping parameter {parameter.Name} ({parameter.ParameterType.Name})");
 
         var targetType = converter.GetDestinationType(parameter.ParameterType, parameter.ParameterType.CustomAttributes, false, TypeChecks.IsNullable(parameter.ParameterType));
         if (targetType is not null)
@@ -220,7 +183,7 @@ public class ApiClientWriter(string outputPath, string? relativeRoot)
 
                 var outputType = allTypes.First(x => x.FullName == (parameter.Type.InnerType?.FullName ?? parameter.Type.FullName));
                 var importPath = $"{relativeRoot}/{outputType.ContractedType.Folder.Path.Replace('\\', '/')}/{outputType.Name}";
-                var parameterImport = $"import {{ {parameter.Type.ImportType} }} from '{importPath}'";
+                var parameterImport = $"import {{ {parameter.Type.ImportType} }} from '{importPath}';";
                 imports.Add(parameterImport);
             }
         }
@@ -231,4 +194,3 @@ public class ApiClientWriter(string outputPath, string? relativeRoot)
         return imports.Distinct().ToList();
     }
 }
-#pragma warning restore CA1305 // Specify IFormatProvider
