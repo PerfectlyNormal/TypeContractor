@@ -1,4 +1,6 @@
 using System.CommandLine;
+using System.CommandLine.Builder;
+using System.CommandLine.Parsing;
 using TypeContractor.Logger;
 using TypeContractor.Tool;
 
@@ -82,8 +84,11 @@ rootCommand.SetHandler(async (context) =>
                                   buildZodSchemasValue,
                                   generateApiClientsValue,
                                   apiClientsTemplateValue);
-
+    
     context.ExitCode = await generator.Execute();
 });
 
-return await rootCommand.InvokeAsync(args);
+var configuration = new CommandLineConfiguration(rootCommand, enableTokenReplacement: false);
+var parser = new Parser(configuration);
+
+return await parser.InvokeAsync(args);

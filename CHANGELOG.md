@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add basic template for React with Axios
 
+### Fixed
+
+- Ignore response files when parsing command line, so "@/Api" can be accepted as a valid relative root
+
 ## [0.13.0] - 2024-11-09
 
 ### Added
