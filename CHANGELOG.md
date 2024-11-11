@@ -15,6 +15,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Ignore response files when parsing command line, so "@/Api" can be accepted as a valid relative root
 
+### Changed
+
+- Update System.Reflection.MetadataLoadContext to v8.0.1
+- Update xunit to v2.9.2
+- Update xunit.analyzers to v1.17.0
+- Update FluentAssertions to v6.12.2
+
 ## [0.13.0] - 2024-11-09
 
 ### Added
