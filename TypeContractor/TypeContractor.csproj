@@ -17,6 +17,6 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <PackageReference Include="Handlebars.Net" Version="2.1.6" />
-	  <PackageReference Include="System.Reflection.MetadataLoadContext" Version="8.0.0" />
+	  <PackageReference Include="System.Reflection.MetadataLoadContext" Version="8.0.1" />
 	</ItemGroup>
 </Project>
