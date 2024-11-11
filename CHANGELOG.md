@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Added
+
+- Add basic template for React with Axios
+
 ## [0.13.0] - 2024-11-09
 
 ### Added

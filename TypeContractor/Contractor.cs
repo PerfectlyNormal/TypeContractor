@@ -117,9 +117,9 @@ public class Contractor
         if (Configuration.GenerateApiClients)
         {
             string template;
-            if (Configuration.ApiClientTemplate == "aurelia")
+            if (Configuration.ApiClientTemplate == "aurelia" || Configuration.ApiClientTemplate == "react-axios")
             {
-                var embed = typeof(ApiClientWriter).Assembly.GetManifestResourceStream("TypeContractor.Templates.aurelia.hbs");
+                var embed = typeof(ApiClientWriter).Assembly.GetManifestResourceStream($"TypeContractor.Templates.{Configuration.ApiClientTemplate}.hbs");
                 using var sr = new StreamReader(embed!);
                 template = sr.ReadToEnd();
             }

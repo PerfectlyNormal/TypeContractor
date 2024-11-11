@@ -15,7 +15,7 @@ var dotnetVersionOptions = new Option<int>("--dotnet-version", () => 8, "Major v
 var logLevelOptions = new Option<LogLevel>("--log-level", () => LogLevel.Info);
 var buildZodSchemasOptions = new Option<bool>("--build-zod-schemas", () => false, "Enable experimental support for Zod schemas alongside generated types.");
 var generateApiClientsOptions = new Option<bool>("--generate-api-clients", () => false, "Enable experimental support for auto-generating API clients for each endpoint.");
-var apiClientsTemplateOptions = new Option<string>("--api-client-template", () => "aurelia", "Template to use for API clients. Either 'aurelia' (built-in) or a path to a Handlebars file, including extension");
+var apiClientsTemplateOptions = new Option<string>("--api-client-template", () => "aurelia", "Template to use for API clients. Either 'aurelia', 'react-axios' (built-in) or a path to a Handlebars file, including extension");
 assemblyOption.IsRequired = true;
 outputOption.IsRequired = true;
 
@@ -36,7 +36,7 @@ rootCommand.AddOption(apiClientsTemplateOptions);
 apiClientsTemplateOptions.AddValidator(result =>
 {
     var value = result.GetValueForOption(apiClientsTemplateOptions)!;
-    if (value.Equals("aurelia", StringComparison.CurrentCultureIgnoreCase))
+    if (value.Equals("aurelia", StringComparison.CurrentCultureIgnoreCase) || value.Equals("react-axios", StringComparison.CurrentCultureIgnoreCase))
         return;
 
     var generateClients = result.GetValueForOption(generateApiClientsOptions);

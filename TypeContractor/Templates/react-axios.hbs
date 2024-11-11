@@ -1,0 +1,52 @@
+import axios from 'axios';
+{{#each Imports}}
+{{this}}
+{{/each}}
+
+{{#if IsObsolete}}
+/**
+ * @deprecated {{ObsoleteReason}}
+ */
+{{/if}}
+export const {{Name}} = {
+{{#each Endpoints}}
+{{#if IsObsolete}}
+  /**
+   * @deprecated {{ObsoleteReason}}
+   */
+{{/if}}
+  {{Name}}: ({{#each Parameters}}{{this}}, {{/each}}cancellationToken: AbortSignal | undefined = undefined) => {
+{{#if DynamicUrl}}
+    const url = new URL(`{{Url}}`, window.location.origin);
+{{else}}
+    const url = new URL('{{Url}}', window.location.origin);
+{{/if}}
+{{#each QueryParameters}}
+{{#if IsBuiltin}}
+{{#if IsNullable}}
+    if (!!{{Name}})
+{{#if IsArray}}
+{{Name}}.forEach((val, i) => url.searchParams.append(`{{Name}}[${i}]`, val.toString()));
+{{else}}
+    url.searchParams.append('{{Name}}', {{Name}}.toString());
+{{/if}}
+{{else}}
+{{#if IsArray}}
+{{Name}}.forEach((val, i) => url.searchParams.append(`{{Name}}[${i}]`, val.toString()));
+{{else}}
+    url.searchParams.append('{{Name}}', {{Name}}.toString());
+{{/if}}
+{{/if}}
+{{else}}
+{{#if IsNullable}}
+      if (!!{{DestinationName}})
+        url.searchParams.append('{{DestinationName}}', {{Name}}.{{DestinationName}}.toString());
+{{else}}
+    url.searchParams.append('{{DestinationName}}', {{Name}}.{{DestinationName}}.toString());
+{{/if}}
+{{/if}}
+{{/each}}
+    return axios.{{HttpMethod}}(`${url.pathname}${url.search}`.slice(1), {{#if RequiresBody}}{{#if BodyParameter}}{{BodyParameter}}{{else}}null{{/if}}, {{/if}}{ signal: cancellationToken });
+  },
+{{/each}}
+};
