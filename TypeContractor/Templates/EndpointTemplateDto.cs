@@ -12,6 +12,7 @@ public record EndpointTemplateDto(
 	bool? EnumerableMappedReturnType,
 	string Url,
 	bool DynamicUrl,
+	IEnumerable<RouteParameterTemplateDto> RouteParameters,
 	IEnumerable<string> Parameters,
 	IEnumerable<QueryParameterTemplateDto> QueryParameters,
 	bool RequiresBody,

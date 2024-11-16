@@ -62,7 +62,8 @@ public static partial class ApiHelpers
 					FromQuery: ParameterIsFromQuery(p, httpMethod, route),
 					FromHeader: p.CustomAttributes.Any(x => x.AttributeType.FullName == "Microsoft.AspNetCore.Mvc.FromHeaderAttribute"),
 					FromServices: p.CustomAttributes.Any(x => x.AttributeType.FullName == "Microsoft.AspNetCore.Mvc.FromServicesAttribute"),
-					FromForm: p.CustomAttributes.Any(x => x.AttributeType.FullName == "Microsoft.AspNetCore.Mvc.FromFormAttribute")
+					FromForm: p.CustomAttributes.Any(x => x.AttributeType.FullName == "Microsoft.AspNetCore.Mvc.FromFormAttribute"),
+					IsOptional: ParameterIsOptional(p, route)
 				))
 				.Where(x => !x.FromHeader && !x.FromServices && !x.FromForm)
 				.Where(x => x.ParameterType.FullName != "System.Threading.CancellationToken")
@@ -120,7 +121,15 @@ public static partial class ApiHelpers
 		if (parameterInfo.CustomAttributes.Any(x => x.AttributeType.FullName == "Microsoft.AspNetCore.Mvc.FromRouteAttribute"))
 			return true;
 
-		return finalRoute.Contains($"{{{parameterInfo.Name}}}");
+		return finalRoute.Contains($"{{{parameterInfo.Name}}}") || finalRoute.Contains($"{{{parameterInfo.Name}?}}");
+	}
+
+	private static bool ParameterIsOptional(ParameterInfo parameterInfo, string finalRoute)
+	{
+		if (!ParameterIsFromRoute(parameterInfo, finalRoute))
+			return false;
+
+		return finalRoute.Contains($"{{{parameterInfo.Name}?}}");
 	}
 
 	private static bool ParameterIsFromQuery(ParameterInfo parameterInfo, EndpointMethod httpMethod, string finalRoute)

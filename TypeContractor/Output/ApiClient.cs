@@ -28,7 +28,8 @@ public record EndpointParameter(string Name,
 								bool FromQuery,
 								bool FromHeader,
 								bool FromServices,
-								bool FromForm);
+								bool FromForm,
+								bool IsOptional);
 
 public enum EndpointMethod
 {
