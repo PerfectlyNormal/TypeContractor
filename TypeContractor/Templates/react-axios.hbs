@@ -21,6 +21,14 @@ export const {{Name}} = {
 {{else}}
     const url = new URL('{{Url}}', window.location.origin);
 {{/if}}
+{{#each RouteParameters}}
+{{#if IsOptional}}
+if ({{Name}} != undefined)
+  url.pathname = url.pathname.replace('{ {{~Name}}?}', {{Name}});
+else
+  url.pathname = url.pathname.replace('/{ {{~Name}}?}', '');
+{{/if}}
+{{/each}}
 {{#each QueryParameters}}
 {{#if IsBuiltin}}
 {{#if IsNullable}}

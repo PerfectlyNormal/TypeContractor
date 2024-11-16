@@ -41,18 +41,22 @@ public class ApiClientWriter(string outputPath, string? relativeRoot)
 				throw new NotImplementedException($"No mapping exists for {endpoint.Method}");
 
 			var parameters = endpoint.Parameters.Select(x => MapParameter(x, converter)).ToList();
-			var parameterMap = parameters.Select(x => $"{x.ParameterName}{(x.Type?.IsNullable ?? false ? "?" : "")}: {x.Type?.FullTypeName ?? "any"}").ToList();
+			var parameterMap = parameters.Select(x => $"{x.ParameterName}{((x.Type?.IsNullable ?? false) && !x.IsOptional ? "?" : "")}: {x.Type?.FullTypeName ?? "any"}{(x.IsOptional ? " | undefined" : "")}").ToList();
 			var returnType = (endpoint.ReturnType is null
 					? null
 					: converter.GetDestinationType(endpoint.ReturnType, endpoint.ReturnType.CustomAttributes, false, TypeChecks.IsNullable(endpoint.ReturnType))?.FullTypeName) ?? "Response";
 
-			var routeParams = endpoint.Parameters.Where(x => x.FromRoute).ToList();
-			var dynamicUrl = routeParams.Count > 0;
+			var routeParams = endpoint.Parameters
+				.Where(x => x.FromRoute)
+				.Select(RouteParameterTemplateDto.Build)
+				.ToList();
+			var dynamicUrl = routeParams.Any(x => !x.IsOptional);
 			if (dynamicUrl)
 			{
-				foreach (var param in routeParams)
+				foreach (var param in routeParams.Where(x => !x.IsOptional))
 					url = url.Replace($"{{{param.Name}}}", $"${{{param.Name}}}");
 			}
+
 			if (url.EndsWith('/'))
 				url = url[..^1];
 
@@ -63,7 +67,7 @@ public class ApiClientWriter(string outputPath, string? relativeRoot)
 				var destinationType = converter.GetDestinationType(queryParam.ParameterType, queryParam.ParameterType.CustomAttributes, false, TypeChecks.IsNullable(queryParam.ParameterType));
 				if (destinationType.IsBuiltin)
 				{
-					queryParamsDto.Add(new QueryParameterTemplateDto(queryParam.Name, destinationType.IsBuiltin, destinationType.IsNullable, destinationType.IsArray, null));
+					queryParamsDto.Add(new QueryParameterTemplateDto(queryParam.Name, destinationType.IsBuiltin, destinationType.IsNullable, destinationType.IsArray, queryParam.IsOptional, null));
 				}
 				else
 				{
@@ -76,12 +80,12 @@ public class ApiClientWriter(string outputPath, string? relativeRoot)
 
 					foreach (var property in outputType.Properties ?? [])
 					{
-						queryParamsDto.Add(new QueryParameterTemplateDto(queryParam.Name, false, property.IsNullable, false, property.DestinationName));
+						queryParamsDto.Add(new QueryParameterTemplateDto(queryParam.Name, false, property.IsNullable, false, queryParam.IsOptional, property.DestinationName));
 					}
 				}
 			}
 
-			var requiresBody = endpoint.Method == EndpointMethod.POST || endpoint.Method == EndpointMethod.PUT || endpoint.Method == EndpointMethod.PATCH;
+			var requiresBody = endpoint.Method is EndpointMethod.POST or EndpointMethod.PUT or EndpointMethod.PATCH;
 			var body = endpoint.Parameters.FirstOrDefault(p => p.FromBody || (!p.FromRoute && !p.FromQuery));
 
 			var returnUnparsedResponse = endpoint.UnwrappedReturnType is null && endpoint.ReturnType is null;
@@ -101,6 +105,7 @@ public class ApiClientWriter(string outputPath, string? relativeRoot)
 				targetType?.IsArray,
 				url,
 				dynamicUrl,
+				routeParams,
 				parameterMap,
 				queryParamsDto,
 				requiresBody,
@@ -133,15 +138,12 @@ public class ApiClientWriter(string outputPath, string? relativeRoot)
 		return filePath;
 	}
 
-	private static (string ParameterName, DestinationType? Type) MapParameter(EndpointParameter parameter, TypeScriptConverter converter)
+	private static (string ParameterName, DestinationType? Type, bool IsOptional) MapParameter(EndpointParameter parameter, TypeScriptConverter converter)
 	{
 		Log.Instance.LogDebug($"Mapping parameter {parameter.Name} ({parameter.ParameterType.Name})");
 
 		var targetType = converter.GetDestinationType(parameter.ParameterType, parameter.ParameterType.CustomAttributes, false, TypeChecks.IsNullable(parameter.ParameterType));
-		if (targetType is not null)
-			return (parameter.Name, targetType);
-
-		return (parameter.Name, null);
+		return (parameter.Name, targetType, parameter.IsOptional);
 	}
 
 	private List<string> BuildImports(IEnumerable<ApiClientEndpoint> endpoints, IEnumerable<OutputType> allTypes, TypeScriptConverter converter, bool buildZodSchema)
@@ -156,7 +158,9 @@ public class ApiClientWriter(string outputPath, string? relativeRoot)
 				: converter.GetDestinationType(endpoint.ReturnType, endpoint.ReturnType.CustomAttributes, false, TypeChecks.IsNullable(endpoint.ReturnType));
 
 			if (returnType is not null && returnType.IsBuiltin)
+			{
 				needZodLibrary = true;
+			}
 			else if (returnType is not null && !returnType.IsBuiltin)
 			{
 				var importTypes = new List<string> { returnType.ImportType };

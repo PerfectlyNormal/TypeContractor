@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Added
+
+- Handle optional segments in routes for API clients (#77)
+
 ### Fixed
 
 - Don't generate types for parameters with an `[FromServices]` annotation (#95)

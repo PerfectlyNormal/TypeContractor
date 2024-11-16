@@ -125,7 +125,7 @@ public sealed class ApiClientWriterTests : IDisposable
 	{
 		// Arrange
 		var apiClient = new ApiClient("TestClient", "TestController", "test", null);
-		apiClient.AddEndpoint(new ApiClientEndpoint("getLatestId", "latest", EndpointMethod.POST, null, typeof(Guid), false, [new EndpointParameter("year", typeof(int), null, false, true, false, false, false, false, false)], null));
+		apiClient.AddEndpoint(new ApiClientEndpoint("getLatestId", "latest", EndpointMethod.POST, null, typeof(Guid), false, [new EndpointParameter("year", typeof(int), null, false, true, false, false, false, false, false, false)], null));
 
 		// Act
 		var result = Sut.Write(apiClient, [], _converter, true, _templateFn);
@@ -147,7 +147,7 @@ public sealed class ApiClientWriterTests : IDisposable
 	{
 		// Arrange
 		var apiClient = new ApiClient("TestClient", "TestController", "test", null);
-		apiClient.AddEndpoint(new ApiClientEndpoint("getLatestId", "latest", EndpointMethod.GET, null, typeof(Guid), false, [new EndpointParameter("year", typeof(int), null, false, false, false, true, false, false, false)], null));
+		apiClient.AddEndpoint(new ApiClientEndpoint("getLatestId", "latest", EndpointMethod.GET, null, typeof(Guid), false, [new EndpointParameter("year", typeof(int), null, false, false, false, true, false, false, false, false)], null));
 
 		// Act
 		var result = Sut.Write(apiClient, [], _converter, true, _templateFn);
@@ -168,7 +168,7 @@ public sealed class ApiClientWriterTests : IDisposable
 	{
 		// Arrange
 		var apiClient = new ApiClient("TestClient", "TestController", "test", null);
-		apiClient.AddEndpoint(new ApiClientEndpoint("getLatestId", "latest/{year}", EndpointMethod.GET, null, typeof(Guid), false, [new EndpointParameter("year", typeof(int), null, false, false, true, false, false, false, false)], null));
+		apiClient.AddEndpoint(new ApiClientEndpoint("getLatestId", "latest/{year}", EndpointMethod.GET, null, typeof(Guid), false, [new EndpointParameter("year", typeof(int), null, false, false, true, false, false, false, false, false)], null));
 
 		// Act
 		var result = Sut.Write(apiClient, [], _converter, true, _templateFn);
@@ -194,7 +194,7 @@ public sealed class ApiClientWriterTests : IDisposable
 		};
 
 		var apiClient = new ApiClient("TestClient", "TestController", "test", null);
-		apiClient.AddEndpoint(new ApiClientEndpoint("getLatestId", "latest", EndpointMethod.GET, null, typeof(Guid), false, [new EndpointParameter("request", typeof(PaginatedRequest), null, false, false, false, true, false, false, false)], null));
+		apiClient.AddEndpoint(new ApiClientEndpoint("getLatestId", "latest", EndpointMethod.GET, null, typeof(Guid), false, [new EndpointParameter("request", typeof(PaginatedRequest), null, false, false, false, true, false, false, false, false)], null));
 
 		// Act
 		var result = Sut.Write(apiClient, outputTypes, _converter, true, _templateFn);
@@ -212,6 +212,31 @@ public sealed class ApiClientWriterTests : IDisposable
 			.And.Contain("url.searchParams.append('year', request.year.toString());")
 			.And.Contain("url.searchParams.append('page', request.page.toString());")
 			.And.Contain("url.searchParams.append('pageSize', request.pageSize.toString());");
+	}
+
+	[Fact]
+	public void Handles_Optional_Route_Parameter()
+	{
+		// Arrange
+		var apiClient = new ApiClient("TestClient", "TestController", "test", null);
+		apiClient.AddEndpoint(new ApiClientEndpoint("getLatestId", "latest/{year?}", EndpointMethod.GET, null, typeof(Guid), false, [new EndpointParameter("year", typeof(int), null, false, false, true, false, false, false, false, true)], null));
+
+		// Act
+		var result = Sut.Write(apiClient, [], _converter, true, _templateFn);
+
+		// Assert
+		var file = File.ReadAllText(result).Trim();
+		file.Should()
+			.NotBeEmpty()
+			.And.Contain("import { z } from 'zod';")
+			.And.Contain("export class TestClient {")
+			.And.Contain("public async getLatestId(year: number | undefined, cancellationToken: AbortSignal = null): Promise<string> {")
+			.And.Contain("const url = new URL('test/latest/{year?}', window.location.origin);")
+			.And.Contain("if (year != undefined)")
+			.And.Contain("url.pathname = url.pathname.replace('{year?}', year.toString());")
+			.And.Contain("else")
+			.And.Contain("url.pathname = url.pathname.replace('/{year?}', '');")
+			.And.NotContain("url.searchParams.append(");
 	}
 
 	private class PaginatedRequest
