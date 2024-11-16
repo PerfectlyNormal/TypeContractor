@@ -2,8 +2,8 @@
 
 namespace ExampleContracts.v1
 {
-    public class CustomClass
-    {
-        public DeeplyClass Deeply { get; set; }
-    }
+	public class CustomClass
+	{
+		public DeeplyClass Deeply { get; set; }
+	}
 }

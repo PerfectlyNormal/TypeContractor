@@ -9,133 +9,133 @@ namespace TypeContractor.Helpers;
 
 public static partial class ApiHelpers
 {
-    private static readonly Regex _routeParameterRegex = RouteParameterRegexImpl();
+	private static readonly Regex _routeParameterRegex = RouteParameterRegexImpl();
 
-    [GeneratedRegex("{([A-Za-z]+)(:[[A-Za-z]+)?}")]
-    private static partial Regex RouteParameterRegexImpl();
+	[GeneratedRegex("{([A-Za-z]+)(:[[A-Za-z]+)?}")]
+	private static partial Regex RouteParameterRegexImpl();
 
-    public static ApiClient BuildApiClient(Type controller, List<MethodInfo> endpoints)
-    {
-        // Find route prefix, if any
-        var prefixAttribute = controller.CustomAttributes.FirstOrDefault(x => x.AttributeType.FullName == "Microsoft.AspNetCore.Mvc.RouteAttribute");
-        var prefix = prefixAttribute?.ConstructorArguments.First().Value as string;
+	public static ApiClient BuildApiClient(Type controller, List<MethodInfo> endpoints)
+	{
+		// Find route prefix, if any
+		var prefixAttribute = controller.CustomAttributes.FirstOrDefault(x => x.AttributeType.FullName == "Microsoft.AspNetCore.Mvc.RouteAttribute");
+		var prefix = prefixAttribute?.ConstructorArguments.First().Value as string;
 
-        // Handle obsolete
-        var obsoleteAttribute = controller.CustomAttributes.FirstOrDefault(x => x.AttributeType.FullName == "System.ObsoleteAttribute");
-        var obsoleteInfo = obsoleteAttribute is not null ? new ObsoleteInfo(obsoleteAttribute.ConstructorArguments.FirstOrDefault().Value as string) : null;
+		// Handle obsolete
+		var obsoleteAttribute = controller.CustomAttributes.FirstOrDefault(x => x.AttributeType.FullName == "System.ObsoleteAttribute");
+		var obsoleteInfo = obsoleteAttribute is not null ? new ObsoleteInfo(obsoleteAttribute.ConstructorArguments.FirstOrDefault().Value as string) : null;
 
-        var clientName = controller.Name.Replace("Controller", "Client");
-        var client = new ApiClient(clientName, controller.FullName!, prefix, obsoleteInfo);
+		var clientName = controller.Name.Replace("Controller", "Client");
+		var client = new ApiClient(clientName, controller.FullName!, prefix, obsoleteInfo);
 
-        foreach (var endpoint in endpoints)
-            foreach (var apiEndpoint in BuildApiEndpoint(endpoint))
-                client.AddEndpoint(apiEndpoint);
+		foreach (var endpoint in endpoints)
+			foreach (var apiEndpoint in BuildApiEndpoint(endpoint))
+				client.AddEndpoint(apiEndpoint);
 
-        return client;
-    }
+		return client;
+	}
 
-    private static List<ApiClientEndpoint> BuildApiEndpoint(MethodInfo endpoint)
-    {
-        // Find HTTP method
-        var httpAttributes = endpoint
-            .CustomAttributes
-            .Where(IsHttpAttribute);
+	private static List<ApiClientEndpoint> BuildApiEndpoint(MethodInfo endpoint)
+	{
+		// Find HTTP method
+		var httpAttributes = endpoint
+			.CustomAttributes
+			.Where(IsHttpAttribute);
 
-        var endpoints = new List<ApiClientEndpoint>(httpAttributes.Count());
-        foreach (var method in httpAttributes)
-        {
-            var (route, httpMethod) = DetermineRoute(endpoint, method);
+		var endpoints = new List<ApiClientEndpoint>(httpAttributes.Count());
+		foreach (var method in httpAttributes)
+		{
+			var (route, httpMethod) = DetermineRoute(endpoint, method);
 
-            // Handle obsolete
-            var endpointObsoleteAttribute = endpoint.CustomAttributes.FirstOrDefault(x => x.AttributeType.FullName == "System.ObsoleteAttribute");
+			// Handle obsolete
+			var endpointObsoleteAttribute = endpoint.CustomAttributes.FirstOrDefault(x => x.AttributeType.FullName == "System.ObsoleteAttribute");
 
-            // Handle return type and input parameters
-            var returnType = UnwrappedReturnType(endpoint);
-            var parameters = endpoint.GetParameters()
-                .Select(p => new EndpointParameter(
-                    p.Name!,
-                    p.ParameterType,
-                    UnwrappedResult(p.ParameterType),
-                    ImplementsIEnumerable(p.ParameterType),
-                    FromBody: p.CustomAttributes.Any(x => x.AttributeType.FullName == "Microsoft.AspNetCore.Mvc.FromBodyAttribute"),
-                    FromRoute: ParameterIsFromRoute(p, route),
-                    FromQuery: ParameterIsFromQuery(p, httpMethod, route),
-                    FromHeader: p.CustomAttributes.Any(x => x.AttributeType.FullName == "Microsoft.AspNetCore.Mvc.FromHeaderAttribute"),
-                    FromServices: p.CustomAttributes.Any(x => x.AttributeType.FullName == "Microsoft.AspNetCore.Mvc.FromServicesAttribute"),
-                    FromForm: p.CustomAttributes.Any(x => x.AttributeType.FullName == "Microsoft.AspNetCore.Mvc.FromFormAttribute")
-                ))
-                .Where(x => !x.FromHeader && !x.FromServices && !x.FromForm)
-                .Where(x => x.ParameterType.FullName != "System.Threading.CancellationToken")
-                .ToList();
+			// Handle return type and input parameters
+			var returnType = UnwrappedReturnType(endpoint);
+			var parameters = endpoint.GetParameters()
+				.Select(p => new EndpointParameter(
+					p.Name!,
+					p.ParameterType,
+					UnwrappedResult(p.ParameterType),
+					ImplementsIEnumerable(p.ParameterType),
+					FromBody: p.CustomAttributes.Any(x => x.AttributeType.FullName == "Microsoft.AspNetCore.Mvc.FromBodyAttribute"),
+					FromRoute: ParameterIsFromRoute(p, route),
+					FromQuery: ParameterIsFromQuery(p, httpMethod, route),
+					FromHeader: p.CustomAttributes.Any(x => x.AttributeType.FullName == "Microsoft.AspNetCore.Mvc.FromHeaderAttribute"),
+					FromServices: p.CustomAttributes.Any(x => x.AttributeType.FullName == "Microsoft.AspNetCore.Mvc.FromServicesAttribute"),
+					FromForm: p.CustomAttributes.Any(x => x.AttributeType.FullName == "Microsoft.AspNetCore.Mvc.FromFormAttribute")
+				))
+				.Where(x => !x.FromHeader && !x.FromServices && !x.FromForm)
+				.Where(x => x.ParameterType.FullName != "System.Threading.CancellationToken")
+				.ToList();
 
-            Log.Instance.LogDebug($"Found endpoint {endpoint.Name} returning {returnType?.Name ?? "HTTP"} with {parameters.Count} parameters");
+			Log.Instance.LogDebug($"Found endpoint {endpoint.Name} returning {returnType?.Name ?? "HTTP"} with {parameters.Count} parameters");
 
-            var endpointName = endpoint.Name.ToTypeScriptName();
-            var apiEndpoint = new ApiClientEndpoint(endpointName,
-                                                    route,
-                                                    httpMethod,
-                                                    FullyUnwrappedReturnType(endpoint),
-                                                    returnType,
-                                                    returnType is not null && ImplementsIEnumerable(returnType),
-                                                    parameters,
-                                                    endpointObsoleteAttribute is not null ? new ObsoleteInfo(endpointObsoleteAttribute.ConstructorArguments.FirstOrDefault().Value as string) : null);
-            endpoints.Add(apiEndpoint);
-        }
+			var endpointName = endpoint.Name.ToTypeScriptName();
+			var apiEndpoint = new ApiClientEndpoint(endpointName,
+													route,
+													httpMethod,
+													FullyUnwrappedReturnType(endpoint),
+													returnType,
+													returnType is not null && ImplementsIEnumerable(returnType),
+													parameters,
+													endpointObsoleteAttribute is not null ? new ObsoleteInfo(endpointObsoleteAttribute.ConstructorArguments.FirstOrDefault().Value as string) : null);
+			endpoints.Add(apiEndpoint);
+		}
 
-        return endpoints;
-    }
+		return endpoints;
+	}
 
-    private static (string Route, EndpointMethod HttpMethod) DetermineRoute(MethodInfo endpoint, CustomAttributeData method)
-    {
-        // Find route (HttpX or Route)
-        var routeAttribute = endpoint.CustomAttributes.FirstOrDefault(x => x.AttributeType.FullName == "Microsoft.AspNetCore.Mvc.RouteAttribute");
-        var route = routeAttribute?.ConstructorArguments.First().Value as string;
-        var methodRoute = method.ConstructorArguments.Count == 1 ? method.ConstructorArguments.First().Value as string : null;
-        var finalRoute = methodRoute ?? route ?? "";
-        var matches = _routeParameterRegex.Matches(finalRoute);
-        foreach (Match match in matches)
-        {
-            if (!match.Success) continue;
-            if (match.Groups.Count < 3) continue;
-            finalRoute = finalRoute.Replace(match.Value, $"{{{match.Groups[1].Value}}}");
-        }
+	private static (string Route, EndpointMethod HttpMethod) DetermineRoute(MethodInfo endpoint, CustomAttributeData method)
+	{
+		// Find route (HttpX or Route)
+		var routeAttribute = endpoint.CustomAttributes.FirstOrDefault(x => x.AttributeType.FullName == "Microsoft.AspNetCore.Mvc.RouteAttribute");
+		var route = routeAttribute?.ConstructorArguments.First().Value as string;
+		var methodRoute = method.ConstructorArguments.Count == 1 ? method.ConstructorArguments.First().Value as string : null;
+		var finalRoute = methodRoute ?? route ?? "";
+		var matches = _routeParameterRegex.Matches(finalRoute);
+		foreach (Match match in matches)
+		{
+			if (!match.Success) continue;
+			if (match.Groups.Count < 3) continue;
+			finalRoute = finalRoute.Replace(match.Value, $"{{{match.Groups[1].Value}}}");
+		}
 
-        var httpMethod = method.AttributeType.Name switch
-        {
-            "HttpGetAttribute" => EndpointMethod.GET,
-            "HttpPostAttribute" => EndpointMethod.POST,
-            "HttpPutAttribute" => EndpointMethod.PUT,
-            "HttpPatchAttribute" => EndpointMethod.PATCH,
-            "HttpDeleteAttribute" => EndpointMethod.DELETE,
-            "HttpOptionsAttribute" => EndpointMethod.OPTIONS,
-            "HttpHeadAttribute" => EndpointMethod.HEAD,
-            _ => EndpointMethod.Invalid,
-        };
+		var httpMethod = method.AttributeType.Name switch
+		{
+			"HttpGetAttribute" => EndpointMethod.GET,
+			"HttpPostAttribute" => EndpointMethod.POST,
+			"HttpPutAttribute" => EndpointMethod.PUT,
+			"HttpPatchAttribute" => EndpointMethod.PATCH,
+			"HttpDeleteAttribute" => EndpointMethod.DELETE,
+			"HttpOptionsAttribute" => EndpointMethod.OPTIONS,
+			"HttpHeadAttribute" => EndpointMethod.HEAD,
+			_ => EndpointMethod.Invalid,
+		};
 
-        return (finalRoute, httpMethod);
-    }
+		return (finalRoute, httpMethod);
+	}
 
-    private static bool ParameterIsFromRoute(ParameterInfo parameterInfo, string finalRoute)
-    {
-        if (parameterInfo.CustomAttributes.Any(x => x.AttributeType.FullName == "Microsoft.AspNetCore.Mvc.FromRouteAttribute"))
-            return true;
+	private static bool ParameterIsFromRoute(ParameterInfo parameterInfo, string finalRoute)
+	{
+		if (parameterInfo.CustomAttributes.Any(x => x.AttributeType.FullName == "Microsoft.AspNetCore.Mvc.FromRouteAttribute"))
+			return true;
 
-        return finalRoute.Contains($"{{{parameterInfo.Name}}}");
-    }
+		return finalRoute.Contains($"{{{parameterInfo.Name}}}");
+	}
 
-    private static bool ParameterIsFromQuery(ParameterInfo parameterInfo, EndpointMethod httpMethod, string finalRoute)
-    {
-        if (parameterInfo.CustomAttributes.Any(x => x.AttributeType.FullName == "Microsoft.AspNetCore.Mvc.FromQueryAttribute"))
-            return true;
+	private static bool ParameterIsFromQuery(ParameterInfo parameterInfo, EndpointMethod httpMethod, string finalRoute)
+	{
+		if (parameterInfo.CustomAttributes.Any(x => x.AttributeType.FullName == "Microsoft.AspNetCore.Mvc.FromQueryAttribute"))
+			return true;
 
-        var noBody = httpMethod == EndpointMethod.GET || httpMethod == EndpointMethod.DELETE;
-        var name = parameterInfo.Name!;
-        var hasRouteAttribute = parameterInfo.CustomAttributes.Any(x => x.AttributeType.FullName == "Microsoft.AspNetCore.Mvc.FromRouteAttribute");
-        var parameterInRoute = finalRoute.Contains($"{{{parameterInfo.Name}}}");
+		var noBody = httpMethod == EndpointMethod.GET || httpMethod == EndpointMethod.DELETE;
+		var name = parameterInfo.Name!;
+		var hasRouteAttribute = parameterInfo.CustomAttributes.Any(x => x.AttributeType.FullName == "Microsoft.AspNetCore.Mvc.FromRouteAttribute");
+		var parameterInRoute = finalRoute.Contains($"{{{parameterInfo.Name}}}");
 
-        if (hasRouteAttribute || parameterInRoute)
-            return false;
+		if (hasRouteAttribute || parameterInRoute)
+			return false;
 
-        return noBody;
-    }
+		return noBody;
+	}
 }
