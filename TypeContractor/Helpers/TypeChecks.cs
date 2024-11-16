@@ -180,10 +180,16 @@ public static class TypeChecks
         ArgumentNullException.ThrowIfNull(methodInfo, nameof(methodInfo));
 
         return methodInfo.GetParameters()
+            .Where(p => !FromServices(p))
             .Select(p => UnwrappedResult(p.ParameterType))
             .Where(p => p is not null)
             .Cast<Type>()
             .ToArray();
+    }
+
+    private static bool FromServices(ParameterInfo p)
+    {
+        return p.CustomAttributes.Any(x => x.AttributeType.FullName == "Microsoft.AspNetCore.Mvc.FromServicesAttribute");
     }
 
     public static bool IsHttpAttribute(CustomAttributeData data)

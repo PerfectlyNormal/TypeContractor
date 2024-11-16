@@ -236,6 +236,22 @@ namespace TypeContractor.Tests.Helpers
             else
                 parameterTypes.Should().ContainInOrder(expectedTypes);
         }
+
+        [Theory]
+        [InlineData(nameof(ParameterTypeController.GetWithExtraServices), null)]
+        public void UnwrappedParameters_Ignores_AspNetFramework_Types(string methodName, Type[]? expectedTypes)
+        {
+            var target = typeof(ParameterTypeController).GetMethod(methodName);
+            if (target is null)
+                Assert.Fail("Unable to find method " + methodName + " on controller");
+
+            var parameterTypes = TypeChecks.UnwrappedParameters(target);
+
+            if (expectedTypes is null)
+                parameterTypes.Should().BeEmpty();
+            else
+                parameterTypes.Should().ContainInOrder(expectedTypes);
+        }
     }
 
 
@@ -269,6 +285,7 @@ namespace TypeContractor.Tests.Helpers
         public Task<ActionResult<ComplexNestedType>> GetById(Guid id, CancellationToken cancellationToken) => throw new NotImplementedException();
         public Task<ActionResult<ComplexNestedType>> GetByNumericId(int id, [FromQuery] string search, CancellationToken cancellationToken) => throw new NotImplementedException();
         public Task<ActionResult<IEnumerable<ComplexNestedType>>> GetWithListOfIds([FromBody] IEnumerable<Guid> organizationId, CancellationToken cancellationToken) => throw new NotImplementedException();
+        public Task<ActionResult<IEnumerable<ComplexNestedType>>> GetWithExtraServices([FromBody] IEnumerable<Guid> organizationId, [FromServices] SimpleRequest requestConfiguration, CancellationToken cancellationToken) => throw new NotImplementedException();
         public Task<ActionResult<Guid>> CreateObject(ComplexRequest request, CancellationToken cancellationToken) => throw new NotImplementedException();
         public Task<ActionResult<IEnumerable<Guid>>> CreateManyObjects(IEnumerable<ComplexRequest> requests, CancellationToken cancellationToken) => throw new NotImplementedException();
         public Task<ActionResult<IEnumerable<Guid>>> MultipleDtos(ComplexRequest request, SimpleRequest extraData, CancellationToken cancellationToken) => throw new NotImplementedException();
