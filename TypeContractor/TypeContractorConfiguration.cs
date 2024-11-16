@@ -85,6 +85,7 @@ public class TypeContractorConfiguration
 		AddCustomMap(typeof(TimeSpan), DestinationTypes.StringType);
 		AddCustomMap(typeof(Stream), DestinationTypes.ByteArray);
 		AddCustomMap(typeof(CultureInfo), DestinationTypes.StringType);
+		AddCustomMap("Microsoft.AspNetCore.Mvc.IActionResult", DestinationTypes.AnyType);
 
 		return this;
 	}
