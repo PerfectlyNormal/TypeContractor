@@ -8,6 +8,7 @@ namespace TypeContractor.TypeScript;
 #pragma warning disable CA1305 // Specify IFormatProvider
 public class TypeScriptWriter(string outputPath)
 {
+    private static readonly Encoding _utf8WithoutBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
     private readonly StringBuilder _builder = new();
 
     public string Write(OutputType outputType, IEnumerable<OutputType> allTypes, bool buildZodSchema)
@@ -29,7 +30,7 @@ public class TypeScriptWriter(string outputPath)
             Directory.CreateDirectory(directory);
 
         // Write file
-        File.WriteAllText(filePath, _builder.ToString());
+        File.WriteAllText(filePath, _builder.ToString().Trim() + Environment.NewLine + Environment.NewLine, _utf8WithoutBom);
 
         // Return the path we wrote to
         return filePath;

@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Don't generate types for parameters with an `[FromServices]` annotation (#95)
 
+### Changed
+
+- Standardize on encoding generated files as UTF-8 without BOM
+- Write a final newline in the files
+
 ## [0.13.1] - 2024-11-11
 
 ### Added

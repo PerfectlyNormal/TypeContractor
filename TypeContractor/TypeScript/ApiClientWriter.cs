@@ -9,6 +9,7 @@ namespace TypeContractor.TypeScript;
 
 public class ApiClientWriter(string outputPath, string? relativeRoot)
 {
+    private static readonly Encoding _utf8WithoutBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
     private static readonly Dictionary<EndpointMethod, string> _httpMethods = new()
     {
         { EndpointMethod.GET, "get" },
@@ -126,7 +127,7 @@ public class ApiClientWriter(string outputPath, string? relativeRoot)
             Directory.CreateDirectory(directory);
 
         // Write file
-        File.WriteAllText(filePath, result);
+        File.WriteAllText(filePath, result.Trim() + Environment.NewLine + Environment.NewLine, _utf8WithoutBom);
 
         // Return the path we wrote to
         return filePath;
