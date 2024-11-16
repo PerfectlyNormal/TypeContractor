@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Write a final newline in the files
 - Standardize on tabs for indentation
 - Fix some editorconfig settings
+- Use better indentation in API client templates when editing
 
 ## [0.13.1] - 2024-11-11
 
