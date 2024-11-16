@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Don't generate types for parameters with an `[FromServices]` annotation (#95)
+- Add default `any`-mapping for `IActionResult` as a return type (#98)
 
 ### Changed
 
