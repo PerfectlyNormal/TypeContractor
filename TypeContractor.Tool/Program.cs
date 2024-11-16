@@ -1,5 +1,4 @@
 using System.CommandLine;
-using System.CommandLine.Builder;
 using System.CommandLine.Parsing;
 using TypeContractor.Logger;
 using TypeContractor.Tool;
@@ -37,55 +36,55 @@ rootCommand.AddOption(apiClientsTemplateOptions);
 
 apiClientsTemplateOptions.AddValidator(result =>
 {
-    var value = result.GetValueForOption(apiClientsTemplateOptions)!;
-    if (value.Equals("aurelia", StringComparison.CurrentCultureIgnoreCase) || value.Equals("react-axios", StringComparison.CurrentCultureIgnoreCase))
-        return;
+	var value = result.GetValueForOption(apiClientsTemplateOptions)!;
+	if (value.Equals("aurelia", StringComparison.CurrentCultureIgnoreCase) || value.Equals("react-axios", StringComparison.CurrentCultureIgnoreCase))
+		return;
 
-    var generateClients = result.GetValueForOption(generateApiClientsOptions);
-    if (!generateClients)
-    {
-        result.ErrorMessage = $"Must generate API clients for --{apiClientsTemplateOptions.Name} to have any effect.";
-        return;
-    }
+	var generateClients = result.GetValueForOption(generateApiClientsOptions);
+	if (!generateClients)
+	{
+		result.ErrorMessage = $"Must generate API clients for --{apiClientsTemplateOptions.Name} to have any effect.";
+		return;
+	}
 
-    if (!File.Exists(value))
-    {
-        result.ErrorMessage = $"The template specified does not exist or is not readable. Searched for {Path.GetFullPath(Path.Join(Directory.GetCurrentDirectory(), value))}.";
-        return;
-    }
+	if (!File.Exists(value))
+	{
+		result.ErrorMessage = $"The template specified does not exist or is not readable. Searched for {Path.GetFullPath(Path.Join(Directory.GetCurrentDirectory(), value))}.";
+		return;
+	}
 });
 
 rootCommand.SetHandler(async (context) =>
 {
-    var assemblyOptionValue = context.ParseResult.GetValueForOption(assemblyOption)!;
-    var outputValue = context.ParseResult.GetValueForOption(outputOption)!;
-    var relativeRootValue = context.ParseResult.GetValueForOption(relativeRootOption);
-    var cleanValue = context.ParseResult.GetValueForOption(cleanOption);
-    var replacementsValue = context.ParseResult.GetValueForOption(replaceOptions) ?? [];
-    var stripValue = context.ParseResult.GetValueForOption(stripOptions) ?? [];
-    var customMapsValue = context.ParseResult.GetValueForOption(mapOptions) ?? [];
-    var packsPathValue = context.ParseResult.GetValueForOption(packsOptions)!;
-    var dotnetVersionValue = context.ParseResult.GetValueForOption(dotnetVersionOptions);
-    var logLevelValue = context.ParseResult.GetValueForOption(logLevelOptions);
-    var buildZodSchemasValue = context.ParseResult.GetValueForOption(buildZodSchemasOptions);
-    var generateApiClientsValue = context.ParseResult.GetValueForOption(generateApiClientsOptions);
-    var apiClientsTemplateValue = context.ParseResult.GetValueForOption(apiClientsTemplateOptions)!;
+	var assemblyOptionValue = context.ParseResult.GetValueForOption(assemblyOption)!;
+	var outputValue = context.ParseResult.GetValueForOption(outputOption)!;
+	var relativeRootValue = context.ParseResult.GetValueForOption(relativeRootOption);
+	var cleanValue = context.ParseResult.GetValueForOption(cleanOption);
+	var replacementsValue = context.ParseResult.GetValueForOption(replaceOptions) ?? [];
+	var stripValue = context.ParseResult.GetValueForOption(stripOptions) ?? [];
+	var customMapsValue = context.ParseResult.GetValueForOption(mapOptions) ?? [];
+	var packsPathValue = context.ParseResult.GetValueForOption(packsOptions)!;
+	var dotnetVersionValue = context.ParseResult.GetValueForOption(dotnetVersionOptions);
+	var logLevelValue = context.ParseResult.GetValueForOption(logLevelOptions);
+	var buildZodSchemasValue = context.ParseResult.GetValueForOption(buildZodSchemasOptions);
+	var generateApiClientsValue = context.ParseResult.GetValueForOption(generateApiClientsOptions);
+	var apiClientsTemplateValue = context.ParseResult.GetValueForOption(apiClientsTemplateOptions)!;
 
-    Log.Instance = new ConsoleLogger(logLevelValue);
-    var generator = new Generator(assemblyOptionValue,
-                                  outputValue,
-                                  relativeRootValue,
-                                  cleanValue,
-                                  replacementsValue,
-                                  stripValue,
-                                  customMapsValue,
-                                  packsPathValue,
-                                  dotnetVersionValue,
-                                  buildZodSchemasValue,
-                                  generateApiClientsValue,
-                                  apiClientsTemplateValue);
-    
-    context.ExitCode = await generator.Execute();
+	Log.Instance = new ConsoleLogger(logLevelValue);
+	var generator = new Generator(assemblyOptionValue,
+								  outputValue,
+								  relativeRootValue,
+								  cleanValue,
+								  replacementsValue,
+								  stripValue,
+								  customMapsValue,
+								  packsPathValue,
+								  dotnetVersionValue,
+								  buildZodSchemasValue,
+								  generateApiClientsValue,
+								  apiClientsTemplateValue);
+
+	context.ExitCode = await generator.Execute();
 });
 
 var configuration = new CommandLineConfiguration(rootCommand, enableTokenReplacement: false);
