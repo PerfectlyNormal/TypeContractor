@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.14.0] - 2024-11-17
+
 ### Added
 
 - Handle optional segments in routes for API clients (#77)
@@ -320,7 +322,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[unreleased]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.13.1...HEAD
+[unreleased]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.14.0...HEAD
+[0.14.0]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.14.0...v0.13.1
 [0.13.1]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.13.1...v0.13.1
 [0.13.0]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.13.0...v0.12.7
 [0.12.7]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.12.7...v0.12.6
