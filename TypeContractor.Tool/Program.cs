@@ -1,7 +1,10 @@
+using DotNetConfig;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using TypeContractor.Logger;
 using TypeContractor.Tool;
+
+var config = Config.Build("typecontractor.config");
 
 var rootCommand = new RootCommand("Tool for generating TypeScript definitions from C# code");
 var assemblyOption = new Option<string>("--assembly", "Path to the assembly to start with. Will be relative to the current directory");
@@ -53,6 +56,9 @@ apiClientsTemplateOptions.AddValidator(result =>
 		return;
 	}
 });
+
+// Apply configuration from file, if any
+rootCommand = rootCommand.WithConfigurableDefaults("typecontractor", config);
 
 rootCommand.SetHandler(async (context) =>
 {

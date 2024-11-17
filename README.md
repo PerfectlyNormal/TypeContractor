@@ -53,6 +53,35 @@ Contractor.FromDefaultConfiguration(configuration => configuration
             .SetOutputDirectory(Path.Combine(Directory.GetCurrentDirectory(), "api")));
 ```
 
+## Configuration file
+
+It's possible to create a configuration file and provide all the same options
+via a file instead of command line arguments.
+
+Create a file called `typecontractor.config` in the same or a parent directory
+from where you run TypeContractor from. We use [dotnet-config] for parsing the
+files (written in [TOML]), so it's possible to inherit from parent directories,
+a user-wide configuration or a system-wide configuration. Or have a
+repository-specific configuration that can be overridden inside the repo with
+`typecontractor.config.user`. You can edit the file manually or install the 
+dotnet-config tool for viewing and changing configuration similar to how
+`git config` works.
+
+### Example configuration file
+
+```toml
+[typecontractor]
+    # backslashes must be escaped
+    assembly = "bin\\Debug\\net8.0\\MyCompany.SystemName.dll"
+    output = "api"
+    strip = "MyCompany"
+    replace = "MyCompany.Common:CommonFiles" # Options can repeat
+    replace = "ThirdParty.Http:Http"
+    root = "~/api"
+    generate-api-clients = true
+    build-zod-schemas = true
+```
+
 ## Run manually
 
 Get an instance of `Contractor` and call `contractor.Build();`
@@ -230,3 +259,6 @@ template is `TypeContractor/Templates/aurelia.hbs`.
 * Improve method for finding AspNetCore framework DLLs
   * Possible to provide a manual path, so not a priority
 * Work with Hot Reload?
+
+[dotnet-config]: https://dotnetconfig.github.io/dotnet-config/index.html
+[TOML]: https://toml.io/en/

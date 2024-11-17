@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Handle optional segments in routes for API clients (#77)
+- Added configuration file support (#90)
 
 ### Fixed
 
