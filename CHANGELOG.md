@@ -324,7 +324,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [unreleased]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.14.0...HEAD
 [0.14.0]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.14.0...v0.13.1
-[0.13.1]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.13.1...v0.13.1
+[0.13.1]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.13.1...v0.13.0
 [0.13.0]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.13.0...v0.12.7
 [0.12.7]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.12.7...v0.12.6
 [0.12.6]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.12.6...v0.12.5
