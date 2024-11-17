@@ -1,5 +1,6 @@
 using HandlebarsDotNet;
 using System.Text;
+using System.Text.RegularExpressions;
 using TypeContractor.Helpers;
 using TypeContractor.Logger;
 using TypeContractor.Output;
@@ -7,7 +8,7 @@ using TypeContractor.Templates;
 
 namespace TypeContractor.TypeScript;
 
-public class ApiClientWriter(string outputPath, string? relativeRoot)
+public partial class ApiClientWriter(string outputPath, string? relativeRoot)
 {
 	private static readonly Encoding _utf8WithoutBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 	private static readonly Dictionary<EndpointMethod, string> _httpMethods = new()
@@ -18,6 +19,9 @@ public class ApiClientWriter(string outputPath, string? relativeRoot)
 		{ EndpointMethod.PATCH, "patch" },
 		{ EndpointMethod.DELETE, "delete" },
 	};
+
+	[GeneratedRegex(@"([^\$])\{([A-Za-z0-9]+)\}")]
+	private static partial Regex RouteParameterRegex();
 
 	public string Write(ApiClient apiClient, IEnumerable<OutputType> allTypes, TypeScriptConverter converter, bool buildZodSchema, HandlebarsTemplate<object, ApiClientTemplateDto> template)
 	{
@@ -59,6 +63,14 @@ public class ApiClientWriter(string outputPath, string? relativeRoot)
 
 			if (url.EndsWith('/'))
 				url = url[..^1];
+
+			var regex = RouteParameterRegex();
+			if (regex.IsMatch(url))
+			{
+				var matches = regex.Matches(url);
+				var names = matches.Select(x => x.Groups[2].Value);
+				Log.Instance.LogError($"URL for {apiClient.Name}.{endpoint.Name} contains unmatched route parameters: {string.Join(", ", names)}");
+			}
 
 			var queryParams = endpoint.Parameters.Where(x => x.FromQuery).ToList();
 			var queryParamsDto = new List<QueryParameterTemplateDto>(queryParams.Count);
