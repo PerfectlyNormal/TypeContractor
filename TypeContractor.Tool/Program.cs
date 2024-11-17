@@ -87,7 +87,4 @@ rootCommand.SetHandler(async (context) =>
 	context.ExitCode = await generator.Execute();
 });
 
-var configuration = new CommandLineConfiguration(rootCommand, enableTokenReplacement: false);
-var parser = new Parser(configuration);
-
-return await parser.InvokeAsync(args);
+return await rootCommand.InvokeAsync(args);

@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Don't generate types for parameters with an `[FromServices]` annotation (#95)
 - Add default `any`-mapping for `IActionResult` as a return type (#98)
 - Log an error if we're unable to match a route parameter when generating API clients (#86)
+- Revert the "response files" fix in [0.13.1], since it broke default command
+  line handling, including the --help command
 
 ### Changed
 
