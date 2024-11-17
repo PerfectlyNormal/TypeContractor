@@ -57,6 +57,11 @@ internal class Generator
 		{
 			context = ReflectionContextHelper.GetMetadataContext(_packPath, _dotnetVersion, _assemblyPath, Log.Instance);
 		}
+		catch (DirectoryNotFoundException ex)
+		{
+			Log.Instance.LogError(ex, ex.Message);
+			return Task.FromResult(1);
+		}
 		catch (FileNotFoundException ex)
 		{
 			Log.Instance.LogError(ex, ex.Message);
