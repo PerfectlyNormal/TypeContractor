@@ -9,8 +9,6 @@ namespace TypeContractor;
 
 public class Contractor
 {
-	private readonly TypeContractorConfiguration _configuration;
-
 	public static Contractor WithConfiguration(TypeContractorConfiguration configuration)
 	{
 		ArgumentNullException.ThrowIfNull(configuration, nameof(configuration));
@@ -36,10 +34,10 @@ public class Contractor
 
 	private Contractor(TypeContractorConfiguration configuration)
 	{
-		_configuration = configuration;
+		Configuration = configuration;
 	}
 
-	public TypeContractorConfiguration Configuration => _configuration;
+	public TypeContractorConfiguration Configuration { get; }
 
 	public int Build(MetadataLoadContext? metadataLoadContext = null, bool smartClean = false)
 	{
@@ -50,16 +48,16 @@ public class Contractor
 		var generatedFiles = new List<string>();
 		var allTypes = new List<OutputType>();
 
-		var converter = new TypeScriptConverter(_configuration, metadataLoadContext);
-		var writer = new TypeScriptWriter(_configuration.OutputPath);
+		var converter = new TypeScriptConverter(Configuration, metadataLoadContext);
+		var writer = new TypeScriptWriter(Configuration.OutputPath);
 
-		foreach (var (assemblyName, assemblyPath) in _configuration.Assemblies)
+		foreach (var (assemblyName, assemblyPath) in Configuration.Assemblies)
 		{
 			var assembly = metadataLoadContext.LoadFromAssemblyPath(assemblyPath);
 
 			var types = assembly.GetTypes()
-				.Where(t => _configuration.Types.Any(type => type == t.FullName) || _configuration.Suffixes.Any(suffix => t.Name.EndsWith(suffix, StringComparison.InvariantCultureIgnoreCase)))
-				.Select(t => ContractedType.FromName(t.FullName!, t, _configuration))
+				.Where(t => Configuration.Types.Any(type => type == t.FullName) || Configuration.Suffixes.Any(suffix => t.Name.EndsWith(suffix, StringComparison.InvariantCultureIgnoreCase)))
+				.Select(t => ContractedType.FromName(t.FullName!, t, Configuration))
 				.ToList();
 
 			var folders = types
@@ -117,7 +115,7 @@ public class Contractor
 		if (Configuration.GenerateApiClients)
 		{
 			string template;
-			if (Configuration.ApiClientTemplate == "aurelia" || Configuration.ApiClientTemplate == "react-axios")
+			if (Configuration.ApiClientTemplate is "aurelia" or "react-axios")
 			{
 				var embed = typeof(ApiClientWriter).Assembly.GetManifestResourceStream($"TypeContractor.Templates.{Configuration.ApiClientTemplate}.hbs");
 				using var sr = new StreamReader(embed!);
@@ -129,7 +127,7 @@ public class Contractor
 			}
 
 			var templateFn = Handlebars.Compile(template);
-			var apiWriter = new ApiClientWriter(_configuration.OutputPath, _configuration.RelativeRoot);
+			var apiWriter = new ApiClientWriter(Configuration.OutputPath, Configuration.RelativeRoot);
 			foreach (var client in Configuration.ApiClients)
 			{
 				try
@@ -150,10 +148,10 @@ public class Contractor
 		if (smartClean)
 		{
 			Log.Instance.LogMessage("Cleaning no longer relevant output files.");
-			var allFiles = Directory.GetFiles(_configuration.OutputPath, "*", SearchOption.AllDirectories);
+			var allFiles = Directory.GetFiles(Configuration.OutputPath, "*", SearchOption.AllDirectories);
 			var diff = allFiles.Except(generatedFiles).ToList();
 
-			var allDirectories = Directory.GetDirectories(_configuration.OutputPath, "*", SearchOption.AllDirectories);
+			var allDirectories = Directory.GetDirectories(Configuration.OutputPath, "*", SearchOption.AllDirectories);
 			var generatedDirectories = allDirectories.Where(d => generatedFiles.Any(f => f.StartsWith(d, StringComparison.InvariantCultureIgnoreCase)));
 			var directoryDiff = allDirectories.Except(generatedDirectories).ToList();
 
@@ -197,7 +195,7 @@ public class Contractor
 		var runtimeAssemblies = Directory.GetFiles(RuntimeEnvironment.GetRuntimeDirectory(), "*.dll");
 
 		// Create the list of assembly paths consisting of runtime assemblies and the inspected assemblies.
-		var paths = runtimeAssemblies.Concat(_configuration.Assemblies.Values);
+		var paths = runtimeAssemblies.Concat(Configuration.Assemblies.Values);
 
 		var resolver = new PathAssemblyResolver(paths);
 

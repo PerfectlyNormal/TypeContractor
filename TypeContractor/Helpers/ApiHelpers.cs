@@ -28,8 +28,10 @@ public static partial class ApiHelpers
 		var client = new ApiClient(clientName, controller.FullName!, prefix, obsoleteInfo);
 
 		foreach (var endpoint in endpoints)
+		{
 			foreach (var apiEndpoint in BuildApiEndpoint(endpoint))
 				client.AddEndpoint(apiEndpoint);
+		}
 
 		return client;
 	}
@@ -137,7 +139,7 @@ public static partial class ApiHelpers
 		if (parameterInfo.CustomAttributes.Any(x => x.AttributeType.FullName == "Microsoft.AspNetCore.Mvc.FromQueryAttribute"))
 			return true;
 
-		var noBody = httpMethod == EndpointMethod.GET || httpMethod == EndpointMethod.DELETE;
+		var noBody = httpMethod is EndpointMethod.GET or EndpointMethod.DELETE;
 		var name = parameterInfo.Name!;
 		var hasRouteAttribute = parameterInfo.CustomAttributes.Any(x => x.AttributeType.FullName == "Microsoft.AspNetCore.Mvc.FromRouteAttribute");
 		var parameterInRoute = finalRoute.Contains($"{{{parameterInfo.Name}}}");
