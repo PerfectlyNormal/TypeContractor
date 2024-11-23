@@ -103,7 +103,19 @@ internal class Generator
 					var client = ApiHelpers.BuildApiClient(controller, endpoints);
 
 					if (client.Endpoints.Any())
+					{
+						if (clients.Any(x => x.Name == client.Name))
+						{
+							var originalName = client.Name;
+							var newName = string.Join("", controller.FullName!.Split('.')[^2..]);
+							newName = $"{newName[0..1].ToUpper()}{newName[1..]}";
+
+							Log.Instance.LogWarning($"Found existing client with name {originalName}. Will rename to {newName}");
+							client = client with { Name = newName };
+						}
+
 						clients.Add(client);
+					}
 				}
 
 				foreach (var returnType in returnTypes)

@@ -250,6 +250,17 @@ that does what you want. The available data model can be found in
 `TypeContractor/Templates/ApiClientTemplateDto.cs` and an example
 template is `TypeContractor/Templates/aurelia.hbs`.
 
+Since the name is just the controller name with `Controller` replaced
+with `Client`, collisions between controllers with the same name but
+different namespaces are possible. If this happens, the first
+controller found gets to keep the original name and TypeContractor
+will prefix the colliding client with the last part of its namespace.
+So for example:
+
+`ExampleApp.Controllers.DataController` turns into `DataClient`,
+while `ExampleApp.Controllers.Subsystem.DataController` collides and
+gets turned into `SubsystemDataClient`.
+
 ## Future improvements
 
 * Kebab-case output files and directories
