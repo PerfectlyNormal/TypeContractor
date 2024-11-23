@@ -32,7 +32,11 @@ public static partial class ApiHelpers
 		var obsoleteAttribute = controller.CustomAttributes.FirstOrDefault(x => x.AttributeType.FullName == "System.ObsoleteAttribute");
 		var obsoleteInfo = obsoleteAttribute is not null ? new ObsoleteInfo(obsoleteAttribute.ConstructorArguments.FirstOrDefault().Value as string) : null;
 
-		var clientName = controller.Name.Replace("Controller", "Client");
+		// Find name of the client
+		var clientAttribute = controller.CustomAttributes.FirstOrDefault(x => x.AttributeType.FullName == typeof(TypeContractorClientAttribute).FullName);
+		var clientName = clientAttribute?.ConstructorArguments.FirstOrDefault().Value as string
+					  ?? controller.Name.Replace("Controller", "Client");
+
 		var client = new ApiClient(clientName, controller.FullName!, prefix, obsoleteInfo);
 
 		foreach (var endpoint in endpoints)

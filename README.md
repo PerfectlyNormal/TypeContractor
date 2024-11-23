@@ -272,15 +272,11 @@ Available annotations:
 * `TypeContractorIgnore`:
   If you have a controller that doesn't need a client
   generated, you can annotate that controller using `TypeContractorIgnore`
-  and it will be automatically skipped. Example:
-
-  ```csharp
-  [TypeContractorIgnore]
-  public class StaticAssetsController : ControllerBase
-  {
-      ...
-  }
-  ```
+  and it will be automatically skipped.
+* `TypeContractorClient`:
+  If you have a badly named controller that you can't rename,
+  you want something custom, or just don't like the default naming
+  scheme, you can apply this attribute to select a brand new name.
 
 ## Future improvements
 
