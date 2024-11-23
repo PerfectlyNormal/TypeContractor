@@ -102,7 +102,7 @@ internal class Generator
 					Log.Instance.LogDebug($"Generating endpoints for {controller.FullName}");
 					var client = ApiHelpers.BuildApiClient(controller, endpoints);
 
-					if (client.Endpoints.Any())
+					if (client?.Endpoints.Any() ?? false)
 					{
 						if (clients.Any(x => x.Name == client.Name))
 						{

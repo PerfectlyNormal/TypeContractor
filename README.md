@@ -261,6 +261,27 @@ So for example:
 while `ExampleApp.Controllers.Subsystem.DataController` collides and
 gets turned into `SubsystemDataClient`.
 
+## Further customization using Annotations
+
+To further customize the output of TypeContractor, you can install
+the optional package `TypeContractor.Annotations` and start annotating
+your controllers.
+
+Available annotations:
+
+* `TypeContractorIgnore`:
+  If you have a controller that doesn't need a client
+  generated, you can annotate that controller using `TypeContractorIgnore`
+  and it will be automatically skipped. Example:
+
+  ```csharp
+  [TypeContractorIgnore]
+  public class StaticAssetsController : ControllerBase
+  {
+      ...
+  }
+  ```
+
 ## Future improvements
 
 * Kebab-case output files and directories

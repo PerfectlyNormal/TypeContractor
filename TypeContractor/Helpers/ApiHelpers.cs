@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Text.RegularExpressions;
+using TypeContractor.Annotations;
 using TypeContractor.Logger;
 using TypeContractor.Output;
 using TypeContractor.TypeScript;
@@ -14,8 +15,15 @@ public static partial class ApiHelpers
 	[GeneratedRegex("{([A-Za-z]+)(:[[A-Za-z]+)?}")]
 	private static partial Regex RouteParameterRegexImpl();
 
-	public static ApiClient BuildApiClient(Type controller, List<MethodInfo> endpoints)
+	public static ApiClient? BuildApiClient(Type controller, List<MethodInfo> endpoints)
 	{
+		var ignoreAttribute = controller.CustomAttributes.FirstOrDefault(x => x.AttributeType.FullName == typeof(TypeContractorIgnoreAttribute).FullName);
+		if (ignoreAttribute is not null)
+		{
+			Log.Instance.LogDebug($"Controller {controller.Name} marked with Ignore. Skipping.");
+			return null;
+		}
+
 		// Find route prefix, if any
 		var prefixAttribute = controller.CustomAttributes.FirstOrDefault(x => x.AttributeType.FullName == "Microsoft.AspNetCore.Mvc.RouteAttribute");
 		var prefix = prefixAttribute?.ConstructorArguments.First().Value as string;

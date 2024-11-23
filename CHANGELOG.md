@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Handle name collisions when creationg API clients (#106)
+- Add annotations package to further customize output (#107)
 
 ## [0.14.0] - 2024-11-17
 

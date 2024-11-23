@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<PackageId>TypeContractor.Annotations</PackageId>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageProjectUrl>https://github.com/PerfectlyNormal/TypeContractor</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/PerfectlyNormal/TypeContractor.git</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<Authors>Per Christian B. Viken</Authors>
+		<Description>
+			Extra annotations to customize TypeContractor output
+		</Description>
+		<PackageTags>dotnet-tool TypeContractor TypeScript generator</PackageTags>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="..\LICENSE" Pack="true" PackagePath="\" />
+		<None Include="..\README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
+</Project>
