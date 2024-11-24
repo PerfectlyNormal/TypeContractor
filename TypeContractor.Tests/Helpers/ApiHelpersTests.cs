@@ -32,11 +32,47 @@ public class ApiHelpersTests
 		client!.Name.Should().Be("RenamedApi");
 	}
 
+	[Fact]
+	public void BuildApiEndpoint_Accepts_NameAttribute()
+	{
+		// Arrange
+		var endpointMethod = typeof(LegacyController).GetMethod(nameof(LegacyController.OverloadEndpoint), [typeof(Guid), typeof(CancellationToken)])!;
+
+		// Act
+		var endpoint = ApiHelpers.BuildApiEndpoint(endpointMethod);
+
+		// Assert
+		endpoint.Should().ContainSingle();
+		endpoint.First().Name.Should().Be("postWithId");
+	}
+
+	[Fact]
+	public void BuildApiEndpoint_Generates_Name()
+	{
+		// Arrange
+		var endpointMethod = typeof(LegacyController).GetMethod(nameof(LegacyController.OverloadEndpoint), [typeof(CancellationToken)])!;
+
+		// Act
+		var endpoint = ApiHelpers.BuildApiEndpoint(endpointMethod);
+
+		// Assert
+		endpoint.Should().ContainSingle();
+		endpoint.First().Name.Should().Be("overloadEndpoint");
+	}
+
 	[TypeContractorIgnore]
 	internal class IgnoredController : ControllerBase { }
 
 	[TypeContractorClient("RenamedClient")]
-	internal class LegacyController : ControllerBase { }
+	internal class LegacyController : ControllerBase
+	{
+		[HttpPost("many-methods")]
+		[TypeContractorName("postWithId")]
+		public ActionResult OverloadEndpoint(Guid id, CancellationToken cancellationToken) => NotFound();
+
+		[HttpGet("other-route")]
+		public ActionResult OverloadEndpoint(CancellationToken cancellationToken) => NotFound();
+	}
 
 	[TypeContractorClient("RenamedApi")]
 	internal class RenamedSuffixController : ControllerBase { }

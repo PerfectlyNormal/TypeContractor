@@ -48,7 +48,7 @@ public static partial class ApiHelpers
 		return client;
 	}
 
-	private static List<ApiClientEndpoint> BuildApiEndpoint(MethodInfo endpoint)
+	internal static List<ApiClientEndpoint> BuildApiEndpoint(MethodInfo endpoint)
 	{
 		// Find HTTP method
 		var httpAttributes = endpoint
@@ -83,9 +83,11 @@ public static partial class ApiHelpers
 				.Where(x => x.ParameterType.FullName != "System.Threading.CancellationToken")
 				.ToList();
 
-			Log.Instance.LogDebug($"Found endpoint {endpoint.Name} returning {returnType?.Name ?? "HTTP"} with {parameters.Count} parameters");
 
-			var endpointName = endpoint.Name.ToTypeScriptName();
+			var nameAttribute = endpoint.CustomAttributes.FirstOrDefault(x => x.AttributeType.FullName == typeof(TypeContractorNameAttribute).FullName);
+			var endpointName = nameAttribute?.ConstructorArguments.FirstOrDefault().Value as string
+							?? endpoint.Name.ToTypeScriptName();
+			Log.Instance.LogDebug($"Found endpoint {endpoint.Name}->{endpointName} returning {returnType?.Name ?? "HTTP"} with {parameters.Count} parameters");
 			var apiEndpoint = new ApiClientEndpoint(endpointName,
 													route,
 													httpMethod,

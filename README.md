@@ -277,6 +277,10 @@ Available annotations:
   If you have a badly named controller that you can't rename,
   you want something custom, or just don't like the default naming
   scheme, you can apply this attribute to select a brand new name.
+* `TypeContractorName`:
+  If you have multiple endpoints with the same name and different parameters,
+  C# handles the overloads perfectly, but not so much in TypeScript.
+  Use `TypeContractorName` to rename a single endpoint to whatever fits.
 
 ## Future improvements
 

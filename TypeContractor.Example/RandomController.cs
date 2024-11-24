@@ -8,6 +8,7 @@ public class RandomController : ControllerBase
 {
 	private readonly Random _random = new();
 
+	[TypeContractorName("randomize")]
 	public ActionResult<int> GenerateRandomValue(CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
