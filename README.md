@@ -273,11 +273,11 @@ Available annotations:
   If you have a controller that doesn't need a client
   generated, you can annotate that controller using `TypeContractorIgnore`
   and it will be automatically skipped.
-* `TypeContractorClient`:
+* `TypeContractorName`:
   If you have a badly named controller that you can't rename,
   you want something custom, or just don't like the default naming
   scheme, you can apply this attribute to select a brand new name.
-* `TypeContractorName`:
+
   If you have multiple endpoints with the same name and different parameters,
   C# handles the overloads perfectly, but not so much in TypeScript.
   Use `TypeContractorName` to rename a single endpoint to whatever fits.

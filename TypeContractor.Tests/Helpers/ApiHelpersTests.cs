@@ -63,7 +63,7 @@ public class ApiHelpersTests
 	[TypeContractorIgnore]
 	internal class IgnoredController : ControllerBase { }
 
-	[TypeContractorClient("RenamedClient")]
+	[TypeContractorName("RenamedClient")]
 	internal class LegacyController : ControllerBase
 	{
 		[HttpPost("many-methods")]
@@ -74,6 +74,6 @@ public class ApiHelpersTests
 		public ActionResult OverloadEndpoint(CancellationToken cancellationToken) => NotFound();
 	}
 
-	[TypeContractorClient("RenamedApi")]
+	[TypeContractorName("RenamedApi")]
 	internal class RenamedSuffixController : ControllerBase { }
 }

@@ -3,7 +3,7 @@ using TypeContractor.Annotations;
 
 namespace TypeContractor.Example;
 
-[TypeContractorClient("RandomizerClient")]
+[TypeContractorName("RandomizerClient")]
 public class RandomController : ControllerBase
 {
 	private readonly Random _random = new();
