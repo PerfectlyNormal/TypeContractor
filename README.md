@@ -281,6 +281,10 @@ Available annotations:
   If you have multiple endpoints with the same name and different parameters,
   C# handles the overloads perfectly, but not so much in TypeScript.
   Use `TypeContractorName` to rename a single endpoint to whatever fits.
+* `TypeContractorNullable`:
+  If your project doesn't support nullable reference types, or you just
+  feel like you know better, you can mark a property as nullable and
+  override the automatically detected setting.
 
 ## Future improvements
 

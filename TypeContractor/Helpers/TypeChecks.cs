@@ -1,4 +1,5 @@
 using System.Reflection;
+using TypeContractor.Annotations;
 
 namespace TypeContractor.Helpers;
 
@@ -24,13 +25,16 @@ public static class TypeChecks
 	public static bool IsNullable(PropertyInfo propertyInfo)
 	{
 		ArgumentNullException.ThrowIfNull(propertyInfo);
-		return IsNullable(propertyInfo.PropertyType) || _nullabilityContext.Create(propertyInfo).WriteState == NullabilityState.Nullable;
+		return IsNullable(propertyInfo.PropertyType)
+			|| propertyInfo.CustomAttributes.Any(x => x.AttributeType.FullName == typeof(TypeContractorNullableAttribute).FullName)
+			|| _nullabilityContext.Create(propertyInfo).WriteState == NullabilityState.Nullable;
 	}
 
 	public static bool IsNullable(Type sourceType)
 	{
 		ArgumentNullException.ThrowIfNull(sourceType);
-		return Nullable.GetUnderlyingType(sourceType) != null || sourceType.Name == "Nullable`1";
+		return Nullable.GetUnderlyingType(sourceType) != null
+			|| sourceType.Name == "Nullable`1";
 	}
 
 	/// <summary>
