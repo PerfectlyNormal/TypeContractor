@@ -1,3 +1,5 @@
+using TypeContractor.Helpers;
+
 namespace TypeContractor.Output;
 
 public record ContractedType(string Name, string FullName, Type Type, Folder Folder)
@@ -9,10 +11,13 @@ public record ContractedType(string Name, string FullName, Type Type, Folder Fol
 
 		var nameparts = ApplyReplacements(name, configuration.Replacements).Split('.');
 		var typeName = nameparts.Last();
-		var folderName = nameparts.Take(..^1).ToList();
+		var folderName = nameparts
+			.Take(..^1)
+			.Select(x => CasingHelpers.ToCasing(x, configuration.Casing))
+			.ToList();
 
 		if (type.IsNestedPublic && type.DeclaringType is not null)
-			folderName.Add(type.DeclaringType.Name);
+			folderName.Add(CasingHelpers.ToCasing(type.DeclaringType.Name, configuration.Casing));
 
 		return new ContractedType(typeName, name, type, Folder.FromParts([.. folderName]));
 	}

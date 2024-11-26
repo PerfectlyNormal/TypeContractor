@@ -1,6 +1,7 @@
 using HandlebarsDotNet;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using TypeContractor.Helpers;
 using TypeContractor.Output;
 using TypeContractor.TypeScript;
 
@@ -40,7 +41,7 @@ public sealed class ApiClientWriterTests : IDisposable
 		apiClient.AddEndpoint(new ApiClientEndpoint("getLatestId", "latest", EndpointMethod.GET, typeof(Guid), typeof(Guid), false, [], null));
 
 		// Act
-		var result = Sut.Write(apiClient, [], _converter, false, _templateFn);
+		var result = Sut.Write(apiClient, [], _converter, false, _templateFn, Casing.Pascal);
 
 		// Assert
 		var file = File.ReadAllText(result).Trim();
@@ -62,7 +63,7 @@ public sealed class ApiClientWriterTests : IDisposable
 		apiClient.AddEndpoint(new ApiClientEndpoint("getLatestId", "", EndpointMethod.GET, typeof(Guid), typeof(Guid), false, [], null));
 
 		// Act
-		var result = Sut.Write(apiClient, [], _converter, false, _templateFn);
+		var result = Sut.Write(apiClient, [], _converter, false, _templateFn, Casing.Pascal);
 
 		// Assert
 		var file = File.ReadAllText(result).Trim();
@@ -84,7 +85,7 @@ public sealed class ApiClientWriterTests : IDisposable
 		apiClient.AddEndpoint(new ApiClientEndpoint("getLatestId", "latest", EndpointMethod.GET, null, typeof(Guid), false, [], null));
 
 		// Act
-		var result = Sut.Write(apiClient, [], _converter, true, _templateFn);
+		var result = Sut.Write(apiClient, [], _converter, true, _templateFn, Casing.Pascal);
 
 		// Assert
 		var file = File.ReadAllText(result).Trim();
@@ -106,7 +107,7 @@ public sealed class ApiClientWriterTests : IDisposable
 		apiClient.AddEndpoint(new ApiClientEndpoint("getLatestId", "latest", EndpointMethod.POST, null, typeof(Guid), false, [], null));
 
 		// Act
-		var result = Sut.Write(apiClient, [], _converter, true, _templateFn);
+		var result = Sut.Write(apiClient, [], _converter, true, _templateFn, Casing.Pascal);
 
 		// Assert
 		var file = File.ReadAllText(result).Trim();
@@ -128,7 +129,7 @@ public sealed class ApiClientWriterTests : IDisposable
 		apiClient.AddEndpoint(new ApiClientEndpoint("getLatestId", "latest", EndpointMethod.POST, null, typeof(Guid), false, [new EndpointParameter("year", typeof(int), null, false, true, false, false, false, false, false, false)], null));
 
 		// Act
-		var result = Sut.Write(apiClient, [], _converter, true, _templateFn);
+		var result = Sut.Write(apiClient, [], _converter, true, _templateFn, Casing.Pascal);
 
 		// Assert
 		var file = File.ReadAllText(result).Trim();
@@ -150,7 +151,7 @@ public sealed class ApiClientWriterTests : IDisposable
 		apiClient.AddEndpoint(new ApiClientEndpoint("getLatestId", "latest", EndpointMethod.GET, null, typeof(Guid), false, [new EndpointParameter("year", typeof(int), null, false, false, false, true, false, false, false, false)], null));
 
 		// Act
-		var result = Sut.Write(apiClient, [], _converter, true, _templateFn);
+		var result = Sut.Write(apiClient, [], _converter, true, _templateFn, Casing.Pascal);
 
 		// Assert
 		var file = File.ReadAllText(result).Trim();
@@ -171,7 +172,7 @@ public sealed class ApiClientWriterTests : IDisposable
 		apiClient.AddEndpoint(new ApiClientEndpoint("getLatestId", "latest/{year}", EndpointMethod.GET, null, typeof(Guid), false, [new EndpointParameter("year", typeof(int), null, false, false, true, false, false, false, false, false)], null));
 
 		// Act
-		var result = Sut.Write(apiClient, [], _converter, true, _templateFn);
+		var result = Sut.Write(apiClient, [], _converter, true, _templateFn, Casing.Pascal);
 
 		// Assert
 		var file = File.ReadAllText(result).Trim();
@@ -197,7 +198,7 @@ public sealed class ApiClientWriterTests : IDisposable
 		apiClient.AddEndpoint(new ApiClientEndpoint("getLatestId", "latest", EndpointMethod.GET, null, typeof(Guid), false, [new EndpointParameter("request", typeof(PaginatedRequest), null, false, false, false, true, false, false, false, false)], null));
 
 		// Act
-		var result = Sut.Write(apiClient, outputTypes, _converter, true, _templateFn);
+		var result = Sut.Write(apiClient, outputTypes, _converter, true, _templateFn, Casing.Pascal);
 
 		// Assert
 		var file = File.ReadAllText(result).Trim();
@@ -222,7 +223,7 @@ public sealed class ApiClientWriterTests : IDisposable
 		apiClient.AddEndpoint(new ApiClientEndpoint("getLatestId", "latest/{year?}", EndpointMethod.GET, null, typeof(Guid), false, [new EndpointParameter("year", typeof(int), null, false, false, true, false, false, false, false, true)], null));
 
 		// Act
-		var result = Sut.Write(apiClient, [], _converter, true, _templateFn);
+		var result = Sut.Write(apiClient, [], _converter, true, _templateFn, Casing.Pascal);
 
 		// Assert
 		var file = File.ReadAllText(result).Trim();
@@ -237,6 +238,49 @@ public sealed class ApiClientWriterTests : IDisposable
 			.And.Contain("else")
 			.And.Contain("url.pathname = url.pathname.replace('/{year?}', '');")
 			.And.NotContain("url.searchParams.append(");
+	}
+
+	[Theory]
+	[InlineData(Casing.Camel)]
+	[InlineData(Casing.Pascal)]
+	[InlineData(Casing.Kebab)]
+	[InlineData(Casing.Snake)]
+	public void Changes_File_Name_According_To_Casing(Casing casing)
+	{
+		// Arrange
+		var apiClient = new ApiClient("TestClient", "TestController", "test", null);
+		apiClient.AddEndpoint(new ApiClientEndpoint("getLatestId", "latest", EndpointMethod.GET, typeof(Guid), typeof(Guid), false, [], null));
+
+		// Act
+		var result = Sut.Write(apiClient, [], _converter, false, _templateFn, casing);
+
+		// Assert
+		switch (casing)
+		{
+			case Casing.Camel:
+				result.Should().EndWith("testClient.ts");
+				break;
+			case Casing.Pascal:
+				result.Should().EndWith("TestClient.ts");
+				break;
+			case Casing.Kebab:
+				result.Should().EndWith("test-client.ts");
+				break;
+			case Casing.Snake:
+				result.Should().EndWith("test_client.ts");
+				break;
+		}
+	}
+
+	[Fact]
+	public void Throws_Exception_When_Casing_Not_Supported()
+	{
+		// Arrange
+		var apiClient = new ApiClient("TestClient", "TestController", "test", null);
+		apiClient.AddEndpoint(new ApiClientEndpoint("getLatestId", "latest", EndpointMethod.GET, typeof(Guid), typeof(Guid), false, [], null));
+
+		// Act & Assert
+		Assert.Throws<ArgumentOutOfRangeException>(() => Sut.Write(apiClient, [], _converter, false, _templateFn, (Casing)4));
 	}
 
 	private class PaginatedRequest

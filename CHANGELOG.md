@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Handle name collisions when creationg API clients (#106)
+- Options for file name casings, defaulting to `pascal` but can be set to `camel`, `snake` or `kebab`
 
 ## [0.14.0] - 2024-11-17
 

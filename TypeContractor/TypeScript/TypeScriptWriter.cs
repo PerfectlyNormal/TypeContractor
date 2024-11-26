@@ -11,7 +11,7 @@ public class TypeScriptWriter(string outputPath)
 	private static readonly Encoding _utf8WithoutBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 	private readonly StringBuilder _builder = new();
 
-	public string Write(OutputType outputType, IEnumerable<OutputType> allTypes, bool buildZodSchema)
+	public string Write(OutputType outputType, IEnumerable<OutputType> allTypes, bool buildZodSchema, Casing casing)
 	{
 		ArgumentNullException.ThrowIfNull(outputType);
 
@@ -23,7 +23,7 @@ public class TypeScriptWriter(string outputPath)
 			ZodSchemaWriter.Write(outputType, allTypes, _builder);
 
 		var directory = Path.Combine(outputPath, outputType.ContractedType.Folder.Path);
-		var filePath = Path.Combine(directory, $"{outputType.Name}.ts");
+		var filePath = Path.Combine(directory, $"{outputType.FileName}.ts");
 
 		// Create directory if needed
 		if (!Directory.Exists(directory))
@@ -74,7 +74,7 @@ public class TypeScriptWriter(string outputPath)
 				try
 				{
 					var relativePath = PathHelpers.RelativePath(importedType.ContractedType.Folder.Name, type.ContractedType.Folder.Name);
-					var importPath = $"{relativePath}/{importedType.Name}".Replace("//", "/", StringComparison.InvariantCultureIgnoreCase);
+					var importPath = $"{relativePath}/{importedType.FileName}".Replace("//", "/", StringComparison.InvariantCultureIgnoreCase);
 
 					alreadyImportedTypes.Add(import.ImportType);
 					var importTypes = new List<string> { import.ImportType };

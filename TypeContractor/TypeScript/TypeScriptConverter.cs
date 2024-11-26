@@ -30,6 +30,7 @@ public class TypeScriptConverter
 		return new(
 			type.Name,
 			type.FullName!,
+			CasingHelpers.ToCasing(type.Name.Replace("_", ""), _configuration.Casing),
 			contractedType ?? ContractedType.FromName(type.FullName!, type, _configuration),
 			type.IsEnum,
 			type.IsEnum ? null : GetProperties(type).Distinct().ToList(),

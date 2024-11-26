@@ -1,6 +1,7 @@
 using DotNetConfig;
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using TypeContractor;
 using TypeContractor.Logger;
 using TypeContractor.Tool;
 
@@ -20,6 +21,7 @@ var logLevelOptions = new Option<LogLevel>("--log-level", () => LogLevel.Info);
 var buildZodSchemasOptions = new Option<bool>("--build-zod-schemas", () => false, "Enable experimental support for Zod schemas alongside generated types.");
 var generateApiClientsOptions = new Option<bool>("--generate-api-clients", () => false, "Enable experimental support for auto-generating API clients for each endpoint.");
 var apiClientsTemplateOptions = new Option<string>("--api-client-template", () => "aurelia", "Template to use for API clients. Either 'aurelia', 'react-axios' (built-in) or a path to a Handlebars file, including extension");
+var casingOptions = new Option<Casing>("--casing", () => Casing.Pascal, "Casing to use for generated file names");
 assemblyOption.IsRequired = true;
 outputOption.IsRequired = true;
 
@@ -36,6 +38,7 @@ rootCommand.AddOption(logLevelOptions);
 rootCommand.AddOption(buildZodSchemasOptions);
 rootCommand.AddOption(generateApiClientsOptions);
 rootCommand.AddOption(apiClientsTemplateOptions);
+rootCommand.AddOption(casingOptions);
 
 apiClientsTemplateOptions.AddValidator(result =>
 {
@@ -75,6 +78,7 @@ rootCommand.SetHandler(async (context) =>
 	var buildZodSchemasValue = context.ParseResult.GetValueForOption(buildZodSchemasOptions);
 	var generateApiClientsValue = context.ParseResult.GetValueForOption(generateApiClientsOptions);
 	var apiClientsTemplateValue = context.ParseResult.GetValueForOption(apiClientsTemplateOptions)!;
+	var casingValue = context.ParseResult.GetValueForOption(casingOptions);
 
 	Log.Instance = new ConsoleLogger(logLevelValue);
 	var generator = new Generator(assemblyOptionValue,
@@ -88,7 +92,8 @@ rootCommand.SetHandler(async (context) =>
 								  dotnetVersionValue,
 								  buildZodSchemasValue,
 								  generateApiClientsValue,
-								  apiClientsTemplateValue);
+								  apiClientsTemplateValue,
+								  casingValue);
 
 	context.ExitCode = await generator.Execute();
 });

@@ -19,6 +19,7 @@ public class TypeContractorConfiguration
 	private bool _buildZodSchemas;
 	private List<ApiClient> _apiClients = [];
 	private string? _apiClientTemplate;
+	private Casing? _casing;
 
 	public IReadOnlyDictionary<string, string> TypeMaps => _map;
 	public IReadOnlyList<string> Suffixes => _suffixes.AsReadOnly();
@@ -31,6 +32,7 @@ public class TypeContractorConfiguration
 	public bool GenerateApiClients => _apiClients.Count != 0;
 	public IReadOnlyList<ApiClient> ApiClients => _apiClients.AsReadOnly();
 	public string ApiClientTemplate => _apiClientTemplate ?? "aurelia";
+	public Casing Casing => _casing ?? Casing.Pascal;
 
 	/// <summary>
 	/// Set up a default configuration using <see cref="AddDefaultSuffixes"/> and <see cref="AddDefaultTypeMaps"/>
@@ -275,6 +277,16 @@ public class TypeContractorConfiguration
 	{
 		_buildZodSchemas = true;
 
+		return this;
+	}
+
+	/// <summary>
+	/// Set the casing to use for generated types. Default is <c>pascal</c>.
+	/// </summary>
+	/// <returns>The configuration object for continued chaining</returns>
+	public TypeContractorConfiguration SetCasing(Casing casing)
+	{
+		_casing = casing;
 		return this;
 	}
 

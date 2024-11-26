@@ -3,7 +3,7 @@ using System.Text;
 
 namespace TypeContractor.Output;
 
-public record OutputType(string Name, string FullName, ContractedType ContractedType, bool IsEnum, ICollection<OutputProperty>? Properties, ICollection<OutputEnumMember>? EnumMembers)
+public record OutputType(string Name, string FullName, string FileName, ContractedType ContractedType, bool IsEnum, ICollection<OutputProperty>? Properties, ICollection<OutputEnumMember>? EnumMembers)
 {
 	public override string ToString()
 	{

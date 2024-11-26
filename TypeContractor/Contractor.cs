@@ -86,7 +86,7 @@ public class Contractor
 			{
 				try
 				{
-					var filePath = writer.Write(type, outputTypes, Configuration.BuildZodSchemas);
+					var filePath = writer.Write(type, outputTypes, Configuration.BuildZodSchemas, Configuration.Casing);
 					generatedFiles.Add(filePath);
 				}
 				catch (TypeScriptReferenceException ex)
@@ -132,7 +132,7 @@ public class Contractor
 			{
 				try
 				{
-					var filePath = apiWriter.Write(client, allTypes, converter, Configuration.BuildZodSchemas, templateFn);
+					var filePath = apiWriter.Write(client, allTypes, converter, Configuration.BuildZodSchemas, templateFn, Configuration.Casing);
 					generatedFiles.Add(filePath);
 				}
 				catch (TypeScriptReferenceException ex)

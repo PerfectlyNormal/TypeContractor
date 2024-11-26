@@ -20,6 +20,7 @@ internal class Generator
 	private readonly bool _buildZodSchemas;
 	private readonly bool _generateApiClients;
 	private readonly string _apiClientTemplate;
+	private readonly Casing? _casing;
 
 	public Generator(string assemblyPath,
 					 string output,
@@ -32,7 +33,8 @@ internal class Generator
 					 int dotnetVersion,
 					 bool buildZodSchemas,
 					 bool generateApiClients,
-					 string apiClientTemplate)
+					 string apiClientTemplate,
+					 Casing? casing)
 	{
 		_assemblyPath = assemblyPath;
 		_output = output;
@@ -46,6 +48,7 @@ internal class Generator
 		_buildZodSchemas = buildZodSchemas;
 		_generateApiClients = generateApiClients;
 		_apiClientTemplate = apiClientTemplate;
+		_casing = casing;
 	}
 
 	public Task<int> Execute()
@@ -208,6 +211,9 @@ internal class Generator
 
 				configuration = configuration.AddCustomMap(parts.ElementAt(0), parts.ElementAt(1));
 			}
+
+		if (_casing is not null)
+			configuration = configuration.SetCasing(_casing.Value);
 
 		return Contractor.WithConfiguration(configuration);
 	}

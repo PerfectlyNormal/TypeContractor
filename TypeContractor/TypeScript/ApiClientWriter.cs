@@ -23,7 +23,7 @@ public partial class ApiClientWriter(string outputPath, string? relativeRoot)
 	[GeneratedRegex(@"([^\$])\{([A-Za-z0-9]+)\}")]
 	private static partial Regex RouteParameterRegex();
 
-	public string Write(ApiClient apiClient, IEnumerable<OutputType> allTypes, TypeScriptConverter converter, bool buildZodSchema, HandlebarsTemplate<object, ApiClientTemplateDto> template)
+	public string Write(ApiClient apiClient, IEnumerable<OutputType> allTypes, TypeScriptConverter converter, bool buildZodSchema, HandlebarsTemplate<object, ApiClientTemplateDto> template, Casing casing)
 	{
 		var _builder = new StringBuilder();
 		ArgumentNullException.ThrowIfNull(apiClient);
@@ -31,7 +31,8 @@ public partial class ApiClientWriter(string outputPath, string? relativeRoot)
 		Log.Instance.LogDebug($"Processing controller {apiClient.Name}");
 
 		var directory = Path.Combine(outputPath, "clients");
-		var filePath = Path.Combine(directory, $"{apiClient.Name}.ts");
+		var fileName = CasingHelpers.ToCasing(apiClient.Name, casing);
+		var filePath = Path.Combine(directory, $"{fileName}.ts");
 
 		// Handle endpoints
 		var endpoints = new List<EndpointTemplateDto>(apiClient.Endpoints.Count());
@@ -185,7 +186,7 @@ public partial class ApiClientWriter(string outputPath, string? relativeRoot)
 				}
 
 				var outputType = allTypes.First(x => x.FullName == (returnType.InnerType?.FullName ?? returnType.FullName));
-				var importPath = $"{relativeRoot}/{outputType.ContractedType.Folder.Path.Replace('\\', '/')}/{outputType.Name}";
+				var importPath = $"{relativeRoot}/{outputType.ContractedType.Folder.Path.Replace('\\', '/')}/{outputType.FileName}";
 				var returnImport = $"import {{ {string.Join(", ", importTypes)} }} from '{importPath}';";
 				imports.Add(returnImport);
 			}
@@ -197,7 +198,7 @@ public partial class ApiClientWriter(string outputPath, string? relativeRoot)
 					continue;
 
 				var outputType = allTypes.First(x => x.FullName == (parameter.Type.InnerType?.FullName ?? parameter.Type.FullName));
-				var importPath = $"{relativeRoot}/{outputType.ContractedType.Folder.Path.Replace('\\', '/')}/{outputType.Name}";
+				var importPath = $"{relativeRoot}/{outputType.ContractedType.Folder.Path.Replace('\\', '/')}/{outputType.FileName}";
 				var parameterImport = $"import {{ {parameter.Type.ImportType} }} from '{importPath}';";
 				imports.Add(parameterImport);
 			}
