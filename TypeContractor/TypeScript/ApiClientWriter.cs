@@ -144,7 +144,7 @@ public partial class ApiClientWriter(string outputPath, string? relativeRoot)
 			Directory.CreateDirectory(directory);
 
 		// Write file
-		File.WriteAllText(filePath, result.Trim() + Environment.NewLine + Environment.NewLine, _utf8WithoutBom);
+		File.WriteAllText(filePath, result.Trim() + Environment.NewLine, _utf8WithoutBom);
 
 		// Return the path we wrote to
 		return filePath;

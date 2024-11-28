@@ -30,7 +30,7 @@ public class TypeScriptWriter(string outputPath)
 			Directory.CreateDirectory(directory);
 
 		// Write file
-		File.WriteAllText(filePath, _builder.ToString().Trim() + Environment.NewLine + Environment.NewLine, _utf8WithoutBom);
+		File.WriteAllText(filePath, _builder.ToString().Trim() + Environment.NewLine, _utf8WithoutBom);
 
 		// Return the path we wrote to
 		return filePath;
