@@ -2,8 +2,8 @@ name: CI
 
 on:
   create:
-    branches: 
-    - release/**
+    tags:
+    - v*
   push:
     branches:
     - main
@@ -54,5 +54,5 @@ jobs:
       run: dotnet test /p:Configuration=Release --no-restore --no-build --verbosity normal
       
     - name: Publish
-      if: startsWith(github.ref, 'refs/heads/release')
+      if: startsWith(github.ref, 'refs/tags/v')
       run: dotnet nuget push **\*.nupkg -s 'https://api.nuget.org/v3/index.json' --api-key ${{secrets.NUGET_API_KEY}}
