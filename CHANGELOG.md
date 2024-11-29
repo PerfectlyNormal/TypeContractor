@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Handle name collisions when creationg API clients (#106)
 - Add annotations package to further customize output (#107)
+- Support for .NET9
+
+### Changed
+
+- Bump Microsoft.NET.Test.Sdk from 17.11.1 to 17.12.0
+- Bump System.Reflection.MetadataLoadContext from 8.0.1 to 9.0.0
 
 ## [0.14.0] - 2024-11-17
 
