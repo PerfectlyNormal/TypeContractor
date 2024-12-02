@@ -97,7 +97,7 @@ public partial class ApiClientWriter(string outputPath, string? relativeRoot)
 				}
 			}
 
-			var requiresBody = endpoint.Method is EndpointMethod.POST or EndpointMethod.PUT or EndpointMethod.PATCH;
+			var requiresBody = endpoint.Method is EndpointMethod.POST or EndpointMethod.PUT or EndpointMethod.PATCH or EndpointMethod.DELETE;
 			var body = endpoint.Parameters.FirstOrDefault(p => p.FromBody || (!p.FromRoute && !p.FromQuery));
 
 			var returnUnparsedResponse = endpoint.UnwrappedReturnType is null && endpoint.ReturnType is null;

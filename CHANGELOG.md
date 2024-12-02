@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add annotations package to further customize output (#107)
 - Support for .NET9
 
+### Fixed
+
+- Send request bodies on DELETE requests even though they should not be used
+
 ### Changed
 
 - Bump Microsoft.NET.Test.Sdk from 17.11.1 to 17.12.0
