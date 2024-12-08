@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Options for file name casings, defaulting to `pascal` but can be set to `camel`, `snake` or `kebab`
+- Add header to each file explaining that it is auto-generated and not to change manually
 
 ### Changed
 

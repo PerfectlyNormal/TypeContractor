@@ -135,7 +135,8 @@ public partial class ApiClientWriter(string outputPath, string? relativeRoot)
 			apiClient.Obsolete is not null,
 			apiClient.Obsolete?.Reason ?? "",
 			endpoints,
-			buildZodSchema
+			buildZodSchema,
+			Contractor.Version
 			);
 
 		var result = template(data);

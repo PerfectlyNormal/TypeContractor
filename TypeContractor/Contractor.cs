@@ -9,6 +9,8 @@ namespace TypeContractor;
 
 public class Contractor
 {
+	public static string Version { get; private set; }
+
 	public static Contractor WithConfiguration(TypeContractorConfiguration configuration)
 	{
 		ArgumentNullException.ThrowIfNull(configuration, nameof(configuration));
@@ -30,6 +32,11 @@ public class Contractor
 		configurationBuilder(configuration);
 
 		return new Contractor(configuration);
+	}
+
+	static Contractor()
+	{
+		Version = typeof(Contractor).Assembly.GetName().Version!.ToString(2);
 	}
 
 	private Contractor(TypeContractorConfiguration configuration)
