@@ -30,7 +30,11 @@ public class TypeScriptWriter(string outputPath)
 			Directory.CreateDirectory(directory);
 
 		// Write file
-		File.WriteAllText(filePath, _builder.ToString().Trim() + Environment.NewLine, _utf8WithoutBom);
+		using var stream = IoHelpers.WaitForFile(filePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite)
+			?? throw new IOException($"Unable to open {filePath} for writing.");
+		using var sw = new StreamWriter(stream, _utf8WithoutBom);
+		sw.Write(_builder.ToString().Trim() + Environment.NewLine);
+		sw.Flush();
 
 		// Return the path we wrote to
 		return filePath;

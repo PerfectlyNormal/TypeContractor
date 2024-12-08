@@ -25,7 +25,6 @@ public partial class ApiClientWriter(string outputPath, string? relativeRoot)
 
 	public string Write(ApiClient apiClient, IEnumerable<OutputType> allTypes, TypeScriptConverter converter, bool buildZodSchema, HandlebarsTemplate<object, ApiClientTemplateDto> template, Casing casing)
 	{
-		var _builder = new StringBuilder();
 		ArgumentNullException.ThrowIfNull(apiClient);
 
 		Log.Instance.LogDebug($"Processing controller {apiClient.Name}");
@@ -145,7 +144,11 @@ public partial class ApiClientWriter(string outputPath, string? relativeRoot)
 			Directory.CreateDirectory(directory);
 
 		// Write file
-		File.WriteAllText(filePath, result.Trim() + Environment.NewLine, _utf8WithoutBom);
+		using var stream = IoHelpers.WaitForFile(filePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite)
+			?? throw new IOException($"Unable to open {filePath} for writing.");
+		using var sw = new StreamWriter(stream, _utf8WithoutBom);
+		sw.Write(result.Trim() + Environment.NewLine);
+		sw.Flush();
 
 		// Return the path we wrote to
 		return filePath;
