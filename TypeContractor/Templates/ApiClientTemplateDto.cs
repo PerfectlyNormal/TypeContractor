@@ -7,4 +7,5 @@ public record ApiClientTemplateDto(
 	bool IsObsolete,
 	string ObsoleteReason,
 	IEnumerable<EndpointTemplateDto> Endpoints,
-	bool BuildZodSchema);
+	bool BuildZodSchema,
+	string TypeContractorVersion);
