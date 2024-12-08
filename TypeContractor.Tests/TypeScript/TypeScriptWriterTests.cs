@@ -345,16 +345,16 @@ public class TypeScriptWriterTests : IDisposable
 		switch (casing)
 		{
 			case Casing.Camel:
-				result.Should().EndWith("typeContractor\\tests\\typeScript\\simpleTypes.ts");
+				result.Should().EndWith(Path.Join("typeContractor", "tests", "typeScript", "simpleTypes.ts"));
 				break;
 			case Casing.Pascal:
-				result.Should().EndWith("TypeContractor\\Tests\\TypeScript\\SimpleTypes.ts");
+				result.Should().EndWith(Path.Join("TypeContractor", "Tests", "TypeScript", "SimpleTypes.ts"));
 				break;
 			case Casing.Kebab:
-				result.Should().EndWith("type-contractor\\tests\\type-script\\simple-types.ts");
+				result.Should().EndWith(Path.Join("type-contractor", "tests", "type-script", "simple-types.ts"));
 				break;
 			case Casing.Snake:
-				result.Should().EndWith("type_contractor\\tests\\type_script\\simple_types.ts");
+				result.Should().EndWith(Path.Join("type_contractor", "tests", "type_script", "simple_types.ts"));
 				break;
 		}
 	}
