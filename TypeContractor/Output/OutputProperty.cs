@@ -1,6 +1,18 @@
 namespace TypeContractor.Output;
 
-public class OutputProperty(string sourceName, Type sourceType, Type? innerSourceType, string destinationName, string destinationType, string importType, bool isBuiltin, bool isArray, bool isNullable, bool isReadonly)
+public class OutputProperty(
+	string sourceName,
+	Type sourceType,
+	Type? innerSourceType,
+	string destinationName,
+	string destinationType,
+	string importType,
+	bool isBuiltin,
+	bool isArray,
+	bool isNullable,
+	bool isReadonly,
+	bool isGeneric,
+	ICollection<DestinationType> genericTypeArguments)
 {
 	public string SourceName { get; set; } = sourceName;
 	public Type SourceType { get; set; } = sourceType;
@@ -12,6 +24,8 @@ public class OutputProperty(string sourceName, Type sourceType, Type? innerSourc
 	public bool IsArray { get; set; } = isArray;
 	public bool IsNullable { get; set; } = isNullable;
 	public bool IsReadonly { get; set; } = isReadonly;
+	public bool IsGeneric { get; set; } = isGeneric;
+	public ICollection<DestinationType> GenericTypeArguments { get; } = genericTypeArguments;
 	public ObsoleteInfo? Obsolete { get; set; }
 
 	/// <summary>
@@ -37,6 +51,8 @@ public class OutputProperty(string sourceName, Type sourceType, Type? innerSourc
 			   IsArray == property.IsArray &&
 			   IsNullable == property.IsNullable &&
 			   IsReadonly == property.IsReadonly &&
+			   IsGeneric == property.IsGeneric &&
+			   GenericTypeArguments.SequenceEqual(property.GenericTypeArguments) &&
 			   EqualityComparer<ObsoleteInfo?>.Default.Equals(Obsolete, property.Obsolete);
 	}
 
@@ -53,6 +69,7 @@ public class OutputProperty(string sourceName, Type sourceType, Type? innerSourc
 		hash.Add(IsArray);
 		hash.Add(IsNullable);
 		hash.Add(IsReadonly);
+		hash.Add(IsGeneric);
 		hash.Add(Obsolete);
 		return hash.ToHashCode();
 	}

@@ -35,7 +35,9 @@ namespace TypeContractor.TypeScript
 
 		public static string? BuildImport(OutputProperty import)
 		{
-			var sourceType = import.SourceType.IsGenericType ? TypeChecks.GetGenericType(import.SourceType) : import.InnerSourceType ?? import.SourceType;
+			var sourceType = import.InnerSourceType ?? import.SourceType;
+			if (TypeChecks.IsNullable(sourceType))
+				sourceType = TypeChecks.GetGenericType(sourceType);
 
 			// We don't currently import any schema for enums
 			if (sourceType.IsEnum)
@@ -60,6 +62,7 @@ namespace TypeContractor.TypeScript
 				return GetImportType(TypeChecks.GetGenericType(innerSourceType), sourceType);
 
 			var name = innerSourceType?.Name ?? sourceType.Name;
+			name = name.Split('`').First();
 			return name;
 		}
 
@@ -85,6 +88,7 @@ namespace TypeContractor.TypeScript
 			else if (!property.IsBuiltin && !property.IsNullable)
 			{
 				var name = property.InnerSourceType?.Name ?? property.SourceType.Name;
+				name = name.Split('`').First();
 				output = $"{name}Schema";
 			}
 			else if (property.IsBuiltin)
@@ -94,11 +98,12 @@ namespace TypeContractor.TypeScript
 			else if (!property.IsBuiltin && property.IsArray && property.InnerSourceType is not null)
 			{
 				var name = property.InnerSourceType.Name;
+				name = name.Split('`').First();
 				output = $"{name}Schema";
 			}
 			else
 			{
-				output = $"{property.SourceType.Name}Schema";
+				output = $"{property.SourceType.Name.Split('`').First()}Schema";
 			}
 
 			if (property.IsArray)

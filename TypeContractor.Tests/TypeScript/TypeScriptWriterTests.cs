@@ -49,6 +49,80 @@ public class TypeScriptWriterTests : IDisposable
 	}
 
 	[Fact]
+	public void Can_Write_Generic_Types()
+	{
+		// Arrange
+		var outputTypes = BuildOutputTypes(typeof(ResponseWithOverrides));
+
+		// Act
+		var responseResult = Sut.Write(outputTypes.First(x => x.Name == "ResponseWithOverrides"), outputTypes, true);
+		var overrideResult = Sut.Write(outputTypes.First(x => x.Name == "Overridable"), outputTypes, true);
+
+		// Assert
+		var responseFile = File.ReadAllLines(responseResult).Select(x => x.TrimStart());
+		responseFile.Should()
+			.NotBeEmpty()
+			.And.Contain("import { Overridable, OverridableSchema } from './Overridable';")
+
+			.And.Contain("export interface ResponseWithOverrides {")
+			.And.Contain("name: Overridable<string>;")
+			.And.Contain("someBool: Overridable<boolean>;")
+
+			.And.Contain("export const ResponseWithOverridesSchema = z.object({")
+			.And.Contain("name: OverridableSchema,")
+			.And.Contain("someBool: OverridableSchema,");
+
+		var overrideFile = File.ReadAllLines(overrideResult).Select(x => x.TrimStart());
+		overrideFile.Should()
+			.NotBeEmpty()
+			.And.Contain("export interface Overridable<T> {")
+			.And.Contain("value?: T;")
+			.And.Contain("isOverridden: boolean;")
+
+			.And.Contain("export const OverridableSchema = z.object({")
+			.And.Contain("value: z.any().nullable(),")
+			.And.Contain("isOverridden: z.boolean(),");
+	}
+
+	[Fact]
+	public void Only_Includes_Relevant_Zod_Schemas()
+	{
+		// Arrange
+		var outputTypes = BuildOutputTypes(typeof(ResponseWithOverridableCustomType));
+
+		// Act
+		var responseResult = Sut.Write(outputTypes.First(x => x.Name == "ResponseWithOverridableCustomType"), outputTypes, true);
+		var overrideResult = Sut.Write(outputTypes.First(x => x.Name == "Overridable"), outputTypes, true);
+		var requestResult = Sut.Write(outputTypes.First(x => x.Name == "MyCustomRequest"), outputTypes, true);
+
+		// Assert
+		var responseFile = File.ReadAllLines(responseResult).Select(x => x.TrimStart());
+		var overrideFile = File.ReadAllLines(overrideResult).Select(x => x.TrimStart());
+		var requestFile = File.ReadAllLines(requestResult).Select(x => x.TrimStart());
+
+		responseFile.Should()
+			.NotBeEmpty()
+			.And.Contain("import { Overridable, OverridableSchema } from './Overridable';")
+			.And.Contain("import { MyCustomRequest } from './MyCustomRequest';")
+
+			.And.Contain("export interface ResponseWithOverridableCustomType {")
+			.And.Contain("nestedRequest: Overridable<MyCustomRequest>;")
+
+			.And.Contain("export const ResponseWithOverridableCustomTypeSchema = z.object({")
+			.And.Contain("nestedRequest: OverridableSchema,");
+
+		overrideFile.Should()
+			.NotBeEmpty()
+			.And.Contain("export interface Overridable<T> {")
+			.And.Contain("value?: T;")
+			.And.Contain("isOverridden: boolean;")
+
+			.And.Contain("export const OverridableSchema = z.object({")
+			.And.Contain("value: z.any().nullable(),")
+			.And.Contain("isOverridden: z.boolean(),");
+	}
+
+	[Fact]
 	public void Handles_Dictionary_With_Complex_Values()
 	{
 		// Arrange
@@ -483,3 +557,29 @@ public class TypeScriptWriterTests : IDisposable
 			_outputDirectory.Delete(true);
 	}
 }
+
+#region Test input
+#pragma warning disable CS8618
+public class Overridable<T>
+{
+	public T? Value { get; set; }
+	public bool IsOverridden { get; set; }
+}
+
+public class ResponseWithOverrides
+{
+	public Overridable<string> Name { get; set; }
+	public Overridable<bool?> SomeBool { get; set; }
+}
+
+public class ResponseWithOverridableCustomType
+{
+	public Overridable<MyCustomRequest> NestedRequest { get; set; }
+}
+
+public class MyCustomRequest
+{
+	public string Name { get; set; }
+}
+#pragma warning restore CS8618
+#endregion

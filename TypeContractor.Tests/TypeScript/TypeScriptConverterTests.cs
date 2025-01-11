@@ -343,6 +343,26 @@ public class TypeScriptConverterTests
 		second.IsNullable.Should().BeTrue();
 	}
 
+	[Fact]
+	public void Handles_Generics()
+	{
+		var result = Sut.Convert(typeof(ResponseWithOverrides));
+
+		result.Should().NotBeNull();
+		result.Properties.Should().NotBeNull();
+		result.Properties!.Should().HaveCount(2);
+		result.Properties!.First().DestinationType.Should().Be("Overridable<string>");
+		result.Properties!.Last().DestinationType.Should().Be("Overridable<boolean>");
+
+		Sut.CustomMappedTypes.Should().ContainSingle();
+		var overridableType = Sut.CustomMappedTypes.First().Value;
+		overridableType.Properties.Should().HaveCount(2);
+		overridableType.Properties!.First().DestinationName.Should().Be("value");
+		overridableType.Properties!.First().DestinationType.Should().Be("T");
+		overridableType.Properties!.Last().DestinationName.Should().Be("isOverridden");
+		overridableType.Properties!.Last().DestinationType.Should().Be("boolean");
+	}
+
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 	private record TopLevelRecord(string Name, SecondStoryRecord? SecondStoryRecord);
 	private record SecondStoryRecord(string Description, SomeOtherDeeplyNestedRecord? SomeOtherDeeplyNestedRecord);
@@ -464,6 +484,18 @@ public class TypeScriptConverterTests
 	private class TimeOnlyResponse
 	{
 		public TimeOnly MeetingTime { get; set; }
+	}
+
+	private class Overridable<T>
+	{
+		public T? Value { get; set; }
+		public bool IsOverridden { get; set; }
+	}
+
+	private class ResponseWithOverrides
+	{
+		public Overridable<string> Name { get; set; }
+		public Overridable<bool?> SomeBool { get; set; }
 	}
 
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
