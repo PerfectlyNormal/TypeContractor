@@ -48,11 +48,24 @@ public class TypeScriptWriter(string outputPath)
 
 	private void BuildImports(OutputType type, IEnumerable<OutputType> allTypes, bool buildZodSchema)
 	{
-		var properties = type.Properties ?? Enumerable.Empty<OutputProperty>();
+		var properties = type.Properties ?? [];
 		var imports = properties
 			.Where(p => !p.IsBuiltin)
 			.DistinctBy(p => p.InnerSourceType ?? p.SourceType)
 			.ToList();
+
+		foreach (var property in properties)
+		{
+			if (!property.IsGeneric) continue;
+			if (property.GenericTypeArguments.Count == 0) continue;
+
+			foreach (var genArg in property.GenericTypeArguments)
+			{
+				if (genArg.IsBuiltin) continue;
+				if (genArg.InnerType is null && genArg.SourceType is null) continue;
+				imports.Add(new OutputProperty(genArg.TypeName, (genArg.InnerType ?? genArg.SourceType)!, null, "", genArg.TypeName, genArg.ImportType, false, genArg.IsArray, genArg.IsNullable, genArg.IsReadonly, genArg.IsGeneric, genArg.GenericTypeArguments));
+			}
+		}
 
 		if (buildZodSchema)
 			_builder.AppendLine(ZodSchemaWriter.LibraryImport);
@@ -88,7 +101,8 @@ public class TypeScriptWriter(string outputPath)
 
 					alreadyImportedTypes.Add(import.ImportType);
 					var importTypes = new List<string> { import.ImportType };
-					if (buildZodSchema)
+					var shouldImportSchema = type.Properties is null || type.Properties.Any(x => x.ImportType == import.ImportType);
+					if (buildZodSchema && shouldImportSchema)
 					{
 						var zodImport = ZodSchemaWriter.BuildImport(import);
 						if (!string.IsNullOrWhiteSpace(zodImport))
@@ -117,7 +131,14 @@ public class TypeScriptWriter(string outputPath)
 		}
 		else
 		{
-			_builder.AppendLine($"export interface {type.Name} {{");
+			var genericPropertyTypes = type.IsGeneric
+				? type.GenericTypeArguments ?? []
+				: [];
+			var genericTypeArguments = genericPropertyTypes.Count > 0
+				? $"<{string.Join(", ", genericPropertyTypes.Select(x => x.TypeName))}>"
+				: "";
+
+			_builder.AppendLine($"export interface {type.Name}{genericTypeArguments} {{");
 		}
 
 		// Body
@@ -167,6 +188,11 @@ public class TypeScriptWriter(string outputPath)
 
 			return allTypes.Where(x => x.FullName == keyType.FullName || x.FullName == valueType.FullName).ToList();
 		}
+
+		if (import.IsGeneric && import.GenericTypeArguments.Count > 0)
+			return allTypes
+				.Where(x => x.FullName == $"{sourceType.Namespace}.{sourceType.Name}")
+				.ToList();
 
 		return allTypes.Where(x => x.FullName == sourceType.FullName).ToList();
 	}

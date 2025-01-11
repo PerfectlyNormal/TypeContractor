@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Added
+
+- Better support for generic types (#123)
+
 ## [0.16.0] - 2024-12-17
 
 ### Added
