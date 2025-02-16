@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Better support for generic types (#123)
 
+### Fixed
+
+- Allow enums to be used as query parameters in API clients (#133)
+
 ## [0.16.0] - 2024-12-17
 
 ### Added
