@@ -186,6 +186,59 @@ public sealed class ApiClientWriterTests : IDisposable
 	}
 
 	[Fact]
+	public void Handles_Get_With_Route_And_Query_Parameters()
+	{
+		// Arrange
+		var apiClient = new ApiClient("TestClient", "TestController", "test", null);
+		apiClient.AddEndpoint(new ApiClientEndpoint("getLatestId", "latest/{year}", EndpointMethod.GET, null, typeof(Guid), false,
+				[new EndpointParameter("year", typeof(int), null, false, false, true, false, false, false, false, false),
+				 new EndpointParameter("reverse", typeof(bool?), null, false, false, false, true, false, false, false, true)], null));
+
+		// Act
+		var result = Sut.Write(apiClient, [], _converter, true, _templateFn, Casing.Pascal);
+
+		// Assert
+		var file = File.ReadAllText(result).Trim();
+		file.Should()
+			.NotBeEmpty()
+			.And.Contain("import { z } from 'zod';")
+			.And.Contain("export class TestClient {")
+			.And.Contain("public async getLatestId(year: number, reverse: boolean | undefined, cancellationToken: AbortSignal = null): Promise<string> {")
+			.And.Contain("const url = new URL(`test/latest/${year}`, window.location.origin);")
+			.And.Contain("if (!!reverse)")
+			.And.Contain("url.searchParams.append('reverse', reverse.toString());");
+	}
+
+	[Fact]
+	public void Handles_Enum_As_Query_Parameter()
+	{
+		// Arrange
+		var outputTypes = new List<OutputType>
+		{
+			_converter.Convert(typeof(ReportType))
+		};
+
+		var apiClient = new ApiClient("TestClient", "TestController", "test", null);
+		apiClient.AddEndpoint(new ApiClientEndpoint("getLatestId", "latest/{year}", EndpointMethod.GET, null, typeof(Guid), false,
+				[new EndpointParameter("year", typeof(int), null, false, false, true, false, false, false, false, false),
+				 new EndpointParameter("reportType", typeof(ReportType), null, false, false, false, true, false, false, false, false)], null));
+
+		// Act
+		var result = Sut.Write(apiClient, outputTypes, _converter, true, _templateFn, Casing.Pascal);
+
+		// Assert
+		var file = File.ReadAllText(result).Trim();
+		file.Should()
+			.NotBeEmpty()
+			.And.Contain("import { z } from 'zod';")
+			.And.Contain("export class TestClient {")
+			.And.Contain("public async getLatestId(year: number, reportType: ReportType, cancellationToken: AbortSignal = null): Promise<string> {")
+			.And.Contain("const url = new URL(`test/latest/${year}`, window.location.origin);")
+			.And.NotContain("if (!!reportType)")
+			.And.Contain("url.searchParams.append('reportType', reportType.toString());");
+	}
+
+	[Fact]
 	public void Unpacks_Complex_Object_To_Query()
 	{
 		// Arrange
@@ -288,6 +341,12 @@ public sealed class ApiClientWriterTests : IDisposable
 		public int Year { get; set; }
 		public int Page { get; set; }
 		public int PageSize { get; set; }
+	}
+
+	private enum ReportType
+	{
+		Summary = 0,
+		Detailed = 1,
 	}
 
 	private MetadataLoadContext BuildMetadataLoadContext()

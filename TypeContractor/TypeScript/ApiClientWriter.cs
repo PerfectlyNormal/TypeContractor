@@ -91,6 +91,12 @@ public partial class ApiClientWriter(string outputPath, string? relativeRoot)
 						continue;
 					}
 
+					if (outputType.IsEnum)
+					{
+						queryParamsDto.Add(new QueryParameterTemplateDto(queryParam.Name, true, false, false, queryParam.IsOptional, null));
+						continue;
+					}
+
 					foreach (var property in outputType.Properties ?? [])
 					{
 						queryParamsDto.Add(new QueryParameterTemplateDto(queryParam.Name, false, property.IsNullable, false, queryParam.IsOptional, property.DestinationName));
