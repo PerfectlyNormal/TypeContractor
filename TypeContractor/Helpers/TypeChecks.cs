@@ -99,6 +99,13 @@ public static class TypeChecks
 	{
 		ArgumentNullException.ThrowIfNull(sourceType, nameof(sourceType));
 
+		if (sourceType.IsArray)
+		{
+			var elementType = sourceType.GetElementType();
+			if (elementType is not null)
+				return elementType;
+		}
+
 		if (sourceType.GenericTypeArguments.Length == 0 && sourceType.BaseType is not null)
 			return GetGenericType(sourceType.BaseType);
 
