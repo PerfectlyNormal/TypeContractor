@@ -189,7 +189,10 @@ public partial class ApiClientWriter(string outputPath, string? relativeRoot)
 					var zodImport = ZodSchemaWriter.BuildImport(returnType);
 
 					if (!string.IsNullOrWhiteSpace(zodImport))
+					{
+						needZodLibrary = true;
 						importTypes.Add(zodImport);
+					}
 				}
 
 				var outputType = allTypes.First(x => x.FullName == (returnType.InnerType?.FullName ?? returnType.FullName));
@@ -207,6 +210,20 @@ public partial class ApiClientWriter(string outputPath, string? relativeRoot)
 				var outputType = allTypes.First(x => x.FullName == (parameter.Type.InnerType?.FullName ?? parameter.Type.FullName));
 				var importPath = $"{relativeRoot}/{outputType.ContractedType.Folder.Path.Replace('\\', '/')}/{outputType.FileName}";
 				var parameterImport = $"import {{ {parameter.Type.ImportType} }} from '{importPath}';";
+				if (imports.Contains(parameterImport))
+					continue;
+
+				if (buildZodSchema)
+				{
+					var zodImportType = ZodSchemaWriter.BuildImport(parameter.Type);
+					if (!string.IsNullOrWhiteSpace(zodImportType))
+					{
+						var duplicateImport = $"import {{ {parameter.Type.ImportType}, {zodImportType} }} from '{importPath}';";
+						if (imports.Contains(duplicateImport))
+							continue;
+					}
+				}
+
 				imports.Add(parameterImport);
 			}
 		}
