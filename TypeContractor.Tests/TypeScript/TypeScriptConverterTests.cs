@@ -363,6 +363,20 @@ public class TypeScriptConverterTests
 		overridableType.Properties!.Last().DestinationType.Should().Be("boolean");
 	}
 
+	[Fact]
+	public void Handles_Arrays()
+	{
+		var result = Sut.Convert(typeof(ResponseWithArrayDto));
+
+		result.Should().NotBeNull();
+		result.Properties.Should()
+			.NotBeNull()
+			.And.ContainSingle();
+		var list = result.Properties!.First();
+		list.DestinationType.Should().Be("DateOnlyResponse");
+		list.IsArray.Should().BeTrue();
+	}
+
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 	private record TopLevelRecord(string Name, SecondStoryRecord? SecondStoryRecord);
 	private record SecondStoryRecord(string Description, SomeOtherDeeplyNestedRecord? SomeOtherDeeplyNestedRecord);
@@ -496,6 +510,11 @@ public class TypeScriptConverterTests
 	{
 		public Overridable<string> Name { get; set; }
 		public Overridable<bool?> SomeBool { get; set; }
+	}
+
+	private class ResponseWithArrayDto
+	{
+		public DateOnlyResponse[] DateOnlyResponses { get; set; }
 	}
 
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
