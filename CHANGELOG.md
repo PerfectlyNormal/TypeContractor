@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Fixed
+
+- Handle array properties (`SomeDto[]`) properly (#140)
+
+### Changed
+
+- Bump System.Reflection.MetadataLoadContext from 9.0.0 to 9.0.3
+- Bump Microsoft.NET.Test.Sdk from 17.12.0 to 17.13.0
+- Bump coverlet.collector from 6.0.2 to 6.0.4
+- Bump xunit.runner.visualstudio from 3.0.0 to 3.0.2
+- Bump xunit.analyzers and xunit
+
 ## [0.17.0] - 2025-02-16
 
 ### Added
