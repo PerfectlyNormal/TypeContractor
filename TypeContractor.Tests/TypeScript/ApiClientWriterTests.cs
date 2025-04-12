@@ -336,6 +336,37 @@ public sealed class ApiClientWriterTests : IDisposable
 		Assert.Throws<ArgumentOutOfRangeException>(() => Sut.Write(apiClient, [], _converter, false, _templateFn, (Casing)4));
 	}
 
+	[Fact]
+	public void Avoids_Duplicate_Imports_With_Same_ReturnType_And_Parameter()
+	{
+		// Arrange
+		var outputTypes = new List<OutputType>
+		{
+			_converter.Convert(typeof(PersonDto))
+		};
+
+		var apiClient = new ApiClient("TestClient", "TestController", "test", null);
+		apiClient.AddEndpoint(new ApiClientEndpoint("update", "", EndpointMethod.PATCH, typeof(PersonDto), typeof(PersonDto), false, [
+			new EndpointParameter("request", typeof(PersonDto), null, false, true, false, false, false, false, false, false)
+		], null));
+
+		// Act
+		var result = Sut.Write(apiClient, outputTypes, _converter, true, _templateFn, Casing.Pascal);
+
+		// Assert
+		var file = File.ReadAllText(result).Trim();
+		file.Should()
+			.NotBeEmpty()
+			.And.Contain("import { z } from 'zod';")
+			.And.Contain("import { PersonDto, PersonDtoSchema } from '~/TypeContractor/Tests/TypeScript/PersonDto';")
+			.And.NotContain("import { PersonDto } from '~/TypeContractor/Tests/TypeScript/PersonDto';")
+			.And.Contain("export class TestClient {")
+			.And.Contain("public async update(request: PersonDto, cancellationToken: AbortSignal = null): Promise<PersonDto> {")
+			.And.Contain("const url = new URL('test', window.location.origin);")
+			.And.NotContain("url.searchParams.append(")
+			.And.Contain("return await response.parseJson<PersonDto>(PersonDtoSchema);");
+	}
+
 	private class PaginatedRequest
 	{
 		public int Year { get; set; }
@@ -348,6 +379,8 @@ public sealed class ApiClientWriterTests : IDisposable
 		Summary = 0,
 		Detailed = 1,
 	}
+
+	private record PersonDto(Guid Id, string FirstName, string LastName);
 
 	private MetadataLoadContext BuildMetadataLoadContext()
 	{

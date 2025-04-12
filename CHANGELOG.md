@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Handle array properties (`SomeDto[]`) properly (#140)
+- Avoid duplicate imports for endpoints having the return type as a parameter type (#139)
 
 ### Changed
 
