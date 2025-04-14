@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.17.2] - 2025-04-14
+
+### Fixed
+
+- Avoid unnecessary import of Zod library (#139)
+
 ## [0.17.1] - 2025-04-12
 
 ### Fixed
@@ -377,7 +383,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[unreleased]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.17.1...HEAD
+[unreleased]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.17.2...HEAD
+[0.17.2]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.17.1...v0.17.2
 [0.17.1]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.17.0...v0.17.1
 [0.17.0]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.15.0...v0.16.0

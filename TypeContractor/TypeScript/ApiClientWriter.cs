@@ -189,10 +189,7 @@ public partial class ApiClientWriter(string outputPath, string? relativeRoot)
 					var zodImport = ZodSchemaWriter.BuildImport(returnType);
 
 					if (!string.IsNullOrWhiteSpace(zodImport))
-					{
-						needZodLibrary = true;
 						importTypes.Add(zodImport);
-					}
 				}
 
 				var outputType = allTypes.First(x => x.FullName == (returnType.InnerType?.FullName ?? returnType.FullName));

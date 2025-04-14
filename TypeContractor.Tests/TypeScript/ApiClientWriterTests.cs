@@ -357,7 +357,6 @@ public sealed class ApiClientWriterTests : IDisposable
 		var file = File.ReadAllText(result).Trim();
 		file.Should()
 			.NotBeEmpty()
-			.And.Contain("import { z } from 'zod';")
 			.And.Contain("import { PersonDto, PersonDtoSchema } from '~/TypeContractor/Tests/TypeScript/PersonDto';")
 			.And.NotContain("import { PersonDto } from '~/TypeContractor/Tests/TypeScript/PersonDto';")
 			.And.Contain("export class TestClient {")
