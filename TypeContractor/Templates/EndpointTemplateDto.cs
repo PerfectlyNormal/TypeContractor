@@ -1,10 +1,11 @@
-﻿namespace TypeContractor.Templates;
+namespace TypeContractor.Templates;
 
 public record EndpointTemplateDto(
 	string Name,
 	bool IsObsolete,
 	string ObsoleteReason,
 	string HttpMethod,
+	string HttpMethodUppercase,
 	string ReturnType,
 	string? UnwrappedReturnType,
 	bool EnumerableReturnType,

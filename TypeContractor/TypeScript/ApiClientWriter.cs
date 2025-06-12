@@ -1,4 +1,5 @@
 using HandlebarsDotNet;
+using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using TypeContractor.Helpers;
@@ -13,11 +14,11 @@ public partial class ApiClientWriter(string outputPath, string? relativeRoot)
 	private static readonly Encoding _utf8WithoutBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 	private static readonly Dictionary<EndpointMethod, string> _httpMethods = new()
 	{
-		{ EndpointMethod.GET, "get" },
-		{ EndpointMethod.POST, "post" },
-		{ EndpointMethod.PUT, "put" },
-		{ EndpointMethod.PATCH, "patch" },
-		{ EndpointMethod.DELETE, "delete" },
+		{ EndpointMethod.GET, "GET" },
+		{ EndpointMethod.POST, "POST" },
+		{ EndpointMethod.PUT, "PUT" },
+		{ EndpointMethod.PATCH, "PATCH" },
+		{ EndpointMethod.DELETE, "DELETE" },
 	};
 
 	[GeneratedRegex(@"([^\$])\{([A-Za-z0-9]+)\}")]
@@ -116,6 +117,7 @@ public partial class ApiClientWriter(string outputPath, string? relativeRoot)
 				endpoint.Name,
 				endpoint.Obsolete is not null,
 				endpoint.Obsolete?.Reason ?? "",
+				method.ToLower(CultureInfo.InvariantCulture),
 				method,
 				returnType,
 				endpoint.UnwrappedReturnType?.Name,
