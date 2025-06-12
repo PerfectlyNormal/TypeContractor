@@ -7,9 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.17.3] - 2025-06-12
+
 ### Fixed
 
 - Always use uppercase HTTP verbs (#149)
+
+### Changed
+
+- Bump dependencies
 
 ## [0.17.2] - 2025-04-14
 
@@ -387,7 +393,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[unreleased]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.17.2...HEAD
+[unreleased]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.17.3...HEAD
+[0.17.3]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.17.2...v0.17.3
 [0.17.2]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.17.1...v0.17.2
 [0.17.1]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.17.0...v0.17.1
 [0.17.0]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.16.0...v0.17.0
