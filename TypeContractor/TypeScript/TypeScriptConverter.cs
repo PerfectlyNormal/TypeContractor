@@ -110,7 +110,7 @@ public class TypeScriptConverter(TypeContractorConfiguration configuration, Meta
 
 	public DestinationType GetDestinationType(in Type sourceType, IEnumerable<CustomAttributeData> customAttributes, bool isReadonly, bool isNullable)
 	{
-		if (!sourceType.IsGenericParameter && configuration.TypeMaps.TryGetValue(sourceType.FullName!, out var destType))
+		if (!sourceType.IsGenericParameter && !string.IsNullOrEmpty(sourceType.FullName) && configuration.TypeMaps.TryGetValue(sourceType.FullName, out var destType))
 			return new DestinationType(destType.Replace("[]", string.Empty), sourceType.FullName, true, destType.Contains("[]"), isReadonly, isNullable || TypeChecks.IsNullable(sourceType), false, [], null, sourceType);
 
 		if (CustomMappedTypes.TryGetValue(sourceType, out var customType))

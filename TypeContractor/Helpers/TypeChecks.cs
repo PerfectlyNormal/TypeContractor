@@ -62,6 +62,9 @@ public static class TypeChecks
 		if (IsDictionary(sourceType))
 			return false;
 
+		if (sourceType.IsArray)
+			return true;
+
 		foreach (var interfaceUsed in sourceType.GetInterfaces())
 		{
 			if (IsDictionary(interfaceUsed))
@@ -124,7 +127,7 @@ public static class TypeChecks
 
 		try
 		{
-			if (type.BaseType is not null && !type.BaseType.FullName!.StartsWith("System.", StringComparison.OrdinalIgnoreCase))
+			if (type.BaseType is not null && !string.IsNullOrEmpty(type.BaseType.FullName) && !type.BaseType.FullName.StartsWith("System.", StringComparison.OrdinalIgnoreCase))
 				return IsController(type.BaseType);
 		}
 		catch (FileLoadException ex)
@@ -220,7 +223,7 @@ public static class TypeChecks
 			return null;
 
 		if (ImplementsIEnumerable(type))
-			return UnwrappedResult(type.GenericTypeArguments[0]);
+			return UnwrappedResult(GetGenericType(type));
 
 		if (type.FullName!.StartsWith("System.", StringComparison.InvariantCulture))
 			return null;

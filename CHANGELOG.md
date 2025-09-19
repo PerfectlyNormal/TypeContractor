@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Fixed
+
+- Make detecting and unwrapping arrays more reliable
+
 ### Changed
 
 - Bump System.Reflection.MetadataLoadContext from 9.0.5 to 9.0.9
