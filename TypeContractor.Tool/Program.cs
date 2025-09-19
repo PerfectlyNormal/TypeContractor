@@ -1,6 +1,5 @@
 using DotNetConfig;
 using System.CommandLine;
-using System.CommandLine.Parsing;
 using TypeContractor;
 using TypeContractor.Logger;
 using TypeContractor.Tool;
@@ -8,54 +7,117 @@ using TypeContractor.Tool;
 var config = Config.Build("typecontractor.config");
 
 var rootCommand = new RootCommand("Tool for generating TypeScript definitions from C# code");
-var assemblyOption = new Option<string>("--assembly", "Path to the assembly to start with. Will be relative to the current directory");
-var outputOption = new Option<string>("--output", "Output path to write to. Will be relative to the current directory");
-var relativeRootOption = new Option<string>("--root", "Relative root for generating cleaner imports. For example '~/api'");
-var cleanOption = new Option<CleanMethod>("--clean", () => CleanMethod.Smart, "Choose how to clean up no longer relevant type files in output directory. Danger!");
-var replaceOptions = new Option<string[]>("--replace", "Provide one replacement in the form '<search>:<replace>'. Can be repeated");
-var stripOptions = new Option<string[]>("--strip", "Provide a prefix to strip out of types. Can be repeated");
-var mapOptions = new Option<string[]>("--custom-map", "Provide a custom type map in the form '<from>:<to>'. Can be repeated");
-var packsOptions = new Option<string>("--packs-path", () => @"C:\Program Files\dotnet\packs\", "Path where dotnet is installed and reference assemblies can be found.");
-var dotnetVersionOptions = new Option<int>("--dotnet-version", () => 8, "Major version of dotnet to look for");
-var logLevelOptions = new Option<LogLevel>("--log-level", () => LogLevel.Info);
-var buildZodSchemasOptions = new Option<bool>("--build-zod-schemas", () => false, "Enable experimental support for Zod schemas alongside generated types.");
-var generateApiClientsOptions = new Option<bool>("--generate-api-clients", () => false, "Enable experimental support for auto-generating API clients for each endpoint.");
-var apiClientsTemplateOptions = new Option<string>("--api-client-template", () => "aurelia", "Template to use for API clients. Either 'aurelia', 'react-axios' (built-in) or a path to a Handlebars file, including extension");
-var casingOptions = new Option<Casing>("--casing", () => Casing.Kebab, "Casing to use for generated file names");
-assemblyOption.IsRequired = true;
-outputOption.IsRequired = true;
 
-rootCommand.AddOption(assemblyOption);
-rootCommand.AddOption(outputOption);
-rootCommand.AddOption(relativeRootOption);
-rootCommand.AddOption(cleanOption);
-rootCommand.AddOption(replaceOptions);
-rootCommand.AddOption(stripOptions);
-rootCommand.AddOption(mapOptions);
-rootCommand.AddOption(packsOptions);
-rootCommand.AddOption(dotnetVersionOptions);
-rootCommand.AddOption(logLevelOptions);
-rootCommand.AddOption(buildZodSchemasOptions);
-rootCommand.AddOption(generateApiClientsOptions);
-rootCommand.AddOption(apiClientsTemplateOptions);
-rootCommand.AddOption(casingOptions);
-
-apiClientsTemplateOptions.AddValidator(result =>
+var assemblyOption = new Option<string>("--assembly")
 {
-	var value = result.GetValueForOption(apiClientsTemplateOptions)!;
+	Description = "Path to the assembly to start with. Will be relative to the current directory",
+	Required = true,
+};
+
+var outputOption = new Option<string>("--output")
+{
+	Description = "Output path to write to. Will be relative to the current directory",
+	Required = true,
+};
+
+var relativeRootOption = new Option<string>("--root")
+{
+	Description = "Relative root for generating cleaner imports. For example '~/api'",
+};
+
+var cleanOption = new Option<CleanMethod>("--clean")
+{
+	DefaultValueFactory = (arg) => CleanMethod.Smart,
+	Description = "Choose how to clean up no longer relevant type files in output directory. Danger!",
+};
+
+var replaceOptions = new Option<string[]>("--replace")
+{
+	Description = "Provide one replacement in the form '<search>:<replace>'. Can be repeated",
+};
+
+var stripOptions = new Option<string[]>("--strip")
+{
+	Description = "Provide a prefix to strip out of types. Can be repeated",
+};
+
+var mapOptions = new Option<string[]>("--custom-map")
+{
+	Description = "Provide a custom type map in the form '<from>:<to>'. Can be repeated",
+};
+
+var packsOptions = new Option<string>("--packs-path")
+{
+	DefaultValueFactory = (arg) => @"C:\Program Files\dotnet\packs\",
+	Description = "Path where dotnet is installed and reference assemblies can be found.",
+};
+
+var dotnetVersionOptions = new Option<int>("--dotnet-version")
+{
+	DefaultValueFactory = (arg) => 8,
+	Description = "Major version of dotnet to look for",
+};
+
+var logLevelOptions = new Option<LogLevel>("--log-level")
+{
+	DefaultValueFactory = (arg) => LogLevel.Info,
+};
+
+var buildZodSchemasOptions = new Option<bool>("--build-zod-schemas")
+{
+	DefaultValueFactory = (arg) => false,
+	Description = "Enable experimental support for Zod schemas alongside generated types.",
+};
+
+var generateApiClientsOptions = new Option<bool>("--generate-api-clients")
+{
+	DefaultValueFactory = (arg) => false,
+	Description = "Enable experimental support for auto-generating API clients for each endpoint.",
+};
+
+var apiClientsTemplateOptions = new Option<string>("--api-client-template")
+{
+	DefaultValueFactory = (arg) => "aurelia",
+	Description = "Template to use for API clients. Either 'aurelia', 'react-axios' (built-in) or a path to a Handlebars file, including extension",
+};
+
+var casingOptions = new Option<Casing>("--casing")
+{
+	DefaultValueFactory = (arg) => Casing.Kebab,
+	Description = "Casing to use for generated file names",
+};
+
+rootCommand.Options.Add(assemblyOption);
+rootCommand.Options.Add(outputOption);
+rootCommand.Options.Add(relativeRootOption);
+rootCommand.Options.Add(cleanOption);
+rootCommand.Options.Add(replaceOptions);
+rootCommand.Options.Add(stripOptions);
+rootCommand.Options.Add(mapOptions);
+rootCommand.Options.Add(packsOptions);
+rootCommand.Options.Add(dotnetVersionOptions);
+rootCommand.Options.Add(logLevelOptions);
+rootCommand.Options.Add(buildZodSchemasOptions);
+rootCommand.Options.Add(generateApiClientsOptions);
+rootCommand.Options.Add(apiClientsTemplateOptions);
+rootCommand.Options.Add(casingOptions);
+
+apiClientsTemplateOptions.Validators.Add(result =>
+{
+	var value = result.GetValue(apiClientsTemplateOptions)!;
 	if (value.Equals("aurelia", StringComparison.CurrentCultureIgnoreCase) || value.Equals("react-axios", StringComparison.CurrentCultureIgnoreCase))
 		return;
 
-	var generateClients = result.GetValueForOption(generateApiClientsOptions);
+	var generateClients = result.GetValue(generateApiClientsOptions);
 	if (!generateClients)
 	{
-		result.ErrorMessage = $"Must generate API clients for --{apiClientsTemplateOptions.Name} to have any effect.";
+		result.AddError($"Must generate API clients for --{apiClientsTemplateOptions.Name} to have any effect.");
 		return;
 	}
 
 	if (!File.Exists(value))
 	{
-		result.ErrorMessage = $"The template specified does not exist or is not readable. Searched for {Path.GetFullPath(Path.Join(Directory.GetCurrentDirectory(), value))}.";
+		result.AddError($"The template specified does not exist or is not readable. Searched for {Path.GetFullPath(Path.Join(Directory.GetCurrentDirectory(), value))}.");
 		return;
 	}
 });
@@ -63,22 +125,22 @@ apiClientsTemplateOptions.AddValidator(result =>
 // Apply configuration from file, if any
 rootCommand = rootCommand.WithConfigurableDefaults("typecontractor", config);
 
-rootCommand.SetHandler(async (context) =>
+rootCommand.SetAction(async (parseResult, cancellationToken) =>
 {
-	var assemblyOptionValue = context.ParseResult.GetValueForOption(assemblyOption)!;
-	var outputValue = context.ParseResult.GetValueForOption(outputOption)!;
-	var relativeRootValue = context.ParseResult.GetValueForOption(relativeRootOption);
-	var cleanValue = context.ParseResult.GetValueForOption(cleanOption);
-	var replacementsValue = context.ParseResult.GetValueForOption(replaceOptions) ?? [];
-	var stripValue = context.ParseResult.GetValueForOption(stripOptions) ?? [];
-	var customMapsValue = context.ParseResult.GetValueForOption(mapOptions) ?? [];
-	var packsPathValue = context.ParseResult.GetValueForOption(packsOptions)!;
-	var dotnetVersionValue = context.ParseResult.GetValueForOption(dotnetVersionOptions);
-	var logLevelValue = context.ParseResult.GetValueForOption(logLevelOptions);
-	var buildZodSchemasValue = context.ParseResult.GetValueForOption(buildZodSchemasOptions);
-	var generateApiClientsValue = context.ParseResult.GetValueForOption(generateApiClientsOptions);
-	var apiClientsTemplateValue = context.ParseResult.GetValueForOption(apiClientsTemplateOptions)!;
-	var casingValue = context.ParseResult.GetValueForOption(casingOptions);
+	var assemblyOptionValue = parseResult.GetValue(assemblyOption)!;
+	var outputValue = parseResult.GetValue(outputOption)!;
+	var relativeRootValue = parseResult.GetValue(relativeRootOption);
+	var cleanValue = parseResult.GetValue(cleanOption);
+	var replacementsValue = parseResult.GetValue(replaceOptions) ?? [];
+	var stripValue = parseResult.GetValue(stripOptions) ?? [];
+	var customMapsValue = parseResult.GetValue(mapOptions) ?? [];
+	var packsPathValue = parseResult.GetValue(packsOptions)!;
+	var dotnetVersionValue = parseResult.GetValue(dotnetVersionOptions);
+	var logLevelValue = parseResult.GetValue(logLevelOptions);
+	var buildZodSchemasValue = parseResult.GetValue(buildZodSchemasOptions);
+	var generateApiClientsValue = parseResult.GetValue(generateApiClientsOptions);
+	var apiClientsTemplateValue = parseResult.GetValue(apiClientsTemplateOptions)!;
+	var casingValue = parseResult.GetValue(casingOptions);
 
 	Log.Instance = new ConsoleLogger(logLevelValue);
 	var generator = new Generator(assemblyOptionValue,
@@ -95,7 +157,8 @@ rootCommand.SetHandler(async (context) =>
 								  apiClientsTemplateValue,
 								  casingValue);
 
-	context.ExitCode = await generator.Execute();
+	return await generator.Execute(cancellationToken);
 });
 
-return await rootCommand.InvokeAsync(args);
+var parsedResult = rootCommand.Parse(args);
+return await parsedResult.InvokeAsync();

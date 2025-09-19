@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Generate Zod v4 schemas (#168)
 - Use `globalThis.Response` instead of `Response` to avoid conflicts (#147)
 - Set kebab-case as the default casing (#166)
+- Update System.CommandLine to latest release candidate (#163)
 
 ## [0.17.4.1] - 2025-09-19
 
