@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Move to xUnit v3 (#162)
+- Update System.CommandLine to latest release candidate (#163)
 
 ## [0.17.4.1] - 2025-09-19
 

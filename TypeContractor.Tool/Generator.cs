@@ -51,7 +51,7 @@ internal class Generator
 		_casing = casing;
 	}
 
-	public Task<int> Execute()
+	public Task<int> Execute(CancellationToken cancellationToken)
 	{
 		var returnCode = 0;
 

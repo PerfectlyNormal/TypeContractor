@@ -1,6 +1,8 @@
 using DotNetConfig;
 using HandlebarsDotNet;
 using System.Collections.Concurrent;
+using System.CommandLine.Parsing;
+using System.Reflection;
 
 namespace System.CommandLine
 {
@@ -192,6 +194,7 @@ namespace System.CommandLine
 			public void SetDefaultValue()
 			{
 				_orderedSubsections = [.. _subsections.OrderByDescending(x => x?.Length ?? 0)];
+				var field = _argument.GetType().GetField("_defaultValueFactory", BindingFlags.Instance | BindingFlags.NonPublic)!;
 
 				if (_argument.Arity.MaximumNumberOfValues > 1)
 				{
@@ -203,19 +206,19 @@ namespace System.CommandLine
 					switch (elementType)
 					{
 						case Type type when type.IsAssignableFrom(typeof(string)):
-							SetDefaultStrings();
+							SetDefaultStrings(field);
 							break;
 						case Type type when type.IsAssignableFrom(typeof(long)):
-							SetDefaultNumbers();
+							SetDefaultNumbers(field);
 							break;
 						case Type type when type.IsAssignableFrom(typeof(int)):
-							SetDefaultIntegers();
+							SetDefaultIntegers(field);
 							break;
 						case Type type when type.IsAssignableFrom(typeof(bool)):
-							SetDefaultBooleans();
+							SetDefaultBooleans(field);
 							break;
 						case Type type when type.IsAssignableFrom(typeof(DateTime)):
-							SetDefaultDateTimes();
+							SetDefaultDateTimes(field);
 							break;
 						default:
 							break;
@@ -226,16 +229,16 @@ namespace System.CommandLine
 					switch (_argument.ValueType)
 					{
 						case Type type when type.IsAssignableFrom(typeof(string)):
-							SetDefaultString();
+							SetDefaultString(field);
 							break;
 						case Type type when type.IsAssignableFrom(typeof(long)) || type.IsAssignableFrom(typeof(int)):
-							SetDefaultNumber();
+							SetDefaultNumber(field);
 							break;
 						case Type type when type.IsAssignableFrom(typeof(bool)):
-							SetDefaultBoolean();
+							SetDefaultBoolean(field);
 							break;
 						case Type type when type.IsAssignableFrom(typeof(DateTime)):
-							SetDefaultDateTime();
+							SetDefaultDateTime(field);
 							break;
 						default:
 							break;
@@ -243,85 +246,70 @@ namespace System.CommandLine
 				}
 			}
 
-			void SetDefaultStrings()
+			void SetDefaultStrings(FieldInfo field)
 			{
-				_argument.SetDefaultValueFactory(() =>
+				field.SetValue(_argument, (ArgumentResult arg) =>
 				{
 					var values = new List<string>();
 					foreach (var subsection in _orderedSubsections)
 						values.AddRange(_config.GetAll(_section, subsection, _argument.Name).Select(x => x.GetString()));
 
-					if (_argument.ValueType.IsArray)
-						return values.ToArray();
-
-					return values;
+					return values.ToArray();
 				});
 			}
 
-			void SetDefaultNumbers()
+			void SetDefaultNumbers(FieldInfo field)
 			{
-				_argument.SetDefaultValueFactory(() =>
+				field.SetValue(_argument, (ArgumentResult arg) =>
 				{
 					var values = new List<long>();
 					foreach (var subsection in _orderedSubsections)
 						values.AddRange(_config.GetAll(_section, subsection, _argument.Name).Select(x => x.GetNumber()));
 
-					if (_argument.ValueType.IsArray)
-						return values.ToArray();
-
-					return values;
+					return values.ToArray();
 				});
 			}
 
-			void SetDefaultIntegers()
+			void SetDefaultIntegers(FieldInfo field)
 			{
-				_argument.SetDefaultValueFactory(() =>
+				field.SetValue(_argument, (ArgumentResult arg) =>
 				{
 					var values = new List<int>();
 					foreach (var subsection in _orderedSubsections)
 						values.AddRange(_config.GetAll(_section, subsection, _argument.Name).Select(x => (int)x.GetNumber()));
 
-					if (_argument.ValueType.IsArray)
-						return values.ToArray();
-
-					return values;
+					return values.ToArray();
 				});
 			}
 
-			void SetDefaultBooleans()
+			void SetDefaultBooleans(FieldInfo field)
 			{
-				_argument.SetDefaultValueFactory(() =>
+				field.SetValue(_argument, (ArgumentResult arg) =>
 				{
 					var values = new List<bool>();
 					foreach (var subsection in _orderedSubsections)
 						values.AddRange(_config.GetAll(_section, subsection, _argument.Name).Select(x => x.GetBoolean()));
 
-					if (_argument.ValueType.IsArray)
-						return values.ToArray();
-
-					return values;
+					return values.ToArray();
 				});
 			}
 
-			void SetDefaultDateTimes()
+			void SetDefaultDateTimes(FieldInfo field)
 			{
-				_argument.SetDefaultValueFactory(() =>
+				field.SetValue(_argument, (ArgumentResult arg) =>
 				{
 					var values = new List<DateTime>();
 					foreach (var subsection in _orderedSubsections)
 						values.AddRange(_config.GetAll(_section, subsection, _argument.Name).Select(x => x.GetDateTime()));
 
-					if (_argument.ValueType.IsArray)
-						return values.ToArray();
-
-					return values;
+					return values.ToArray();
 				});
 			}
 
-			void SetDefaultString()
+			void SetDefaultString(FieldInfo field)
 			{
-				var originalDefault = _argument.HasDefaultValue ? _argument.GetDefaultValue() : null;
-				_argument.SetDefaultValueFactory(() =>
+				string? originalDefault = _argument.HasDefaultValue ? (string?)_argument.GetDefaultValue() : null;
+				field.SetValue(_argument, (ArgumentResult arg) =>
 				{
 					foreach (var subsection in _orderedSubsections)
 					{
@@ -332,58 +320,60 @@ namespace System.CommandLine
 				});
 			}
 
-			void SetDefaultNumber()
+			void SetDefaultNumber(FieldInfo field)
 			{
-				var originalDefault = _argument.HasDefaultValue ? _argument.GetDefaultValue() : null;
+				int? originalDefault = _argument.HasDefaultValue ? (int?)_argument.GetDefaultValue() : null;
 				if (_argument.ValueType == typeof(int))
 				{
-					_argument.SetDefaultValueFactory(() =>
+					field.SetValue(_argument, (ArgumentResult arg) =>
 					{
 						foreach (var subsection in _orderedSubsections)
 						{
 							if (_config.TryGetNumber(_section, subsection, _argument.Name, out var value))
 								return (int)value;
 						}
-						return originalDefault ?? default;
+						return originalDefault ?? 0;
 					});
 				}
 				else
 				{
-					_argument.SetDefaultValueFactory(() =>
+					field.SetValue(_argument, (ArgumentResult arg) =>
 					{
 						foreach (var subsection in _orderedSubsections)
 						{
 							if (_config.TryGetNumber(_section, subsection, _argument.Name, out var value))
 								return value;
 						}
-						return originalDefault ?? default;
+						return (long?)originalDefault ?? 0L;
 					});
 				}
 			}
 
-			void SetDefaultBoolean()
+			void SetDefaultBoolean(FieldInfo field)
 			{
-				var originalDefault = _argument.HasDefaultValue ? _argument.GetDefaultValue() : null;
-				_argument.SetDefaultValueFactory(() =>
+				bool? originalDefault = _argument.HasDefaultValue ? (bool?)_argument.GetDefaultValue() : null;
+				field.SetValue(_argument, (ArgumentResult arg) =>
 				{
 					foreach (var subsection in _orderedSubsections)
 					{
 						if (_config.TryGetBoolean(_section, subsection, _argument.Name, out var value))
 							return value;
 					}
-					return originalDefault ?? default;
+
+					return originalDefault ?? false;
 				});
 			}
 
-			void SetDefaultDateTime()
+			void SetDefaultDateTime(FieldInfo field)
 			{
-				_argument.SetDefaultValueFactory(() =>
+				field.SetValue(_argument, (ArgumentResult arg) =>
 				{
 					foreach (var subsection in _orderedSubsections)
 					{
 						if (_config.TryGetDateTime(_section, subsection, _argument.Name, out var value))
 							return value;
 					}
+
 					return default;
 				});
 			}
