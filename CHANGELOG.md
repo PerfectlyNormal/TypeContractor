@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.17.4.1] - 2025-09-19
+
+### Fixed
+
+- Order list of loaded assemblies when logging a `FileLoadException`, but, like, really this time.
+
 ## [0.17.4] - 2025-09-19
 
 ### Fixed
