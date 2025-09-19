@@ -160,7 +160,7 @@ internal class Generator
 		}
 		catch (FileLoadException ex)
 		{
-			Log.Instance.LogError(ex, string.Format("Unable to load a file. Loaded assemblies are: {0}", string.Join(",\n", context.GetAssemblies().Select(ass => ass.FullName))));
+			Log.Instance.LogError(ex, string.Format("Unable to load a file. Loaded assemblies are: {0}", string.Join(",\n", context.GetAssemblies().Select(ass => ass.FullName)).Order()));
 			returnCode = 1;
 		}
 
