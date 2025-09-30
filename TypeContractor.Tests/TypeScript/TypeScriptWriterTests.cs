@@ -298,7 +298,7 @@ public class TypeScriptWriterTests : IDisposable
 			.And.Contain("import { z } from 'zod';")
 			.And.Contain("import { ObsoleteEnum } from './ObsoleteEnum';")
 			.And.Contain("export const TypeWithEnumSchema = z.object({")
-			.And.Contain("  status: z.nativeEnum(ObsoleteEnum),")
+			.And.Contain("  status: z.enum(ObsoleteEnum),")
 			.And.Contain("});");
 	}
 
@@ -318,7 +318,7 @@ public class TypeScriptWriterTests : IDisposable
 			.And.Contain("import { z } from 'zod';")
 			.And.Contain("import { ObsoleteEnum } from './ObsoleteEnum';")
 			.And.Contain("export const TypeWithNullableEnumSchema = z.object({")
-			.And.Contain("  status: z.nativeEnum(ObsoleteEnum).nullable(),")
+			.And.Contain("  status: z.enum(ObsoleteEnum).nullable(),")
 			.And.Contain("});");
 	}
 

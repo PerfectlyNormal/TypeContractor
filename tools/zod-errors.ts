@@ -3,7 +3,7 @@ const leftPad = (stringToPad: string, number: number = 1): string => {
 };
 
 export type ErrorRoot = {
-  _errors: string[];
+  errors: string[];
 };
 export type ErrorInstance = ErrorRoot & {
   [key: string]: ErrorInstance;
@@ -15,13 +15,13 @@ export function formatErrors(input: ErrorRoot): any {
   const activeBreadcumb: string[] = [];
 
   function formatErrorsRecursive(input: any, activeBreadcumb: string[]) {
-    if (input['_errors'] && input['_errors'].length > 0) {
-      const errorsString = `- ${input['_errors'].join('\n')}\n`;
+    if (input['errors'] && input['errors'].length > 0) {
+      const errorsString = `- ${input['errors'].join('\n')}\n`;
       result += leftPad(errorsString, activeBreadcumb.length);
     }
 
     for (const key in input) {
-      if (key === '_errors') continue;
+      if (key === 'errors') continue;
 
       result += `${leftPad(key, activeBreadcumb.length)}:\n`;
 
