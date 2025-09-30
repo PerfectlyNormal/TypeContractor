@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Move to xUnit v3 (#162)
+- Generate Zod v4 schemas (#168)
 
 ## [0.17.4.1] - 2025-09-19
 

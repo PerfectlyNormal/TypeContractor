@@ -69,12 +69,12 @@ namespace TypeContractor.TypeScript
 		private static string? GetZodOutputType(OutputProperty property, IEnumerable<OutputType> allTypes)
 		{
 			if (!property.IsBuiltin && property.SourceType.IsEnum)
-				return $"z.nativeEnum({property.SourceType.Name})";
+				return $"z.enum({property.SourceType.Name})";
 			else if (!property.IsBuiltin && property.IsNullable && property.SourceType.IsGenericType)
 			{
 				var sourceType = TypeChecks.GetGenericType(property.SourceType);
 				if (sourceType.IsEnum)
-					return $"z.nativeEnum({sourceType.Name}).nullable()";
+					return $"z.enum({sourceType.Name}).nullable()";
 			}
 
 			string? output;
@@ -124,17 +124,17 @@ namespace TypeContractor.TypeScript
 			if (IsOfType(sourceType, typeof(string)))
 				output = "z.string()";
 			else if (IsOfType(sourceType, typeof(Guid)))
-				output = "z.string().uuid()";
+				output = "z.guid()";
 			else if (IsOfType(sourceType, typeof(int), typeof(long), typeof(float), typeof(double), typeof(short), typeof(byte), typeof(decimal)))
 				output = "z.number()";
 			else if (IsOfType(sourceType, typeof(bool)))
 				output = "z.boolean()";
 			else if (IsOfType(sourceType, typeof(DateTime), typeof(DateTimeOffset)))
-				output = "z.string().datetime({ offset: true })";
+				output = "z.iso.datetime({ offset: true })";
 			else if (IsOfType(sourceType, typeof(DateOnly)))
-				output = "z.string().date()";
+				output = "z.iso.date()";
 			else if (IsOfType(sourceType, typeof(TimeOnly)))
-				output = "z.string().time()";
+				output = "z.iso.time()";
 			else if (IsOfType(sourceType, typeof(TimeSpan)))
 				output = "z.string()"; // FIXME: Can assume some formatting here
 			else if (TypeChecks.ImplementsIEnumerable(sourceType))
