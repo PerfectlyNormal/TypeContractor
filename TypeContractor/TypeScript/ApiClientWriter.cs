@@ -50,7 +50,7 @@ public partial class ApiClientWriter(string outputPath, string? relativeRoot)
 			var parameterMap = parameters.Select(x => $"{x.ParameterName}{((x.Type?.IsNullable ?? false) && !x.IsOptional ? "?" : "")}: {x.Type?.FullTypeName ?? "any"}{(x.IsOptional ? " | undefined" : "")}").ToList();
 			var returnType = (endpoint.ReturnType is null
 					? null
-					: converter.GetDestinationType(endpoint.ReturnType, endpoint.ReturnType.CustomAttributes, false, TypeChecks.IsNullable(endpoint.ReturnType))?.FullTypeName) ?? "Response";
+					: converter.GetDestinationType(endpoint.ReturnType, endpoint.ReturnType.CustomAttributes, false, TypeChecks.IsNullable(endpoint.ReturnType))?.FullTypeName) ?? "globalThis.Response";
 
 			var routeParams = endpoint.Parameters
 				.Where(x => x.FromRoute)
