@@ -1,9 +1,9 @@
-﻿namespace TypeContractor;
+namespace TypeContractor;
 
 public enum Casing
 {
 	/// <summary>
-	/// PascalCase (default)
+	/// PascalCase
 	/// </summary>
 	Pascal,
 

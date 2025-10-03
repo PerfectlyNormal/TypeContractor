@@ -157,7 +157,7 @@ public class TypeScriptConverterTests
 
 		result.Should().NotBeNull();
 		result.Name.Should().Be("Response");
-		result.ContractedType.Folder.Path.Should().EndWith("YearSummary");
+		result.ContractedType.Folder.Path.Should().EndWith("year-summary");
 	}
 
 	[Fact]

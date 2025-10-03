@@ -357,8 +357,8 @@ public sealed class ApiClientWriterTests : IDisposable
 		var file = File.ReadAllText(result).Trim();
 		file.Should()
 			.NotBeEmpty()
-			.And.Contain("import { PersonDto, PersonDtoSchema } from '~/TypeContractor/Tests/TypeScript/PersonDto';")
-			.And.NotContain("import { PersonDto } from '~/TypeContractor/Tests/TypeScript/PersonDto';")
+			.And.Contain("import { PersonDto, PersonDtoSchema } from '~/type-contractor/tests/type-script/person-dto';")
+			.And.NotContain("import { PersonDto } from '~/type-contractor/tests/type-script/person-dto';")
 			.And.Contain("export class TestClient {")
 			.And.Contain("public async update(request: PersonDto, cancellationToken: AbortSignal = null): Promise<PersonDto> {")
 			.And.Contain("const url = new URL('test', window.location.origin);")
