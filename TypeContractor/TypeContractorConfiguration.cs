@@ -30,7 +30,7 @@ public class TypeContractorConfiguration
 	public bool GenerateApiClients => _apiClients.Count != 0;
 	public IReadOnlyList<ApiClient> ApiClients => _apiClients.AsReadOnly();
 	public string ApiClientTemplate => _apiClientTemplate ?? "aurelia";
-	public Casing Casing => _casing ?? Casing.Pascal;
+	public Casing Casing => _casing ?? Casing.Kebab;
 
 	/// <summary>
 	/// Set up a default configuration using <see cref="AddDefaultSuffixes"/> and <see cref="AddDefaultTypeMaps"/>

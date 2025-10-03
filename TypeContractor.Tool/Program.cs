@@ -21,7 +21,7 @@ var logLevelOptions = new Option<LogLevel>("--log-level", () => LogLevel.Info);
 var buildZodSchemasOptions = new Option<bool>("--build-zod-schemas", () => false, "Enable experimental support for Zod schemas alongside generated types.");
 var generateApiClientsOptions = new Option<bool>("--generate-api-clients", () => false, "Enable experimental support for auto-generating API clients for each endpoint.");
 var apiClientsTemplateOptions = new Option<string>("--api-client-template", () => "aurelia", "Template to use for API clients. Either 'aurelia', 'react-axios' (built-in) or a path to a Handlebars file, including extension");
-var casingOptions = new Option<Casing>("--casing", () => Casing.Pascal, "Casing to use for generated file names");
+var casingOptions = new Option<Casing>("--casing", () => Casing.Kebab, "Casing to use for generated file names");
 assemblyOption.IsRequired = true;
 outputOption.IsRequired = true;
 

@@ -7,7 +7,7 @@ namespace TypeContractor.Helpers;
 internal partial class CasingHelpers
 {
 	[GeneratedRegex(@"(?<!^)(?=[A-Z][a-z])|(?<=(?<=[a-z])(?=[A-Z]))|(?<=(?<=[A-Z])(?=[A-Z][a-z]))")]
-	private static partial Regex SeperateWordsWithRegex();
+	private static partial Regex SeparateWordsWithRegex();
 
 	[GeneratedRegex(@"([A-Z]+(?=[A-Z][a-z]|\d|\W|$)|\d+|[A-Z][a-z]+)")]
 	private static partial Regex FindWordsRegex();
@@ -44,7 +44,7 @@ internal partial class CasingHelpers
 		return sb.ToString();
 	}
 
-	private static string ToSnakeCase(string input) => SeperateWordsWithRegex().Replace(input, "_").ToLower(_cultureInfo);
+	private static string ToSnakeCase(string input) => SeparateWordsWithRegex().Replace(input, "_").ToLower(_cultureInfo);
 
-	private static string ToKebabCase(string input) => SeperateWordsWithRegex().Replace(input, "-").ToLower(_cultureInfo);
+	private static string ToKebabCase(string input) => SeparateWordsWithRegex().Replace(input, "-").ToLower(_cultureInfo);
 }
