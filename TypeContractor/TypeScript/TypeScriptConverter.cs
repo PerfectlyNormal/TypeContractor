@@ -45,7 +45,7 @@ public class TypeScriptConverter(TypeContractorConfiguration configuration, Meta
 			.Select((name, idx) =>
 			{
 				var member = matchedEnumType.GetMember(name);
-				var obsolete = member.FirstOrDefault()?.CustomAttributes.FirstOrDefault(x => x.AttributeType.FullName == "System.ObsoleteAttribute");
+				var obsolete = member.FirstOrDefault()?.GetCustomAttribute("System.ObsoleteAttribute");
 				var obsoleteInfo = obsolete is not null ? new ObsoleteInfo((string?)obsolete.ConstructorArguments.FirstOrDefault().Value) : null;
 				return new OutputEnumMember(name, name, underlyingValues.GetValue(idx)!, obsoleteInfo);
 			})
@@ -89,7 +89,7 @@ public class TypeScriptConverter(TypeContractorConfiguration configuration, Meta
 				destinationType.IsGeneric,
 				destinationType.GenericTypeArguments);
 
-			var obsolete = property.CustomAttributes.FirstOrDefault(x => x.AttributeType.FullName == "System.ObsoleteAttribute");
+			var obsolete = property.GetCustomAttribute("System.ObsoleteAttribute");
 			outputProperty.Obsolete = obsolete is not null ? new ObsoleteInfo((string?)obsolete.ConstructorArguments.FirstOrDefault().Value) : null;
 
 			outputProperties.Add(outputProperty);

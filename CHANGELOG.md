@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Fixed
+
+- Add better handling of FileLoadException when looking at custom attributes (#176)
+
 ### Changed
 
 - Move to xUnit v3 (#162)

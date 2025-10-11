@@ -1,5 +1,6 @@
 using System.Reflection;
 using TypeContractor.Annotations;
+using TypeContractor.Logger;
 
 namespace TypeContractor.Helpers;
 
@@ -25,9 +26,17 @@ public static class TypeChecks
 	public static bool IsNullable(PropertyInfo propertyInfo)
 	{
 		ArgumentNullException.ThrowIfNull(propertyInfo);
-		return IsNullable(propertyInfo.PropertyType)
-			|| propertyInfo.CustomAttributes.Any(x => x.AttributeType.FullName == typeof(TypeContractorNullableAttribute).FullName)
-			|| _nullabilityContext.Create(propertyInfo).WriteState == NullabilityState.Nullable;
+		try
+		{
+			return IsNullable(propertyInfo.PropertyType)
+				|| propertyInfo.HasCustomAttribute(typeof(TypeContractorNullableAttribute).FullName!)
+				|| _nullabilityContext.Create(propertyInfo).WriteState == NullabilityState.Nullable;
+		}
+		catch (FileLoadException ex)
+		{
+			Log.Instance.LogError(ex, $"Determining nullability for {propertyInfo.Name} in {propertyInfo.DeclaringType!.FullName} failed");
+			return false;
+		}
 	}
 
 	public static bool IsNullable(Type sourceType)
@@ -142,7 +151,7 @@ public static class TypeChecks
 	{
 		ArgumentNullException.ThrowIfNull(methodInfo, nameof(methodInfo));
 
-		if (methodInfo.CustomAttributes.Any(a => a.AttributeType.FullName == "Microsoft.AspNetCore.Mvc.NonActionAttribute"))
+		if (methodInfo.HasCustomAttribute("Microsoft.AspNetCore.Mvc.NonActionAttribute"))
 			return false;
 
 		if (methodInfo.ReturnType.Name is "ActionResult`1" or "ActionResult" or "IActionResult")
@@ -203,7 +212,7 @@ public static class TypeChecks
 			.ToArray();
 	}
 
-	private static bool FromServices(ParameterInfo p) => p.CustomAttributes.Any(x => x.AttributeType.FullName == "Microsoft.AspNetCore.Mvc.FromServicesAttribute");
+	private static bool FromServices(ParameterInfo p) => p.HasCustomAttribute("Microsoft.AspNetCore.Mvc.FromServicesAttribute");
 
 	public static bool IsHttpAttribute(CustomAttributeData data)
 	{
