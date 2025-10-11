@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add better handling of FileLoadException when looking at custom attributes (#176)
 - Write a newline after the exception when logging the error
+- Improve detection of generic arguments for classes quacking like a
+  `Dictionary`, or other generic arguments
 
 ### Changed
 

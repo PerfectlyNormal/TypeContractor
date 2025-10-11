@@ -118,12 +118,27 @@ public static class TypeChecks
 				return elementType;
 		}
 
+		if (ImplementsIDictionary(sourceType))
+		{
+			if (sourceType.IsInterface && IsDictionary(sourceType))
+				return sourceType.GenericTypeArguments.ElementAt(index);
+
+			foreach (var interfaceUsed in sourceType.GetInterfaces())
+				if (IsDictionary(interfaceUsed))
+					return GetGenericType(interfaceUsed, index);
+		}
+
+		if (sourceType.GenericTypeArguments.Length > 0)
+			return sourceType.GenericTypeArguments.ElementAt(index);
+
+		foreach (var interfaceUsed in sourceType.GetInterfaces())
+			if (interfaceUsed.GenericTypeArguments.Length == index + 1)
+				return interfaceUsed.GenericTypeArguments.ElementAt(index);
+
 		if (sourceType.GenericTypeArguments.Length == 0 && sourceType.BaseType is not null)
 			return GetGenericType(sourceType.BaseType);
 
-		return sourceType.GenericTypeArguments.Length > 0
-			? sourceType.GenericTypeArguments.ElementAt(index)
-			: throw new InvalidOperationException($"Expected {sourceType.FullName} to have a generic type argument, but unable to find any.");
+		throw new InvalidOperationException($"Expected {sourceType.FullName} to have a generic type argument, but unable to find any.");
 	}
 
 	public static bool IsController(Type type)
