@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Add better handling of FileLoadException when looking at custom attributes (#176)
+- Write a newline after the exception when logging the error
 
 ### Changed
 

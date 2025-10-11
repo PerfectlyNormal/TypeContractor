@@ -22,7 +22,7 @@ internal class ConsoleLogger(LogLevel logLevel) : ILog
 	{
 		LogError(message);
 		if (logLevel <= LogLevel.Debug)
-			Console.Error.Write(exception);
+			Console.Error.WriteLine(exception);
 	}
 
 	public void LogWarning(string message)
