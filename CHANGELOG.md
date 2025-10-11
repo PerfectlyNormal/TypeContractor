@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Write a newline after the exception when logging the error
 - Improve detection of generic arguments for classes quacking like a
   `Dictionary`, or other generic arguments
+- Make sure we don't generate an interface for `IActionResult`
 
 ### Changed
 

@@ -246,6 +246,9 @@ public static class TypeChecks
 		if (type.Name == "ActionResult")
 			return null;
 
+		if (type.Name == "IActionResult")
+			return null;
+
 		if (ImplementsIEnumerable(type))
 			return UnwrappedResult(GetGenericType(type));
 
