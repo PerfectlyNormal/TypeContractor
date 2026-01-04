@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.18.0] - 2026-01-04
+
 ### Fixed
 
 - Add better handling of FileLoadException when looking at custom attributes (#176)
@@ -21,7 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Generate Zod v4 schemas (#168)
 - Use `globalThis.Response` instead of `Response` to avoid conflicts (#147)
 - Set kebab-case as the default casing (#166)
-- Update System.CommandLine to latest release candidate (#163)
+- Update System.CommandLine to 2.0.1 (#163, #185)
+- Update dependencies (#184, #181)
 
 ## [0.17.4.1] - 2025-09-19
 
@@ -427,7 +430,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[unreleased]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.17.4.1...HEAD
+[unreleased]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.18.0...HEAD
+[0.18.0]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.17.4.1...v0.18.0
 [0.17.4.1]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.17.4...v0.17.4.1
 [0.17.4]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.17.3...v0.17.4
 [0.17.3]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.17.2...v0.17.3
