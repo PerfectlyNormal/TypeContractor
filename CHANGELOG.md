@@ -7,12 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [0.19.0] - 2026-03-07
+
 ### Added
 
 - Support for .NET10 (#188)
 
 ### Changed
 
+- Set .NET10 as the default version
 - Update dependencies
 
 ## [0.18.0] - 2026-01-04
@@ -438,7 +441,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[unreleased]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.18.0...HEAD
+[unreleased]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.19.0...HEAD
+[0.19.0]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.18.0...v0.19.0
 [0.18.0]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.17.4.1...v0.18.0
 [0.17.4.1]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.17.4...v0.17.4.1
 [0.17.4]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.17.3...v0.17.4
