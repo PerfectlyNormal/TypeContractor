@@ -61,7 +61,7 @@ var packsOptions = new Option<string>("--packs-path")
 
 var dotnetVersionOptions = new Option<int>("--dotnet-version")
 {
-	DefaultValueFactory = (arg) => config.GetNumberWithFallback("dotnet-version", 8),
+	DefaultValueFactory = (arg) => config.GetNumberWithFallback("dotnet-version", 10),
 	Description = "Major version of dotnet to look for",
 };
 
