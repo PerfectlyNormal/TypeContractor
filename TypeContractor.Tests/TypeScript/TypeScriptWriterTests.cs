@@ -296,9 +296,9 @@ public class TypeScriptWriterTests : IDisposable
 		file.Should()
 			.NotBeEmpty()
 			.And.Contain("import { z } from 'zod';")
-			.And.Contain("import { ObsoleteEnum } from './ObsoleteEnum';")
+			.And.Contain("import { ObsoleteEnum, ObsoleteEnumEnum } from './ObsoleteEnum';")
 			.And.Contain("export const TypeWithEnumSchema = z.object({")
-			.And.Contain("  status: z.enum(ObsoleteEnum),")
+			.And.Contain("  status: ObsoleteEnumEnum,")
 			.And.Contain("});");
 	}
 
@@ -316,9 +316,9 @@ public class TypeScriptWriterTests : IDisposable
 		file.Should()
 			.NotBeEmpty()
 			.And.Contain("import { z } from 'zod';")
-			.And.Contain("import { ObsoleteEnum } from './ObsoleteEnum';")
+			.And.Contain("import { ObsoleteEnum, ObsoleteEnumEnum } from './ObsoleteEnum';")
 			.And.Contain("export const TypeWithNullableEnumSchema = z.object({")
-			.And.Contain("  status: z.enum(ObsoleteEnum).nullable(),")
+			.And.Contain("  status: ObsoleteEnumEnum.nullable(),")
 			.And.Contain("});");
 	}
 

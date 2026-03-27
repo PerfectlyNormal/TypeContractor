@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Changed
+
+- Update the way we handle enums when generating Zod schemas (#202)
+
 ## [0.19.0] - 2026-03-07
 
 ### Added

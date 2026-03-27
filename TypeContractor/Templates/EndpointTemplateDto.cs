@@ -8,6 +8,7 @@ public record EndpointTemplateDto(
 	string HttpMethodUppercase,
 	string ReturnType,
 	string? UnwrappedReturnType,
+	string? UnwrappedReturnSchema,
 	bool EnumerableReturnType,
 	string? MappedReturnType,
 	bool? EnumerableMappedReturnType,

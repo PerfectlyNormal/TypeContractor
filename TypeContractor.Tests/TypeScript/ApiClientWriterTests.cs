@@ -239,6 +239,31 @@ public sealed class ApiClientWriterTests : IDisposable
 	}
 
 	[Fact]
+	public void Handles_Enum_Return_With_Zod_Schema()
+	{
+		// Arrange
+		var outputTypes = new List<OutputType>
+		{
+			_converter.Convert(typeof(ReportType))
+		};
+
+		var apiClient = new ApiClient("TestClient", "TestController", "test", null);
+		apiClient.AddEndpoint(new ApiClientEndpoint("getReportType", "report-type", EndpointMethod.GET, typeof(ReportType), typeof(ReportType), false, [], null));
+
+		// Act
+		var result = Sut.Write(apiClient, outputTypes, _converter, true, _templateFn, Casing.Pascal);
+
+		// Assert
+		var file = File.ReadAllText(result).Trim();
+		file.Should()
+			.NotBeEmpty()
+			.And.Contain("import { ReportType, ReportTypeEnum } from '~/type-contractor/tests/type-script/report-type';")
+			.And.Contain("public async getReportType(cancellationToken: AbortSignal = null): Promise<ReportType> {")
+			.And.Contain("return await response.parseJson<ReportType>(ReportTypeEnum);")
+			.And.NotContain("ReportTypeSchema");
+	}
+
+	[Fact]
 	public void Unpacks_Complex_Object_To_Query()
 	{
 		// Arrange
