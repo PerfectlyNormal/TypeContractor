@@ -39,10 +39,6 @@ namespace TypeContractor.TypeScript
 			if (TypeChecks.IsNullable(sourceType))
 				sourceType = TypeChecks.GetGenericType(sourceType);
 
-			// We don't currently import any schema for enums
-			if (sourceType.IsEnum)
-				return null;
-
 			var suffix = sourceType.IsEnum ? "Enum" : "Schema";
 			var name = GetImportType(import.InnerSourceType, sourceType);
 			return $"{name}{suffix}";
@@ -52,6 +48,10 @@ namespace TypeContractor.TypeScript
 		{
 			if (returnType.IsBuiltin)
 				return null;
+
+			var sourceType = returnType.InnerType ?? returnType.SourceType;
+			if (sourceType?.IsEnum == true)
+				return $"{returnType.ImportType}Enum";
 
 			return $"{returnType.ImportType}Schema";
 		}
@@ -69,12 +69,12 @@ namespace TypeContractor.TypeScript
 		private static string? GetZodOutputType(OutputProperty property, IEnumerable<OutputType> allTypes)
 		{
 			if (!property.IsBuiltin && property.SourceType.IsEnum)
-				return $"z.enum({property.SourceType.Name})";
+				return $"{property.SourceType.Name.Split('`').First()}Enum";
 			else if (!property.IsBuiltin && property.IsNullable && property.SourceType.IsGenericType)
 			{
 				var sourceType = TypeChecks.GetGenericType(property.SourceType);
 				if (sourceType.IsEnum)
-					return $"z.enum({sourceType.Name}).nullable()";
+					return $"{sourceType.Name.Split('`').First()}Enum.nullable()";
 			}
 
 			string? output;
@@ -87,9 +87,11 @@ namespace TypeContractor.TypeScript
 			}
 			else if (!property.IsBuiltin && !property.IsNullable)
 			{
-				var name = property.InnerSourceType?.Name ?? property.SourceType.Name;
+				var sourceType = property.InnerSourceType ?? property.SourceType;
+				var name = sourceType.Name;
 				name = name.Split('`').First();
-				output = $"{name}Schema";
+				var suffix = sourceType.IsEnum ? "Enum" : "Schema";
+				output = $"{name}{suffix}";
 			}
 			else if (property.IsBuiltin)
 			{
@@ -97,9 +99,11 @@ namespace TypeContractor.TypeScript
 			}
 			else if (!property.IsBuiltin && property.IsArray && property.InnerSourceType is not null)
 			{
-				var name = property.InnerSourceType.Name;
+				var sourceType = property.InnerSourceType;
+				var name = sourceType.Name;
 				name = name.Split('`').First();
-				output = $"{name}Schema";
+				var suffix = sourceType.IsEnum ? "Enum" : "Schema";
+				output = $"{name}{suffix}";
 			}
 			else
 			{
@@ -142,7 +146,8 @@ namespace TypeContractor.TypeScript
 			else if (allTypes.Any(x => IsOfType(sourceType, x.ContractedType.Type)))
 			{
 				var targetType = allTypes.First(x => IsOfType(sourceType, x.ContractedType.Type));
-				output = $"{targetType.Name}Schema";
+				var suffix = targetType.IsEnum ? "Enum" : "Schema";
+				output = $"{targetType.Name}{suffix}";
 			}
 			else
 				output = "z.any()";

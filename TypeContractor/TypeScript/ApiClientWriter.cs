@@ -112,6 +112,11 @@ public partial class ApiClientWriter(string outputPath, string? relativeRoot)
 			var targetType = buildZodSchema && endpoint.ReturnType is not null
 				? converter.GetDestinationType(endpoint.ReturnType, endpoint.ReturnType.CustomAttributes, false, TypeChecks.IsNullable(endpoint.ReturnType))
 				: null;
+			var unwrappedReturnSchema = endpoint.UnwrappedReturnType is null
+				? null
+				: endpoint.UnwrappedReturnType.IsEnum
+					? $"{endpoint.UnwrappedReturnType.Name}Enum"
+					: $"{endpoint.UnwrappedReturnType.Name}Schema";
 
 			endpoints.Add(new EndpointTemplateDto(
 				endpoint.Name,
@@ -121,6 +126,7 @@ public partial class ApiClientWriter(string outputPath, string? relativeRoot)
 				method,
 				returnType,
 				endpoint.UnwrappedReturnType?.Name,
+				unwrappedReturnSchema,
 				endpoint.EnumerableReturnType,
 				targetType?.TypeName,
 				targetType?.IsArray,
@@ -171,7 +177,6 @@ public partial class ApiClientWriter(string outputPath, string? relativeRoot)
 	private List<string> BuildImports(IEnumerable<ApiClientEndpoint> endpoints, IEnumerable<OutputType> allTypes, TypeScriptConverter converter, bool buildZodSchema)
 	{
 		var imports = new List<string>();
-		var needZodLibrary = false;
 
 		foreach (var endpoint in endpoints)
 		{
@@ -179,11 +184,7 @@ public partial class ApiClientWriter(string outputPath, string? relativeRoot)
 				? null
 				: converter.GetDestinationType(endpoint.ReturnType, endpoint.ReturnType.CustomAttributes, false, TypeChecks.IsNullable(endpoint.ReturnType));
 
-			if (returnType is not null && returnType.IsBuiltin)
-			{
-				needZodLibrary = true;
-			}
-			else if (returnType is not null && !returnType.IsBuiltin)
+			if (returnType is not null && !returnType.IsBuiltin)
 			{
 				var importTypes = new List<string> { returnType.ImportType };
 				if (buildZodSchema)
@@ -227,7 +228,7 @@ public partial class ApiClientWriter(string outputPath, string? relativeRoot)
 			}
 		}
 
-		if (buildZodSchema && needZodLibrary)
+		if (buildZodSchema)
 			imports.Insert(0, ZodSchemaWriter.LibraryImport);
 
 		return imports.Distinct().ToList();
