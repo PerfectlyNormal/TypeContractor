@@ -156,7 +156,7 @@ public class Contractor
 		{
 			Log.Instance.LogMessage("Cleaning no longer relevant output files.");
 			var allFiles = Directory.GetFiles(Configuration.OutputPath, "*", SearchOption.AllDirectories);
-			var diff = allFiles.Except(generatedFiles).ToList();
+			var diff = allFiles.Except(generatedFiles, StringComparer.OrdinalIgnoreCase).ToList();
 
 			var allDirectories = Directory.GetDirectories(Configuration.OutputPath, "*", SearchOption.AllDirectories);
 			var generatedDirectories = allDirectories.Where(d => generatedFiles.Any(f => f.StartsWith(d, StringComparison.InvariantCultureIgnoreCase)));
