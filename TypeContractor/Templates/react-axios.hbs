@@ -20,7 +20,7 @@ export const {{Name}} = {
    * @deprecated {{ObsoleteReason}}
    */
 {{/if}}
-  {{Name}}: ({{#each Parameters}}{{this}}, {{/each}}cancellationToken: AbortSignal | undefined = undefined) => {
+  {{Name}}: async ({{#each Parameters}}{{this}}, {{/each}}signal: AbortSignal | undefined = undefined) => {
 {{#if DynamicUrl}}
     const url = new URL(`{{Url}}`, window.location.origin);
 {{else}}
@@ -37,13 +37,16 @@ else
 {{#each QueryParameters}}
 {{#if IsBuiltin}}
 {{#if IsNullable}}
-    if (!!{{Name}})
+    if ({{Name}} !== null && {{Name}} !== undefined)
 {{#if IsArray}}
 {{Name}}.forEach((val, i) => url.searchParams.append(`{{Name}}[${i}]`, val.toString()));
 {{else}}
     url.searchParams.append('{{Name}}', {{Name}}.toString());
 {{/if}}
 {{else}}
+{{#if IsOptional}}
+    if ({{Name}} !== undefined)
+{{/if}}
 {{#if IsArray}}
 {{Name}}.forEach((val, i) => url.searchParams.append(`{{Name}}[${i}]`, val.toString()));
 {{else}}
@@ -51,15 +54,23 @@ else
 {{/if}}
 {{/if}}
 {{else}}
+{{#if IsOptional}}
+    if ({{Name}} !== undefined && {{Name}} !== null)
+{{/if}}
 {{#if IsNullable}}
-      if (!!{{DestinationName}})
+      if ({{Name}}.{{DestinationName}} !== null && {{Name}}.{{DestinationName}} !== undefined)
         url.searchParams.append('{{DestinationName}}', {{Name}}.{{DestinationName}}.toString());
 {{else}}
     url.searchParams.append('{{DestinationName}}', {{Name}}.{{DestinationName}}.toString());
 {{/if}}
 {{/if}}
 {{/each}}
-    return axios.{{HttpMethod}}(`${url.pathname}${url.search}`.slice(1), {{#if RequiresBody}}{{#if BodyParameter}}{{BodyParameter}}{{else}}null{{/if}}, {{/if}}{ signal: cancellationToken });
+{{#if ReturnUnparsedResponse}}
+    return axios.{{HttpMethod}}{{#if UnwrappedReturnType}}<{{UnwrappedReturnType}}{{#if EnumerableReturnType}}[]{{/if}}>{{/if}}(`${url.pathname}${url.search}`.slice(1), {{#if RequiresBody}}{{#if BodyParameter}}{{BodyParameter}}{{else}}null{{/if}}, {{/if}}{ signal });
+{{else}}
+    const response = await axios.{{HttpMethod}}{{#if UnwrappedReturnType}}<{{UnwrappedReturnType}}{{#if EnumerableReturnType}}[]{{/if}}>{{/if}}(`${url.pathname}${url.search}`.slice(1), {{#if RequiresBody}}{{#if BodyParameter}}{{BodyParameter}}{{else}}null{{/if}}, {{/if}}{ signal });
+    return response.data;
+{{/if}}
   },
 {{/each}}
 };
