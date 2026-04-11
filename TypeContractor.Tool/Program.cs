@@ -16,6 +16,12 @@ var assemblyOption = new Option<string>("--assembly")
 	Required = true,
 };
 
+var extraAssemblyOptions = new Option<string[]>("--also-look-in")
+{
+	DefaultValueFactory = (arg) => config.GetStrings("also-look-in"),
+	Description = "Path to additional assemblies to look for relevant types in. Can be repeated",
+};
+
 var outputOption = new Option<string>("--output")
 {
 	DefaultValueFactory = (arg) => config.TryGetString("output") ?? "",
@@ -51,6 +57,12 @@ var mapOptions = new Option<string[]>("--custom-map")
 {
 	DefaultValueFactory = (arg) => config.GetStrings("custom-map"),
 	Description = "Provide a custom type map in the form '<from>:<to>'. Can be repeated",
+};
+
+var constantOptions = new Option<string[]>("--generate-constants")
+{
+	DefaultValueFactory = (arg) => config.GetStrings("generate-constants"),
+	Description = "Treat the provided type name as containing constants to convert. Can be repeated",
 };
 
 var packsOptions = new Option<string>("--packs-path")
@@ -95,12 +107,14 @@ var casingOptions = new Option<Casing>("--casing")
 };
 
 rootCommand.Options.Add(assemblyOption);
+rootCommand.Options.Add(extraAssemblyOptions);
 rootCommand.Options.Add(outputOption);
 rootCommand.Options.Add(relativeRootOption);
 rootCommand.Options.Add(cleanOption);
 rootCommand.Options.Add(replaceOptions);
 rootCommand.Options.Add(stripOptions);
 rootCommand.Options.Add(mapOptions);
+rootCommand.Options.Add(constantOptions);
 rootCommand.Options.Add(packsOptions);
 rootCommand.Options.Add(dotnetVersionOptions);
 rootCommand.Options.Add(logLevelOptions);
@@ -132,12 +146,14 @@ apiClientsTemplateOptions.Validators.Add(result =>
 rootCommand.SetAction(async (parseResult, cancellationToken) =>
 {
 	var assemblyOptionValue = parseResult.GetValue(assemblyOption)!;
+	var extraAssembliesValue = parseResult.GetValue(extraAssemblyOptions) ?? [];
 	var outputValue = parseResult.GetValue(outputOption)!;
 	var relativeRootValue = parseResult.GetValue(relativeRootOption);
 	var cleanValue = parseResult.GetValue(cleanOption);
 	var replacementsValue = parseResult.GetValue(replaceOptions) ?? [];
 	var stripValue = parseResult.GetValue(stripOptions) ?? [];
 	var customMapsValue = parseResult.GetValue(mapOptions) ?? [];
+	var constantsValue = parseResult.GetValue(constantOptions) ?? [];
 	var packsPathValue = parseResult.GetValue(packsOptions)!;
 	var dotnetVersionValue = parseResult.GetValue(dotnetVersionOptions);
 	var logLevelValue = parseResult.GetValue(logLevelOptions);
@@ -148,12 +164,14 @@ rootCommand.SetAction(async (parseResult, cancellationToken) =>
 
 	Log.Instance = new ConsoleLogger(logLevelValue);
 	var generator = new Generator(assemblyOptionValue,
+								  extraAssembliesValue,
 								  outputValue,
 								  relativeRootValue,
 								  cleanValue,
 								  replacementsValue,
 								  stripValue,
 								  customMapsValue,
+								  constantsValue,
 								  packsPathValue,
 								  dotnetVersionValue,
 								  buildZodSchemasValue,

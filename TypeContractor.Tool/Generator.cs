@@ -15,6 +15,8 @@ internal class Generator
 	private readonly string[] _replacements;
 	private readonly string[] _strip;
 	private readonly string[] _customMaps;
+	private readonly string[] _alsoLookIn;
+	private readonly string[] _constantsTypes;
 	private readonly string _packPath;
 	private readonly int _dotnetVersion;
 	private readonly bool _buildZodSchemas;
@@ -23,12 +25,14 @@ internal class Generator
 	private readonly Casing? _casing;
 
 	public Generator(string assemblyPath,
+					 string[] alsoLookIn,
 					 string output,
 					 string? relativeRoot,
 					 CleanMethod cleanMethod,
 					 string[] replacements,
 					 string[] strip,
 					 string[] customMaps,
+					 string[] constantsTypes,
 					 string packsPath,
 					 int dotnetVersion,
 					 bool buildZodSchemas,
@@ -37,12 +41,14 @@ internal class Generator
 					 Casing? casing)
 	{
 		_assemblyPath = assemblyPath;
+		_alsoLookIn = alsoLookIn;
 		_output = output;
 		_relativeRoot = relativeRoot;
 		_cleanMethod = cleanMethod;
 		_replacements = replacements;
 		_strip = strip;
 		_customMaps = customMaps;
+		_constantsTypes = constantsTypes;
 		_packPath = packsPath;
 		_dotnetVersion = dotnetVersion;
 		_buildZodSchemas = buildZodSchemas;
@@ -77,9 +83,19 @@ internal class Generator
 			var clients = new List<ApiClient>();
 			var assembly = context.LoadFromAssemblyPath(_assemblyPath);
 			var assemblyTypes = assembly.GetExportedTypes();
+			foreach (var assPath in _alsoLookIn)
+			{
+				var extraAssembly = context.LoadFromAssemblyPath(assPath);
+				assemblyTypes = [.. assemblyTypes, .. extraAssembly.GetExportedTypes()];
+			}
 
 			var controllers = assemblyTypes.Where(IsController).ToList();
-			var constants = assemblyTypes.Where(ContainsConstants).Distinct().ToList();
+
+			var extraConstants = (_constantsTypes ?? [])
+				.SelectMany(x => context.GetAssemblies().Select(ass => ass.GetType(x)))
+				.Where(x => x is not null)
+				.Cast<Type>();
+			var constants = assemblyTypes.Where(ContainsConstants).Concat(extraConstants).Distinct().ToList();
 
 			if (controllers.Count == 0 && constants.Count == 0)
 			{
