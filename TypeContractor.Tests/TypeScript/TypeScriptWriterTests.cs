@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
+using TypeContractor.Annotations;
 using TypeContractor.Output;
 using TypeContractor.TypeScript;
 
@@ -433,6 +434,28 @@ public class TypeScriptWriterTests : IDisposable
 		}
 	}
 
+	[Fact]
+	public void Writes_A_File_With_Constants()
+	{
+		// Arrange
+		var outputTypes = BuildOutputTypes(typeof(MyConstants));
+
+		// Act
+		var result = Sut.Write(outputTypes.First(), outputTypes, buildZodSchema: false);
+		var file = File.ReadAllText(result);
+
+		// Assert
+		file.Should()
+			.NotBeEmpty()
+			.And.Contain("export const MyConstants = {")
+			.And.Contain("  finishedGeneratingReports: \"FinishedGeneratingReports\",")
+			.And.NotContain("  startingToGenerate: \"StartingToGenerate\",")
+			.And.NotContain("  failedToGenerate: \"FailedToGenerate\",")
+			.And.Contain("  useTabsInsteadOfSpaces: true")
+			.And.Contain("  retries: 5")
+			.And.Contain("}");
+	}
+
 	private List<OutputType> BuildOutputTypes(Type type, Casing casing = Casing.Pascal)
 	{
 		var oldCasing = _configuration.Casing;
@@ -580,6 +603,16 @@ public class ResponseWithOverridableCustomType
 public class MyCustomRequest
 {
 	public string Name { get; set; }
+}
+
+[TypeContractorConstants]
+public static class MyConstants
+{
+	public const string FinishedGeneratingReports = "FinishedGeneratingReports";
+	public static readonly string StartingToGenerate = "StartingToGenerate";
+	public static string FailedToGenerate { get; } = "FailedToGenerate";
+	public const bool UseTabsInsteadOfSpaces = true;
+	public const int Retries = 5;
 }
 #pragma warning restore CS8618
 #endregion

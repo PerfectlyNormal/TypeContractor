@@ -10,6 +10,7 @@ public record OutputType(
 	ContractedType ContractedType,
 	bool IsEnum,
 	bool IsGeneric,
+	bool IsConstantsFile,
 	ICollection<DestinationType> GenericTypeArguments,
 	ICollection<OutputProperty>? Properties,
 	ICollection<OutputEnumMember>? EnumMembers)

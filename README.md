@@ -39,6 +39,11 @@ TypeScript interfaces and enums
    the types, we have the schemas. Let's just make everything work together,
    and let TypeContractor handle keeping those pesky API changes in sync.
 
+6. Generate a file with constants to TypeScript
+
+   Any class annotated with `[TypeContractorConstants]` will get a TypeScript
+   version created where all `public const` fields gets converted to a
+   constant TypeScript object with all the fields and their values.
 
 ## Setup and configuration
 
@@ -287,6 +292,9 @@ Available annotations:
   If your project doesn't support nullable reference types, or you just
   feel like you know better, you can mark a property as nullable and
   override the automatically detected setting.
+* `TypeContractorConstants`:
+  If you have a file with various constants that you want to share and
+  generate a TypeScript file from that gets kept in sync.
 
 ## Future improvements
 

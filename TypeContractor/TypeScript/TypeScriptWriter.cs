@@ -129,6 +129,10 @@ public class TypeScriptWriter(string outputPath)
 		{
 			_builder.AppendLine($"export enum {type.Name} {{");
 		}
+		else if (type.IsConstantsFile)
+		{
+			_builder.AppendLine($"export const {type.Name} = {{");
+		}
 		else
 		{
 			var genericPropertyTypes = type.IsGeneric
@@ -144,12 +148,31 @@ public class TypeScriptWriter(string outputPath)
 		// Body
 		foreach (var property in type.Properties ?? Enumerable.Empty<OutputProperty>())
 		{
-			var nullable = property.IsNullable ? "?" : "";
-			var array = property.IsArray ? "[]" : "";
-			var isReadonly = property.IsReadonly ? "readonly " : "";
-
 			_builder.AppendDeprecationComment(property.Obsolete);
-			_builder.AppendFormat("  {4}{0}{1}: {2}{3};\r\n", property.DestinationName, nullable, property.DestinationType, array, isReadonly);
+
+			if (type.IsConstantsFile)
+			{
+				if (property.Value is null)
+					continue;
+
+				var value = property.Value switch
+				{
+					string => $"\"{property.Value}\"",
+					short or int or long or ushort or uint or ulong => $"{property.Value}",
+					bool => $"{property.Value}".ToLowerInvariant(),
+					_ => $"{property.Value}",
+				};
+
+				_builder.AppendFormat("  {0}: {1},\r\n", property.DestinationName, value);
+			}
+			else
+			{
+				var nullable = property.IsNullable ? "?" : "";
+				var array = property.IsArray ? "[]" : "";
+				var isReadonly = property.IsReadonly ? "readonly " : "";
+
+				_builder.AppendFormat("  {4}{0}{1}: {2}{3};\r\n", property.DestinationName, nullable, property.DestinationType, array, isReadonly);
+			}
 		}
 
 		foreach (var member in type.EnumMembers ?? Enumerable.Empty<OutputEnumMember>())

@@ -27,6 +27,7 @@ public class OutputProperty(
 	public bool IsGeneric { get; set; } = isGeneric;
 	public ICollection<DestinationType> GenericTypeArguments { get; } = genericTypeArguments;
 	public ObsoleteInfo? Obsolete { get; set; }
+	public object? Value { get; set; }
 
 	/// <summary>
 	/// Returns the <see cref="DestinationType"/> and array brackets if the type is an array
@@ -35,7 +36,7 @@ public class OutputProperty(
 
 	public override string ToString()
 	{
-		return $"{(IsReadonly ? "readonly" : "")}{DestinationName}{(IsNullable ? "?" : "")}: {FullDestinationType} (import {ImportType} from {SourceType}, {(IsBuiltin ? "builtin" : "custom")})";
+		return $"{(IsReadonly ? "readonly " : "")}{DestinationName}{(IsNullable ? "?" : "")}: {FullDestinationType} (import {ImportType} from {SourceType}, {(IsBuiltin ? "builtin" : "custom")})";
 	}
 
 	public override bool Equals(object? obj)

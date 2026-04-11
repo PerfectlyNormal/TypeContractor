@@ -21,6 +21,7 @@ public class TypeScriptConverter(TypeContractorConfiguration configuration, Meta
 		ArgumentNullException.ThrowIfNull(type);
 
 		var typeName = type.Name.Split('`').First();
+		var isConstantsFile = TypeChecks.ContainsConstants(type);
 
 		return new(
 			typeName,
@@ -29,8 +30,9 @@ public class TypeScriptConverter(TypeContractorConfiguration configuration, Meta
 			contractedType ?? ContractedType.FromName(type.FullName ?? typeName, type, configuration),
 			type.IsEnum,
 			type.IsGenericType,
+			isConstantsFile,
 			type.IsGenericType ? ((TypeInfo)type).GenericTypeParameters.Select(x => GetDestinationType(x, [], false, TypeChecks.IsNullable(x))).ToList() : [],
-			type.IsEnum ? null : GetProperties(type).Distinct().ToList(),
+			type.IsEnum ? null : (isConstantsFile ? GetConstantProperties(type) : GetProperties(type)).Distinct().ToList(),
 			type.IsEnum ? GetEnumProperties(type) : null
 		);
 	}
@@ -110,6 +112,84 @@ public class TypeScriptConverter(TypeContractorConfiguration configuration, Meta
 		// Look at interfaces
 		foreach (var iface in type.GetInterfaces())
 			outputProperties.AddRange(GetProperties(iface));
+
+		return outputProperties;
+	}
+
+	private List<OutputProperty> GetConstantProperties(Type type)
+	{
+		var outputProperties = new List<OutputProperty>();
+
+		// Find all properties
+		var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Static);
+
+		// Evaluate type of property
+		foreach (var property in properties)
+		{
+			if (property.HasCustomAttribute(typeof(TypeContractorIgnoreAttribute).FullName!))
+			{
+				Log.Instance.LogTrace($"Property {type.FullName ?? type.Name}.{property.Name} is ignored by attribute");
+				continue;
+			}
+
+			// Need to have a getter
+			if (!property.CanRead) continue;
+
+			// Getter has to be public
+			var getter = property.GetGetMethod(false);
+			if (getter is null) continue;
+
+			Log.Instance.LogWarning($"Ignoring {type.FullName ?? type.Name}.{property.Name}. {property.Name} is a property, but must be a constant field to be included");
+		}
+
+		// Check fields
+		var fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
+		foreach (var field in fields)
+		{
+			if (field.HasCustomAttribute(typeof(TypeContractorIgnoreAttribute).FullName!))
+			{
+				Log.Instance.LogTrace($"Field {type.FullName ?? type.Name}.{field.Name} is ignored by attribute");
+				continue;
+			}
+
+			var destinationName = GetDestinationName(field.Name);
+			var destinationType = GetDestinationType(field.FieldType, field.CustomAttributes, isReadonly: true, TypeChecks.IsNullable(field.FieldType));
+			var outputProperty = new OutputProperty(
+				field.Name,
+				field.FieldType,
+				destinationType.InnerType,
+				destinationName,
+				destinationType.TypeName,
+				destinationType.ImportType,
+				destinationType.IsBuiltin,
+				destinationType.IsArray,
+				TypeChecks.IsNullable(field),
+				destinationType.IsReadonly,
+				destinationType.IsGeneric,
+				destinationType.GenericTypeArguments);
+
+			var obsolete = field.GetCustomAttribute("System.ObsoleteAttribute");
+			outputProperty.Obsolete = obsolete is not null ? new ObsoleteInfo((string?)obsolete.ConstructorArguments.FirstOrDefault().Value) : null;
+
+			try
+			{
+				if (field.IsLiteral)
+					outputProperty.Value = field.GetRawConstantValue();
+				else if (field.IsInitOnly)
+				{
+					Log.Instance.LogWarning($"Ignoring {type.FullName ?? type.Name}.{field.Name}. {field.Name} is a non-constant field");
+					continue;
+				}
+				else
+					outputProperty.Value = field.GetValue(type);
+			}
+			catch (InvalidOperationException ex)
+			{
+				Log.Instance.LogError(ex, $"Unable to get constant value of {type.FullName ?? type.Name}.{field.Name}");
+			}
+
+			outputProperties.Add(outputProperty);
+		}
 
 		return outputProperties;
 	}

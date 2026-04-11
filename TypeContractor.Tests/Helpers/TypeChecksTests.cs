@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Collections;
 using System.Reflection;
-using System.Reflection.Metadata;
+using TypeContractor.Annotations;
 using TypeContractor.Helpers;
 
 namespace TypeContractor.Tests.Helpers
@@ -252,6 +252,18 @@ namespace TypeContractor.Tests.Helpers
 			else
 				parameterTypes.Should().ContainInOrder(expectedTypes);
 		}
+
+		[Fact]
+		public void ContainsConstants_Is_True_With_Attribute()
+		{
+			TypeChecks.ContainsConstants(typeof(MyConstants)).Should().BeTrue();
+		}
+
+		[Fact]
+		public void ContainsConstants_Is_False_Without_Attribute()
+		{
+			TypeChecks.ContainsConstants(typeof(MyPlainConstants)).Should().BeFalse();
+		}
 	}
 
 
@@ -331,6 +343,17 @@ namespace TypeContractor.Tests.Helpers
 		public string Reference { get; set; } = "";
 		public Guid SequentialId { get; set; }
 		public string SourceHint { get; set; }
+	}
+
+	[TypeContractorConstants]
+	internal class MyConstants
+	{
+		public const string Test = "hello";
+	}
+
+	internal class MyPlainConstants
+	{
+		public const string Test = "hello";
 	}
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 }
