@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Added
+
+- Simplified response for generated API clients using the React template (#203)
+
+### Fixed
+
+- Do case-insensitive file compare when smart cleaning (#203)
+
 ### Changed
 
 - Update the way we handle enums when generating Zod schemas (#202)
