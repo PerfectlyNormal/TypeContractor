@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add default maps for unsigned numbers (#180)
 - Apply `TypeContractorIgnore` to properties
 - Add support for converting classes with constants (#196)
+- Add support for specifying additional assemblies to look in
 
 ### Fixed
 
