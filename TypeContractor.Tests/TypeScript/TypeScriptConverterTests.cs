@@ -36,7 +36,7 @@ public class TypeScriptConverterTests
 		result.FullName.Should().Be("TypeContractor.Tests.TypeScript.TypeScriptConverterTests+SimpleTypes");
 		result.IsEnum.Should().BeFalse();
 		result.EnumMembers.Should().BeNull();
-		result.Properties.Should().HaveCount(6);
+		result.Properties.Should().HaveCount(9);
 	}
 
 	[Theory]
@@ -46,6 +46,9 @@ public class TypeScriptConverterTests
 	[InlineData(3)]
 	[InlineData(4)]
 	[InlineData(5)]
+	[InlineData(6)]
+	[InlineData(7)]
+	[InlineData(8)]
 	public void Converted_Simple_Properties_Looks_As_Expected(int propertyIndex)
 	{
 		var result = Sut.Convert(typeof(SimpleTypes));
@@ -56,7 +59,7 @@ public class TypeScriptConverterTests
 		{
 			case 0:
 				prop.SourceName.Should().Be("StringProperty");
-				prop.SourceType.Should().Be(typeof(string));
+				prop.SourceType.Should().Be<string>();
 				prop.InnerSourceType.Should().BeNull();
 				prop.DestinationName.Should().Be("stringProperty");
 				prop.DestinationType.Should().Be("string");
@@ -67,7 +70,7 @@ public class TypeScriptConverterTests
 
 			case 1:
 				prop.SourceName.Should().Be("NumberProperty");
-				prop.SourceType.Should().Be(typeof(int?));
+				prop.SourceType.Should().Be<int?>();
 				prop.InnerSourceType.Should().BeNull();
 				prop.DestinationName.Should().Be("numberProperty");
 				prop.DestinationType.Should().Be("number");
@@ -78,8 +81,8 @@ public class TypeScriptConverterTests
 
 			case 2:
 				prop.SourceName.Should().Be("NumbersProperty");
-				prop.SourceType.Should().Be(typeof(IEnumerable<int>));
-				prop.InnerSourceType.Should().Be(typeof(int));
+				prop.SourceType.Should().Be<IEnumerable<int>>();
+				prop.InnerSourceType.Should().Be<int>();
 				prop.DestinationName.Should().Be("numbersProperty");
 				prop.DestinationType.Should().Be("number");
 				prop.IsBuiltin.Should().BeTrue();
@@ -89,7 +92,7 @@ public class TypeScriptConverterTests
 
 			case 3:
 				prop.SourceName.Should().Be("DoubleTime");
-				prop.SourceType.Should().Be(typeof(double));
+				prop.SourceType.Should().Be<double>();
 				prop.InnerSourceType.Should().BeNull();
 				prop.DestinationName.Should().Be("doubleTime");
 				prop.DestinationType.Should().Be("number");
@@ -100,7 +103,7 @@ public class TypeScriptConverterTests
 
 			case 4:
 				prop.SourceName.Should().Be("TimeyWimeySpan");
-				prop.SourceType.Should().Be(typeof(TimeSpan));
+				prop.SourceType.Should().Be<TimeSpan>();
 				prop.InnerSourceType.Should().BeNull();
 				prop.DestinationName.Should().Be("timeyWimeySpan");
 				prop.DestinationType.Should().Be("string");
@@ -111,10 +114,43 @@ public class TypeScriptConverterTests
 
 			case 5:
 				prop.SourceName.Should().Be("SomeObject");
-				prop.SourceType.Should().Be(typeof(object));
+				prop.SourceType.Should().Be<object>();
 				prop.InnerSourceType.Should().BeNull();
 				prop.DestinationName.Should().Be("someObject");
 				prop.DestinationType.Should().Be("any");
+				prop.IsBuiltin.Should().BeTrue();
+				prop.IsArray.Should().BeFalse();
+				prop.IsNullable.Should().BeFalse();
+				break;
+
+			case 6:
+				prop.SourceName.Should().Be("UnsignedNumber");
+				prop.SourceType.Should().Be<uint>();
+				prop.InnerSourceType.Should().BeNull();
+				prop.DestinationName.Should().Be("unsignedNumber");
+				prop.DestinationType.Should().Be("number");
+				prop.IsBuiltin.Should().BeTrue();
+				prop.IsArray.Should().BeFalse();
+				prop.IsNullable.Should().BeFalse();
+				break;
+
+			case 7:
+				prop.SourceName.Should().Be("UnsignedButLargeNumber");
+				prop.SourceType.Should().Be<ulong>();
+				prop.InnerSourceType.Should().BeNull();
+				prop.DestinationName.Should().Be("unsignedButLargeNumber");
+				prop.DestinationType.Should().Be("number");
+				prop.IsBuiltin.Should().BeTrue();
+				prop.IsArray.Should().BeFalse();
+				prop.IsNullable.Should().BeFalse();
+				break;
+
+			case 8:
+				prop.SourceName.Should().Be("UnsignedShorty");
+				prop.SourceType.Should().Be<ushort>();
+				prop.InnerSourceType.Should().BeNull();
+				prop.DestinationName.Should().Be("unsignedShorty");
+				prop.DestinationType.Should().Be("number");
 				prop.IsBuiltin.Should().BeTrue();
 				prop.IsArray.Should().BeFalse();
 				prop.IsNullable.Should().BeFalse();
@@ -138,7 +174,7 @@ public class TypeScriptConverterTests
 		var result = Sut.Convert(typeof(NestedInheritanceTest));
 
 		result.Properties.Should().NotBeNull();
-		result.Properties.Should().HaveCount(8);
+		result.Properties.Should().HaveCount(11);
 		result.Properties.Should()
 			.Contain(x => x.SourceName == "StringProperty")
 			.And.Contain(x => x.SourceName == "NumberProperty")
@@ -146,6 +182,9 @@ public class TypeScriptConverterTests
 			.And.Contain(x => x.SourceName == "DoubleTime")
 			.And.Contain(x => x.SourceName == "TimeyWimeySpan")
 			.And.Contain(x => x.SourceName == "SomeObject")
+			.And.Contain(x => x.SourceName == "UnsignedNumber")
+			.And.Contain(x => x.SourceName == "UnsignedButLargeNumber")
+			.And.Contain(x => x.SourceName == "UnsignedShorty")
 			.And.Contain(x => x.SourceName == "InheritedProperty")
 			.And.Contain(x => x.SourceName == "FinalProperty");
 	}
@@ -390,6 +429,9 @@ public class TypeScriptConverterTests
 		public double DoubleTime { get; set; }
 		public TimeSpan TimeyWimeySpan { get; set; }
 		public object SomeObject { get; set; }
+		public uint UnsignedNumber { get; set; }
+		public ulong UnsignedButLargeNumber { get; set; }
+		public ushort UnsignedShorty { get; set; }
 	}
 
 	private class TypeVisibility

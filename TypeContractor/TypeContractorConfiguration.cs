@@ -77,8 +77,11 @@ public class TypeContractorConfiguration
 		AddCustomMap(typeof(bool), DestinationTypes.Boolean);
 		AddCustomMap(typeof(byte), DestinationTypes.Number);
 		AddCustomMap(typeof(short), DestinationTypes.Number);
+		AddCustomMap(typeof(ushort), DestinationTypes.Number);
 		AddCustomMap(typeof(int), DestinationTypes.Number);
+		AddCustomMap(typeof(uint), DestinationTypes.Number);
 		AddCustomMap(typeof(long), DestinationTypes.Number);
+		AddCustomMap(typeof(ulong), DestinationTypes.Number);
 		AddCustomMap(typeof(decimal), DestinationTypes.Number);
 		AddCustomMap(typeof(float), DestinationTypes.Number);
 		AddCustomMap(typeof(double), DestinationTypes.Number);

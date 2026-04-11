@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Simplified response for generated API clients using the React template (#203)
+- Add default maps for unsigned numbers (#180)
 
 ### Fixed
 
