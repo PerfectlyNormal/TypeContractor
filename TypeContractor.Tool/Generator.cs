@@ -74,14 +74,16 @@ internal class Generator
 		try
 		{
 			Log.Instance.LogDebug($"Going to load assembly {_assemblyPath}");
-			var assembly = context.LoadFromAssemblyPath(_assemblyPath);
-			var controllers = assembly.GetTypes()
-				.Where(IsController).ToList();
 			var clients = new List<ApiClient>();
+			var assembly = context.LoadFromAssemblyPath(_assemblyPath);
+			var assemblyTypes = assembly.GetExportedTypes();
 
-			if (controllers.Count == 0)
+			var controllers = assemblyTypes.Where(IsController).ToList();
+			var constants = assemblyTypes.Where(ContainsConstants).Distinct().ToList();
+
+			if (controllers.Count == 0 && constants.Count == 0)
 			{
-				Log.Instance.LogError("Unable to find any controllers.");
+				Log.Instance.LogError("Unable to find anything to generate types from.");
 				return Task.FromResult(1);
 			}
 
@@ -134,6 +136,12 @@ internal class Generator
 					typesToLoad.TryAdd(parameterType.Assembly, []);
 					typesToLoad[parameterType.Assembly].Add(parameterType);
 				}
+			}
+
+			foreach (var constant in constants)
+			{
+				typesToLoad.TryAdd(constant.Assembly, []);
+				typesToLoad[constant.Assembly].Add(constant);
 			}
 
 			if (typesToLoad.Count == 0)

@@ -162,6 +162,9 @@ public static class TypeChecks
 		return false;
 	}
 
+	public static bool ContainsConstants(Type type)
+		=> type.HasCustomAttribute(typeof(TypeContractorConstantsAttribute).FullName!);
+
 	public static bool ReturnsActionResult(MethodInfo methodInfo)
 	{
 		ArgumentNullException.ThrowIfNull(methodInfo, nameof(methodInfo));

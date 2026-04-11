@@ -429,6 +429,21 @@ public class TypeScriptConverterTests
 			.And.Contain(x => x.DestinationName == "dontIgnoreMeBro");
 	}
 
+	[Fact]
+	public void Finds_Constant_Values()
+	{
+		var result = Sut.Convert(typeof(SignalRConstants));
+
+		result.Should().NotBeNull();
+		result.Properties.Should()
+			.NotBeNull()
+			.And.NotContain(x => x.DestinationName == "hubName")
+			.And.NotContain(x => x.DestinationName == "someProperty")
+			.And.ContainSingle(x => x.DestinationName == "finishedGeneratingReports" && x.Value is string && (string)x.Value == "finishedGeneratingReports")
+			.And.ContainSingle(x => x.DestinationName == "timeoutInSeconds" && x.Value is int && (int)x.Value == 15)
+			.And.ContainSingle(x => x.DestinationName == "reconnect" && x.Value is bool && (bool)x.Value == true);
+	}
+
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 	private record TopLevelRecord(string Name, SecondStoryRecord? SecondStoryRecord);
 	private record SecondStoryRecord(string Description, SomeOtherDeeplyNestedRecord? SomeOtherDeeplyNestedRecord);
@@ -577,6 +592,18 @@ public class TypeScriptConverterTests
 		public string DontIgnoreMeBro { get; set; }
 		[TypeContractorIgnore]
 		public string FeelFreeToIgnoreMe { get; set; }
+	}
+
+	[TypeContractorConstants]
+	private static class SignalRConstants
+	{
+		[TypeContractorIgnore]
+		public const string HubName = "Notifications";
+		public static readonly string SomeProperty = "this will be excluded :'(";
+
+		public const string FinishedGeneratingReports = "finishedGeneratingReports";
+		public const int TimeoutInSeconds = 15;
+		public const bool Reconnect = true;
 	}
 
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
