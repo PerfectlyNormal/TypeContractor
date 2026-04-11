@@ -4,6 +4,7 @@ namespace TypeContractor.Tool;
 
 public enum LogLevel
 {
+	Trace,
 	Debug,
 	Info,
 	Warning,
@@ -41,5 +42,11 @@ internal class ConsoleLogger(LogLevel logLevel) : ILog
 	{
 		if (logLevel <= LogLevel.Debug)
 			Console.WriteLine($"[ DBG] {message}");
+	}
+
+	public void LogTrace(string message)
+	{
+		if (logLevel <= LogLevel.Trace)
+			Console.WriteLine($"[TRC] {message}");
 	}
 }
