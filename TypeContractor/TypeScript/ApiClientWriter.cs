@@ -112,6 +112,11 @@ public partial class ApiClientWriter(string outputPath, string? relativeRoot)
 			var targetType = buildZodSchema && endpoint.ReturnType is not null
 				? converter.GetDestinationType(endpoint.ReturnType, endpoint.ReturnType.CustomAttributes, false, TypeChecks.IsNullable(endpoint.ReturnType))
 				: null;
+			var unwrappedReturnSchema = endpoint.UnwrappedReturnType is null
+				? null
+				: endpoint.UnwrappedReturnType.IsEnum
+					? $"{endpoint.UnwrappedReturnType.Name}Enum"
+					: $"{endpoint.UnwrappedReturnType.Name}Schema";
 
 			endpoints.Add(new EndpointTemplateDto(
 				endpoint.Name,
@@ -121,6 +126,7 @@ public partial class ApiClientWriter(string outputPath, string? relativeRoot)
 				method,
 				returnType,
 				endpoint.UnwrappedReturnType?.Name,
+				unwrappedReturnSchema,
 				endpoint.EnumerableReturnType,
 				targetType?.TypeName,
 				targetType?.IsArray,
