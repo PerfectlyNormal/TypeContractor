@@ -17,7 +17,7 @@ jobs:
       id-token: write
 
     env:
-      SOLUTION: "TypeContractor.sln"
+      SOLUTION: "TypeContractor.slnx"
       DOTNET_CLI_TELEMETRY_OPTOUT: true
 
     runs-on: ubuntu-latest
