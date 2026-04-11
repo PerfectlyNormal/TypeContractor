@@ -1,5 +1,7 @@
 using System.Reflection;
+using TypeContractor.Annotations;
 using TypeContractor.Helpers;
+using TypeContractor.Logger;
 using TypeContractor.Output;
 
 namespace TypeContractor.TypeScript;
@@ -62,6 +64,12 @@ public class TypeScriptConverter(TypeContractorConfiguration configuration, Meta
 		// Evaluate type of property
 		foreach (var property in properties)
 		{
+			if (property.HasCustomAttribute(typeof(TypeContractorIgnoreAttribute).FullName!))
+			{
+				Log.Instance.LogTrace($"Property {type.FullName ?? type.Name}.{property.Name} is ignored by attribute");
+				continue;
+			}
+
 			// Need to have a getter
 			if (!property.CanRead) continue;
 

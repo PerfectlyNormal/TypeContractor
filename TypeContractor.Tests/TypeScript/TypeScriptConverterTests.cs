@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
+using TypeContractor.Annotations;
 using TypeContractor.TypeScript;
 
 namespace TypeContractor.Tests.TypeScript;
@@ -416,6 +417,18 @@ public class TypeScriptConverterTests
 		list.IsArray.Should().BeTrue();
 	}
 
+	[Fact]
+	public void Ignores_Properties_With_IgnoreAttribute()
+	{
+		var result = Sut.Convert(typeof(ResponseWithIgnoredProperties));
+
+		result.Should().NotBeNull();
+		result.Properties.Should()
+			.NotBeNull()
+			.And.ContainSingle()
+			.And.Contain(x => x.DestinationName == "dontIgnoreMeBro");
+	}
+
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 	private record TopLevelRecord(string Name, SecondStoryRecord? SecondStoryRecord);
 	private record SecondStoryRecord(string Description, SomeOtherDeeplyNestedRecord? SomeOtherDeeplyNestedRecord);
@@ -557,6 +570,13 @@ public class TypeScriptConverterTests
 	private class ResponseWithArrayDto
 	{
 		public DateOnlyResponse[] DateOnlyResponses { get; set; }
+	}
+
+	private class ResponseWithIgnoredProperties
+	{
+		public string DontIgnoreMeBro { get; set; }
+		[TypeContractorIgnore]
+		public string FeelFreeToIgnoreMe { get; set; }
 	}
 
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.

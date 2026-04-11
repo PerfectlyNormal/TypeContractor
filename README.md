@@ -273,6 +273,8 @@ Available annotations:
   If you have a controller that doesn't need a client
   generated, you can annotate that controller using `TypeContractorIgnore`
   and it will be automatically skipped.
+
+  Also works on properties that shouldn't be included in generated DTOs.
 * `TypeContractorName`:
   If you have a badly named controller that you can't rename,
   you want something custom, or just don't like the default naming
