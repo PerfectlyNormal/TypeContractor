@@ -2,6 +2,10 @@ namespace TypeContractor.Logger;
 
 public class NullLogger : ILog
 {
+	public void LogTrace(string message)
+	{
+	}
+
 	public void LogDebug(string message)
 	{
 	}
