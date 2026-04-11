@@ -1,0 +1,26 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="CHANGELOG.md" />
+    <File Path="global.json" />
+    <File Path="LICENSE" />
+    <File Path="NuGet.config" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/Solution Items/github/">
+    <File Path=".github/dependabot.yml" />
+  </Folder>
+  <Folder Name="/Solution Items/github/workflows/" />
+  <Folder Name="/Solution Items/tools/">
+    <File Path="tools/response.d.ts" />
+    <File Path="tools/response.ts" />
+    <File Path="tools/zod-errors.ts" />
+  </Folder>
+  <Project Path="ExampleContracts/ExampleContracts.csproj" />
+  <Project Path="TypeContractor.Annotations/TypeContractor.Annotations.csproj" />
+  <Project Path="TypeContractor.Example/TypeContractor.Example.csproj" />
+  <Project Path="TypeContractor.Tests/TypeContractor.Tests.csproj" />
+  <Project Path="TypeContractor.Tool/TypeContractor.Tool.csproj" />
+  <Project Path="TypeContractor/TypeContractor.csproj" />
+</Solution>
