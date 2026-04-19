@@ -444,10 +444,33 @@ public class TypeScriptConverterTests
 			.And.ContainSingle(x => x.DestinationName == "reconnect" && x.Value is bool && (bool)x.Value == true);
 	}
 
+	[Fact]
+	public void Can_Convert_Nullable_Record_Structs()
+	{
+		var result = Sut.Convert(typeof(ListModel));
+
+		result.Should().NotBeNull();
+		result.Properties.Should()
+			.NotBeNull()
+			.And.Contain(x => x.DestinationName == "recordStructThingy" && x.DestinationType == "RecordStructThingy" && x.IsNullable && !x.IsBuiltin);
+	}
+
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 	private record TopLevelRecord(string Name, SecondStoryRecord? SecondStoryRecord);
 	private record SecondStoryRecord(string Description, SomeOtherDeeplyNestedRecord? SomeOtherDeeplyNestedRecord);
 	private record SomeOtherDeeplyNestedRecord(string Extra);
+
+	private class ListModel
+	{
+		public string Name { get; set; }
+		public RecordStructThingy? RecordStructThingy { get; set; }
+	}
+
+	private readonly record struct RecordStructThingy
+	{
+		public string Id { get; }
+		public bool IsConnected { get; }
+	}
 
 	private class SimpleTypes
 	{

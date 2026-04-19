@@ -324,6 +324,26 @@ public class TypeScriptWriterTests : IDisposable
 	}
 
 	[Fact]
+	public void Writes_Zod_Schema_With_Nullable_RecordStruct()
+	{
+		// Arrange
+		var outputTypes = BuildOutputTypes(typeof(TypeWithNullableRecordStruct));
+
+		// Act
+		var result = Sut.Write(outputTypes.First(), outputTypes, true);
+		var file = File.ReadAllText(result);
+
+		// Assert
+		file.Should()
+			.NotBeEmpty()
+			.And.Contain("import { z } from 'zod';")
+			.And.Contain("import { UserId, UserIdSchema } from './UserId';")
+			.And.Contain("export const TypeWithNullableRecordStructSchema = z.object({")
+			.And.Contain("  userId: UserIdSchema.nullable(),")
+			.And.Contain("});");
+	}
+
+	[Fact]
 	public void Writes_Zod_Schema_With_Custom_Types_In_Dictionaries()
 	{
 		// Arrange
@@ -504,6 +524,17 @@ public class TypeScriptWriterTests : IDisposable
 	{
 		public DateTime SubmittedDateTimeUtc { get; set; }
 		public ObsoleteEnum? Status { get; set; }
+	}
+
+	private class TypeWithNullableRecordStruct
+	{
+		public UserId? UserId { get; set; }
+	}
+
+	private readonly record struct UserId
+	{
+		public Guid Id { get; }
+		public bool ConnectedToApplication { get; }
 	}
 
 	private class TypeWithCustomDictionaryValues

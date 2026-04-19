@@ -73,8 +73,7 @@ namespace TypeContractor.TypeScript
 			else if (!property.IsBuiltin && property.IsNullable && property.SourceType.IsGenericType)
 			{
 				var sourceType = TypeChecks.GetGenericType(property.SourceType);
-				if (sourceType.IsEnum)
-					return $"{sourceType.Name.Split('`').First()}Enum.nullable()";
+				return $"{sourceType.Name.Split('`').First()}{GetSuffix(sourceType)}.nullable()";
 			}
 
 			string? output;
@@ -90,8 +89,7 @@ namespace TypeContractor.TypeScript
 				var sourceType = property.InnerSourceType ?? property.SourceType;
 				var name = sourceType.Name;
 				name = name.Split('`').First();
-				var suffix = sourceType.IsEnum ? "Enum" : "Schema";
-				output = $"{name}{suffix}";
+				output = $"{name}{GetSuffix(sourceType)}";
 			}
 			else if (property.IsBuiltin)
 			{
@@ -102,8 +100,7 @@ namespace TypeContractor.TypeScript
 				var sourceType = property.InnerSourceType;
 				var name = sourceType.Name;
 				name = name.Split('`').First();
-				var suffix = sourceType.IsEnum ? "Enum" : "Schema";
-				output = $"{name}{suffix}";
+				output = $"{name}{GetSuffix(sourceType)}";
 			}
 			else
 			{
@@ -120,6 +117,9 @@ namespace TypeContractor.TypeScript
 
 			return output;
 		}
+
+		private static string GetSuffix(Type sourceType)
+			=> sourceType.IsEnum ? "Enum" : "Schema";
 
 		private static string? GetZodOutputType(Type sourceType, IEnumerable<OutputType> allTypes, bool augment = false)
 		{
