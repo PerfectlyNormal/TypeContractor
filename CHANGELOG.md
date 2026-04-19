@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Do case-insensitive file compare when smart cleaning (#203)
 - Fix unwrapping Zod schemas for nullable record structs (#207)
+- Avoid potential null references when logging custom attribute errors
 
 ### Changed
 

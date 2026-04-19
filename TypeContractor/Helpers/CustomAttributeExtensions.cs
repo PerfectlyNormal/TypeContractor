@@ -22,7 +22,8 @@ internal static class CustomAttributeExtensions
 		}
 		catch (FileLoadException ex)
 		{
-			Log.Instance.LogError(ex, $"Looking for custom attributes on {propertyInfo.Name} in {propertyInfo.DeclaringType!.FullName} failed");
+			var owner = (propertyInfo.DeclaringType ?? propertyInfo.ReflectedType)?.FullName ?? "<unknown>";
+			Log.Instance.LogError(ex, $"Looking for custom attributes on {propertyInfo.Name} in {owner} failed");
 			return null;
 		}
 	}
@@ -35,7 +36,8 @@ internal static class CustomAttributeExtensions
 		}
 		catch (FileLoadException ex)
 		{
-			Log.Instance.LogError(ex, $"Looking for custom attributes on {memberInfo.Name} in {memberInfo.DeclaringType!.FullName} failed");
+			var owner = (memberInfo.DeclaringType ?? memberInfo.ReflectedType)?.FullName ?? "<unknown>";
+			Log.Instance.LogError(ex, $"Looking for custom attributes on {memberInfo.Name} in {owner} failed");
 			return null;
 		}
 	}
@@ -48,7 +50,8 @@ internal static class CustomAttributeExtensions
 		}
 		catch (FileLoadException ex)
 		{
-			Log.Instance.LogError(ex, $"Looking for custom attributes on {parameterInfo.Name} in {parameterInfo.Member.DeclaringType!.FullName} failed");
+			var owner = (parameterInfo.Member.DeclaringType ?? parameterInfo.Member.ReflectedType)?.FullName ?? "<unknown>";
+			Log.Instance.LogError(ex, $"Looking for custom attributes on {parameterInfo.Name} in {owner} failed");
 			return null;
 		}
 	}
