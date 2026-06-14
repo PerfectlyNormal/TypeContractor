@@ -279,7 +279,8 @@ Available annotations:
   generated, you can annotate that controller using `TypeContractorIgnore`
   and it will be automatically skipped.
 
-  Also works on properties that shouldn't be included in generated DTOs.
+  Also works on properties that shouldn't be included in generated DTOs,
+  or on endpoints in a controller if you only want some of the endpoints.
 * `TypeContractorName`:
   If you have a badly named controller that you can't rename,
   you want something custom, or just don't like the default naming

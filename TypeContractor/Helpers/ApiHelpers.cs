@@ -17,8 +17,8 @@ public static partial class ApiHelpers
 
 	public static ApiClient? BuildApiClient(Type controller, List<MethodInfo> endpoints)
 	{
-		var ignoreAttribute = controller.CustomAttributes.FirstOrDefault(x => x.AttributeType.FullName == typeof(TypeContractorIgnoreAttribute).FullName);
-		if (ignoreAttribute is not null)
+		var hasIgnoreAttribute = controller.HasCustomAttribute(typeof(TypeContractorIgnoreAttribute).FullName ?? "");
+		if (hasIgnoreAttribute)
 		{
 			Log.Instance.LogDebug($"Controller {controller.Name} marked with Ignore. Skipping.");
 			return null;
@@ -50,6 +50,13 @@ public static partial class ApiHelpers
 
 	internal static List<ApiClientEndpoint> BuildApiEndpoint(MethodInfo endpoint)
 	{
+		// See if we should skip
+		if (endpoint.HasCustomAttribute(typeof(TypeContractorIgnoreAttribute).FullName ?? ""))
+		{
+			Log.Instance.LogDebug($"Method {endpoint.Name} marked with Ignore. Skipping.");
+			return [];
+		}
+
 		// Find HTTP method
 		var httpAttributes = endpoint
 			.CustomAttributes

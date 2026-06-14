@@ -60,6 +60,19 @@ public class ApiHelpersTests
 		endpoint.First().Name.Should().Be("overloadEndpoint");
 	}
 
+	[Fact]
+	public void BuildApiEndpoint_Skips_Ignored_Methods()
+	{
+		// Arrange
+		var endpointMethod = typeof(LegacyController).GetMethod(nameof(LegacyController.NothingToSeeHere), [typeof(CancellationToken)])!;
+
+		// Act
+		var endpoint = ApiHelpers.BuildApiEndpoint(endpointMethod);
+
+		// Assert
+		endpoint.Should().BeEmpty();
+	}
+
 	[TypeContractorIgnore]
 	internal class IgnoredController : ControllerBase { }
 
@@ -72,6 +85,10 @@ public class ApiHelpersTests
 
 		[HttpGet("other-route")]
 		public ActionResult OverloadEndpoint(CancellationToken cancellationToken) => NotFound();
+
+		[HttpPatch("third-route")]
+		[TypeContractorIgnore]
+		public ActionResult NothingToSeeHere(CancellationToken cancellationToken) => NotFound();
 	}
 
 	[TypeContractorName("RenamedApi")]
