@@ -63,7 +63,7 @@ export class {{Name}} {
     {{/if}}
     {{/if}}
     {{/each}}
-    const response = await this.http.{{HttpMethod}}(`${url.pathname}${url.search}`.slice(1), {{#if RequiresBody}}{{#if BodyParameter}}json({{BodyParameter}}){{else}}null{{/if}}, {{/if}}{ signal: cancellationToken });
+    const response = await this.http.{{HttpMethod}}(`${url.pathname}${url.search}`.slice(1), {{#if RequiresBody}}{{#if BodyParameter}}json({{BodyParameter}}){{else}}null{{/if}}, {{else}}{{#if IsDelete}}null, {{/if}}{{/if}}{ signal: cancellationToken });
     {{#if ../BuildZodSchema}}
     {{#if UnwrappedReturnType}}
     return await response.parseJson<{{UnwrappedReturnType}}{{#if EnumerableReturnType}}[]{{/if}}>({{UnwrappedReturnSchema}}{{#if EnumerableReturnType}}.array(){{/if}});
