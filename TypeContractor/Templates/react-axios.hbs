@@ -66,7 +66,7 @@ else
 {{/if}}
 {{/each}}
 {{#if ReturnUnparsedResponse}}
-    return axios.{{HttpMethod}}{{#if UnwrappedReturnType}}<{{UnwrappedReturnType}}{{#if EnumerableReturnType}}[]{{/if}}>{{/if}}(`${url.pathname}${url.search}`.slice(1), {{#if RequiresBody}}{{#if BodyParameter}}{{BodyParameter}}{{else}}null{{/if}}, {{/if}}{ signal });
+    return await axios.{{HttpMethod}}{{#if UnwrappedReturnType}}<{{UnwrappedReturnType}}{{#if EnumerableReturnType}}[]{{/if}}>{{/if}}(`${url.pathname}${url.search}`.slice(1), {{#if RequiresBody}}{{#if BodyParameter}}{{BodyParameter}}{{else}}null{{/if}}, {{/if}}{ signal });
 {{else}}
     const response = await axios.{{HttpMethod}}{{#if UnwrappedReturnType}}<{{UnwrappedReturnType}}{{#if EnumerableReturnType}}[]{{/if}}>{{/if}}(`${url.pathname}${url.search}`.slice(1), {{#if RequiresBody}}{{#if BodyParameter}}{{BodyParameter}}{{else}}null{{/if}}, {{/if}}{ signal });
     return response.data;
