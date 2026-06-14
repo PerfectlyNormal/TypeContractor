@@ -27,10 +27,7 @@ public sealed class ApiClientWriterTests : IDisposable
 		_converter = new TypeScriptConverter(_configuration, BuildMetadataLoadContext());
 		Sut = new ApiClientWriter(_configuration.OutputPath, "~");
 
-		var embed = typeof(ApiClientWriter).Assembly.GetManifestResourceStream("TypeContractor.Templates.aurelia.hbs");
-		using var sr = new StreamReader(embed!);
-		var template = sr.ReadToEnd();
-		_templateFn = Handlebars.Compile(template);
+		_templateFn = CompileTemplate("TypeContractor.Templates.aurelia.hbs");
 	}
 
 	[Fact]
@@ -141,6 +138,50 @@ public sealed class ApiClientWriterTests : IDisposable
 			.And.Contain("const url = new URL('test/latest', window.location.origin);")
 			.And.Contain("const response = await this.http.post(`${url.pathname}${url.search}`.slice(1), json(year), { signal: cancellationToken });")
 			.And.Contain("return await response.parseJson(z.string());");
+	}
+
+	[Fact]
+	public void Writes_Delete_Without_Body()
+	{
+		// Arrange
+		var apiClient = new ApiClient("TestClient", "TestController", "test", null);
+		apiClient.AddEndpoint(new ApiClientEndpoint("byId", "{id}", EndpointMethod.DELETE, null, null, false, [new EndpointParameter("id", typeof(Guid), null, false, false, true, false, false, false, false, false)], null));
+
+		// Act
+		var result = Sut.Write(apiClient, [], _converter, true, _templateFn, Casing.Pascal);
+
+		// Assert
+		var file = File.ReadAllText(result).Trim();
+		file.Should()
+			.NotBeEmpty()
+			.And.NotContain("import { z } from 'zod';") // No schema to care about
+			.And.Contain("export class TestClient {")
+			.And.Contain("public async byId(id: string, cancellationToken: AbortSignal = null): Promise<globalThis.Response> {")
+			.And.Contain("const url = new URL(`test/${id}`, window.location.origin);")
+			.And.Contain("const response = await this.http.delete(`${url.pathname}${url.search}`.slice(1), null, { signal: cancellationToken });")
+			.And.Contain("return response;");
+	}
+
+	[Fact]
+	public void Writes_Delete_Without_Body_Using_React_Template()
+	{
+		// Arrange
+		var apiClient = new ApiClient("TestClient", "TestController", "test", null);
+		apiClient.AddEndpoint(new ApiClientEndpoint("byId", "{id}", EndpointMethod.DELETE, null, null, false, [new EndpointParameter("id", typeof(Guid), null, false, false, true, false, false, false, false, false)], null));
+
+		// Act
+		var result = Sut.Write(apiClient, [], _converter, true, CompileTemplate("TypeContractor.Templates.react-axios.hbs"), Casing.Pascal);
+
+		// Assert
+		var file = File.ReadAllText(result).Trim();
+		file.Should()
+			.NotBeEmpty()
+			.And.Contain("import axios from 'axios';")
+			.And.NotContain("import { z } from 'zod';") // No schema to care about
+			.And.Contain("export const TestClient = {")
+			.And.Contain("byId: async (id: string, signal: AbortSignal | undefined = undefined) => {")
+			.And.Contain("const url = new URL(`test/${id}`, window.location.origin);")
+			.And.Contain("return await axios.delete(`${url.pathname}${url.search}`.slice(1), { signal });");
 	}
 
 	[Fact]
@@ -423,5 +464,13 @@ public sealed class ApiClientWriterTests : IDisposable
 	{
 		if (_outputDirectory.Exists)
 			_outputDirectory.Delete(true);
+	}
+
+	private static HandlebarsTemplate<object, object> CompileTemplate(string resourceName)
+	{
+		var embed = typeof(ApiClientWriter).Assembly.GetManifestResourceStream(resourceName);
+		using var sr = new StreamReader(embed!);
+		var template = sr.ReadToEnd();
+		return Handlebars.Compile(template);
 	}
 }
