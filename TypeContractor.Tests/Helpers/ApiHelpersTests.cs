@@ -73,6 +73,27 @@ public class ApiHelpersTests
 		endpoint.Should().BeEmpty();
 	}
 
+	[Fact]
+	public void BuildApiEndpoint_Handles_Optional_Route_Part()
+	{
+		// Arrange
+		var endpointMethod = typeof(RouteController).GetMethod(nameof(RouteController.DeleteWithOptionalPart), [typeof(Guid), typeof(Guid), typeof(Guid), typeof(Guid), typeof(Guid?), typeof(CancellationToken)])!;
+
+		// Act
+		var endpoints = ApiHelpers.BuildApiEndpoint(endpointMethod);
+
+		// Assert
+		endpoints.Should().ContainSingle();
+		var endpoint = endpoints.First();
+
+		endpoint.Route.Should().Be("deletemember/{id}/{referenceId}/{certificationGroupId?}");
+		endpoint.Parameters.Should()
+			.HaveCount(3)
+			.And.Contain(x => x.FromRoute && x.Name == "id" && !x.IsOptional)
+			.And.Contain(x => x.FromRoute && x.Name == "referenceId" && !x.IsOptional)
+			.And.Contain(x => x.FromRoute && x.Name == "certificationGroupId" && x.IsOptional);
+	}
+
 	[TypeContractorIgnore]
 	internal class IgnoredController : ControllerBase { }
 
@@ -93,4 +114,10 @@ public class ApiHelpersTests
 
 	[TypeContractorName("RenamedApi")]
 	internal class RenamedSuffixController : ControllerBase { }
+
+	internal class RouteController : ControllerBase
+	{
+		[HttpDelete("deletemember/{id:Guid}/{referenceId:Guid}/{certificationGroupId:Guid?}")]
+		public ActionResult DeleteWithOptionalPart([FromHeader] Guid organizationId, [FromHeader] Guid customerId, Guid id, Guid referenceId, Guid? certificationGroupId, CancellationToken cancellationToken) => NotFound();
+	}
 }
