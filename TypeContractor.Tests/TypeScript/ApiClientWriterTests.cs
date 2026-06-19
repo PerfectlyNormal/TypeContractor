@@ -359,6 +359,35 @@ public sealed class ApiClientWriterTests : IDisposable
 			.And.NotContain("url.searchParams.append(");
 	}
 
+	[Fact]
+	public void Handles_Nullable_Route_Parameter()
+	{
+		// Arrange
+		var apiClient = new ApiClient("TestClient", "TestController", "test", null);
+		apiClient.AddEndpoint(new ApiClientEndpoint("getLatest", "latest/{id}/{referenceId}/{groupId?}", EndpointMethod.GET, null, typeof(Guid), false, [
+			new EndpointParameter("id", typeof(Guid), null, false, false, true, false, false, false, false, false),
+			new EndpointParameter("referenceId", typeof(Guid), null, false, false, true, false, false, false, false, false),
+			new EndpointParameter("groupId", typeof(Guid?), typeof(Guid), false, false, true, false, false, false, false, true),
+		], null));
+
+		// Act
+		var result = Sut.Write(apiClient, [], _converter, true, _templateFn, Casing.Pascal);
+
+		// Assert
+		var file = File.ReadAllText(result).Trim();
+		file.Should()
+			.NotBeEmpty()
+			.And.Contain("import { z } from 'zod';")
+			.And.Contain("export class TestClient {")
+			.And.Contain("public async getLatest(id: string, referenceId: string, groupId: string | undefined, cancellationToken: AbortSignal = null): Promise<string> {")
+			.And.Contain("const url = new URL(`test/latest/${id}/${referenceId}/{groupId?}`, window.location.origin);")
+			.And.Contain("if (groupId != undefined)")
+			.And.Contain("url.pathname = url.pathname.replace('{groupId?}', groupId.toString());")
+			.And.Contain("else")
+			.And.Contain("url.pathname = url.pathname.replace('/{groupId?}', '');")
+			.And.NotContain("url.searchParams.append(");
+	}
+
 	[Theory]
 	[InlineData(Casing.Camel)]
 	[InlineData(Casing.Pascal)]

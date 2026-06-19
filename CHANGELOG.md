@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Fixed
+
+- Handle optional route parameters with constraints (#222)
+
 ### Changed
 
 - Bump System.Reflection.MetadataLoadContext from 10.0.8 to 10.0.9 (#221)

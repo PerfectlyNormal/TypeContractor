@@ -12,7 +12,7 @@ public static partial class ApiHelpers
 {
 	private static readonly Regex _routeParameterRegex = RouteParameterRegexImpl();
 
-	[GeneratedRegex("{([A-Za-z]+)(:[[A-Za-z]+)?}")]
+	[GeneratedRegex("{([A-Za-z]+)(:[[A-Za-z?]+)?}")]
 	private static partial Regex RouteParameterRegexImpl();
 
 	public static ApiClient? BuildApiClient(Type controller, List<MethodInfo> endpoints)
@@ -121,7 +121,8 @@ public static partial class ApiHelpers
 		{
 			if (!match.Success) continue;
 			if (match.Groups.Count < 3) continue;
-			finalRoute = finalRoute.Replace(match.Value, $"{{{match.Groups[1].Value}}}");
+			var optional = match.Groups[2].Value.EndsWith('?') ? "?" : "";
+			finalRoute = finalRoute.Replace(match.Value, $"{{{match.Groups[1].Value}{optional}}}");
 		}
 
 		var httpMethod = method.AttributeType.Name switch
@@ -152,7 +153,13 @@ public static partial class ApiHelpers
 		if (!ParameterIsFromRoute(parameterInfo, finalRoute))
 			return false;
 
-		return finalRoute.Contains($"{{{parameterInfo.Name}?}}");
+		if (finalRoute.Contains($"{{{parameterInfo.Name}?}}"))
+			return true;
+
+		if (IsNullable(parameterInfo.ParameterType))
+			return true;
+
+		return false;
 	}
 
 	private static bool ParameterIsFromQuery(ParameterInfo parameterInfo, EndpointMethod httpMethod, string finalRoute)
