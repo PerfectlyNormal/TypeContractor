@@ -7,14 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.22.0] - 2026-07-31
+
 ### Fixed
 
 - Handle optional route parameters with constraints (#222)
 
 ### Changed
 
-- Bump System.Reflection.MetadataLoadContext from 10.0.8 to 10.0.9 (#221)
-- Bump System.CommandLine from 2.0.8 to 2.0.9 (#220)
+- Bump System.Reflection.MetadataLoadContext from 10.0.8 to 10.0.10
+- Bump System.CommandLine from 2.0.8 to 2.0.10
+- Bump Microsoft.NET.Test.SDK from 18.6.0 to 18.8.1
 
 ## [0.21.0] - 2026-06-14
 
@@ -485,7 +488,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[unreleased]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.21.0...HEAD
+[unreleased]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.22.0...HEAD
+[0.22.0]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.21.0...v0.22.0
 [0.21.0]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.20.0...v0.21.0
 [0.20.0]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.19.0...v0.20.0
 [0.19.0]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.18.0...v0.19.0
