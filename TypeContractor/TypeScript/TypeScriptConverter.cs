@@ -31,7 +31,7 @@ public class TypeScriptConverter(TypeContractorConfiguration configuration, Meta
 			type.IsEnum,
 			type.IsGenericType,
 			isConstantsFile,
-			type.IsGenericType ? ((TypeInfo)type).GenericTypeParameters.Select(x => GetDestinationType(x, [], false, TypeChecks.IsNullable(x))).ToList() : [],
+			type.IsGenericType ? ((TypeInfo)type).GenericTypeParameters.Select(x => GetDestinationType(x, [], false, TypeChecks.IsNullable(x), false)).ToList() : [],
 			type.IsEnum ? null : (isConstantsFile ? GetConstantProperties(type) : GetProperties(type)).Distinct().ToList(),
 			type.IsEnum ? GetEnumProperties(type) : null
 		);
@@ -84,7 +84,7 @@ public class TypeScriptConverter(TypeContractorConfiguration configuration, Meta
 			var isReadonly = !property.CanWrite || setter is null;
 
 			var destinationName = GetDestinationName(property.Name);
-			var destinationType = GetDestinationType(property.PropertyType, property.CustomAttributes, isReadonly, TypeChecks.IsNullable(property.PropertyType));
+			var destinationType = GetDestinationType(property.PropertyType, property.CustomAttributes, isReadonly, TypeChecks.IsNullable(property.PropertyType), false);
 			var outputProperty = new OutputProperty(
 				property.Name,
 				property.PropertyType,
@@ -153,7 +153,7 @@ public class TypeScriptConverter(TypeContractorConfiguration configuration, Meta
 			}
 
 			var destinationName = GetDestinationName(field.Name);
-			var destinationType = GetDestinationType(field.FieldType, field.CustomAttributes, isReadonly: true, TypeChecks.IsNullable(field.FieldType));
+			var destinationType = GetDestinationType(field.FieldType, field.CustomAttributes, isReadonly: true, TypeChecks.IsNullable(field.FieldType), false);
 			var outputProperty = new OutputProperty(
 				field.Name,
 				field.FieldType,
@@ -196,8 +196,11 @@ public class TypeScriptConverter(TypeContractorConfiguration configuration, Meta
 
 	public static string GetDestinationName(string name) => name.ToTypeScriptName();
 
-	public DestinationType GetDestinationType(in Type sourceType, IEnumerable<CustomAttributeData> customAttributes, bool isReadonly, bool isNullable)
+	public DestinationType GetDestinationType(in Type sourceType, IEnumerable<CustomAttributeData> customAttributes, bool isReadonly, bool isNullable, bool dictionaryKey)
 	{
+		if (dictionaryKey && sourceType.IsEnum)
+			return new DestinationType(DestinationTypes.Number, null, true, false, false, false, false, [], null, null, null);
+
 		if (!sourceType.IsGenericParameter && !string.IsNullOrEmpty(sourceType.FullName) && configuration.TypeMaps.TryGetValue(sourceType.FullName, out var destType))
 			return new DestinationType(destType.Replace("[]", string.Empty), sourceType.FullName, true, destType.Contains("[]"), isReadonly, isNullable || TypeChecks.IsNullable(sourceType), false, [], null, sourceType);
 
@@ -209,9 +212,9 @@ public class TypeScriptConverter(TypeContractorConfiguration configuration, Meta
 
 		if (TypeChecks.ImplementsIDictionary(sourceType))
 		{
-			var keyType = GetDestinationType(TypeChecks.GetGenericType(sourceType, 0), customAttributes, isReadonly, false);
+			var keyType = GetDestinationType(TypeChecks.GetGenericType(sourceType, 0), customAttributes, isReadonly, false, true);
 			var valueType = TypeChecks.GetGenericType(sourceType, 1);
-			var valueDestinationType = GetDestinationType(valueType, customAttributes, isReadonly, TypeChecks.IsNullable(valueType));
+			var valueDestinationType = GetDestinationType(valueType, customAttributes, isReadonly, TypeChecks.IsNullable(valueType), false);
 
 			var isBuiltin = keyType.IsBuiltin && valueDestinationType.IsBuiltin;
 
@@ -222,14 +225,14 @@ public class TypeScriptConverter(TypeContractorConfiguration configuration, Meta
 		{
 			var innerType = TypeChecks.GetGenericType(sourceType);
 
-			var (TypeName, FullName, _, IsBuiltin, _, IsReadonly, IsNullable, IsGeneric, _, _, _) = GetDestinationType(innerType, customAttributes, isReadonly, isNullable);
+			var (TypeName, FullName, _, IsBuiltin, _, IsReadonly, IsNullable, IsGeneric, _, _, _) = GetDestinationType(innerType, customAttributes, isReadonly, isNullable, false);
 			return new DestinationType(TypeName, FullName, IsBuiltin, true, IsReadonly, IsNullable, IsGeneric, [], innerType, sourceType);
 		}
 
 		if (TypeChecks.IsValueTuple(sourceType))
 		{
 			var arguments = sourceType.GenericTypeArguments;
-			var argumentDestinationTypes = arguments.Select(arg => GetDestinationType(arg, customAttributes, isReadonly, isNullable));
+			var argumentDestinationTypes = arguments.Select(arg => GetDestinationType(arg, customAttributes, isReadonly, isNullable, false));
 			var isBuiltin = argumentDestinationTypes.All(arg => arg.IsBuiltin);
 
 			var argumentList = argumentDestinationTypes.Select((arg, idx) => $"item{idx + 1}: {arg.FullTypeName}");
@@ -240,7 +243,7 @@ public class TypeScriptConverter(TypeContractorConfiguration configuration, Meta
 
 		if (TypeChecks.IsNullable(sourceType))
 		{
-			return GetDestinationType(sourceType.GenericTypeArguments.First(), customAttributes, isReadonly, true);
+			return GetDestinationType(sourceType.GenericTypeArguments.First(), customAttributes, isReadonly, true, false);
 		}
 
 		if (sourceType.IsGenericType && sourceType.GenericTypeArguments.Length > 0)
@@ -250,7 +253,7 @@ public class TypeScriptConverter(TypeContractorConfiguration configuration, Meta
 			CustomMappedTypes.TryAdd(genericType, genericOutputType);
 
 			var genericArguments = sourceType.GenericTypeArguments
-				.Select(x => GetDestinationType(x, customAttributes, isReadonly, TypeChecks.IsNullable(x)))
+				.Select(x => GetDestinationType(x, customAttributes, isReadonly, TypeChecks.IsNullable(x), false))
 				.ToList();
 
 			var importType = genericOutputType.Name.Split('`').First();

@@ -50,7 +50,7 @@ public partial class ApiClientWriter(string outputPath, string? relativeRoot)
 			var parameterMap = parameters.Select(x => $"{x.ParameterName}{((x.Type?.IsNullable ?? false) && !x.IsOptional ? "?" : "")}: {x.Type?.FullTypeName ?? "any"}{(x.IsOptional ? " | undefined" : "")}").ToList();
 			var returnType = (endpoint.ReturnType is null
 					? null
-					: converter.GetDestinationType(endpoint.ReturnType, endpoint.ReturnType.CustomAttributes, false, TypeChecks.IsNullable(endpoint.ReturnType))?.FullTypeName) ?? "globalThis.Response";
+					: converter.GetDestinationType(endpoint.ReturnType, endpoint.ReturnType.CustomAttributes, false, TypeChecks.IsNullable(endpoint.ReturnType), false)?.FullTypeName) ?? "globalThis.Response";
 
 			var routeParams = endpoint.Parameters
 				.Where(x => x.FromRoute)
@@ -78,7 +78,7 @@ public partial class ApiClientWriter(string outputPath, string? relativeRoot)
 			var queryParamsDto = new List<QueryParameterTemplateDto>(queryParams.Count);
 			foreach (var queryParam in queryParams)
 			{
-				var destinationType = converter.GetDestinationType(queryParam.ParameterType, queryParam.ParameterType.CustomAttributes, false, TypeChecks.IsNullable(queryParam.ParameterType));
+				var destinationType = converter.GetDestinationType(queryParam.ParameterType, queryParam.ParameterType.CustomAttributes, false, TypeChecks.IsNullable(queryParam.ParameterType), false);
 				if (destinationType.IsBuiltin)
 				{
 					queryParamsDto.Add(new QueryParameterTemplateDto(queryParam.Name, destinationType.IsBuiltin, destinationType.IsNullable, destinationType.IsArray, queryParam.IsOptional, null));
@@ -110,7 +110,7 @@ public partial class ApiClientWriter(string outputPath, string? relativeRoot)
 
 			var returnUnparsedResponse = endpoint.UnwrappedReturnType is null && endpoint.ReturnType is null;
 			var targetType = buildZodSchema && endpoint.ReturnType is not null
-				? converter.GetDestinationType(endpoint.ReturnType, endpoint.ReturnType.CustomAttributes, false, TypeChecks.IsNullable(endpoint.ReturnType))
+				? converter.GetDestinationType(endpoint.ReturnType, endpoint.ReturnType.CustomAttributes, false, TypeChecks.IsNullable(endpoint.ReturnType), false)
 				: null;
 			var unwrappedReturnSchema = endpoint.UnwrappedReturnType is null
 				? null
@@ -175,7 +175,7 @@ public partial class ApiClientWriter(string outputPath, string? relativeRoot)
 	{
 		Log.Instance.LogDebug($"Mapping parameter {parameter.Name} ({parameter.ParameterType.Name})");
 
-		var targetType = converter.GetDestinationType(parameter.ParameterType, parameter.ParameterType.CustomAttributes, false, TypeChecks.IsNullable(parameter.ParameterType));
+		var targetType = converter.GetDestinationType(parameter.ParameterType, parameter.ParameterType.CustomAttributes, false, TypeChecks.IsNullable(parameter.ParameterType), false);
 		return (parameter.Name, targetType, parameter.IsOptional);
 	}
 
@@ -188,7 +188,7 @@ public partial class ApiClientWriter(string outputPath, string? relativeRoot)
 		{
 			var returnType = endpoint.ReturnType is null
 				? null
-				: converter.GetDestinationType(endpoint.ReturnType, endpoint.ReturnType.CustomAttributes, false, TypeChecks.IsNullable(endpoint.ReturnType));
+				: converter.GetDestinationType(endpoint.ReturnType, endpoint.ReturnType.CustomAttributes, false, TypeChecks.IsNullable(endpoint.ReturnType), false);
 
 			if (returnType is not null && returnType.IsBuiltin)
 			{

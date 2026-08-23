@@ -244,8 +244,21 @@ public class TypeScriptConverterTests
 		result.Should().NotBeNull();
 		result.Properties.Should().HaveCount(1);
 		var prop = result.Properties!.First();
+		prop.ImportType.Should().Be("FormulaDto");
 		prop.DestinationName.Should().Be("formulas");
 		prop.DestinationType.Should().Be("{ [key: string]: { [key: string]: FormulaDto[] } }");
+	}
+
+	[Fact]
+	public void Handles_Dictionary_With_Enum_Keys()
+	{
+		var result = Sut.Convert(typeof(EnumKeyedDictionary));
+
+		result.Should().NotBeNull();
+		result.Properties.Should().HaveCount(1);
+		var prop = result.Properties!.First();
+		prop.DestinationName.Should().Be("valuesPerState");
+		prop.DestinationType.Should().Be("{ [key: number]: number }");
 	}
 
 	[Fact]
@@ -534,6 +547,18 @@ public class TypeScriptConverterTests
 	private class NestedValueDictionary
 	{
 		public Dictionary<Guid, Dictionary<string, IEnumerable<FormulaDto>>> Formulas { get; set; }
+	}
+
+	private class EnumKeyedDictionary
+	{
+		public Dictionary<State, int> ValuesPerState { get; set; }
+	}
+
+	private enum State
+	{
+		NotSet,
+		Pending,
+		Done,
 	}
 
 	private class FormulaDto

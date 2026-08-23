@@ -141,6 +141,23 @@ public class TypeScriptWriterTests : IDisposable
 	}
 
 	[Fact]
+	public void Handles_Dictionary_With_Enum_Keys()
+	{
+		// Arrange
+		var outputTypes = BuildOutputTypes(typeof(EnumKeyedDictionary));
+
+		// Act
+		var result = Sut.Write(outputTypes.First(), outputTypes, false);
+
+		// Assert
+		var file = File.ReadAllText(result);
+		file.Should()
+			.NotBeEmpty()
+			.And.NotContain("import { ")
+			.And.Contain("valuesPerState: { [key: number]: number };");
+	}
+
+	[Fact]
 	public void Handles_Dictionary_With_Nested_Dictionary_Values()
 	{
 		// Arrange
@@ -572,6 +589,18 @@ public class TypeScriptWriterTests : IDisposable
 	private class ComplexValueDictionary
 	{
 		public Dictionary<Guid, IEnumerable<FormulaDto>> Formulas { get; set; }
+	}
+
+	private class EnumKeyedDictionary
+	{
+		public Dictionary<State, int> ValuesPerState { get; set; }
+	}
+
+	private enum State
+	{
+		NotSet,
+		Pending,
+		Done,
 	}
 
 	private class NestedValueDictionary
