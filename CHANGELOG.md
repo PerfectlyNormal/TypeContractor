@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Pin Handlebars.Net dependency to pre-slopped releases
+- Bump System.Reflection.MetadataLoadContext from 10.0.10 to 10.0.11
+- Bump Microsoft.NET.Test.SDK from 18.8.1 to 18.9.0
+- Bump xunit.runner.visualstudio from 3.1.5 to 4.0.0
 
 ## [0.22.0] - 2026-07-31
 
