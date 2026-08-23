@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Convert dictionaries with enum keys to `number`
 
+### Changed
+
+- Pin Handlebars.Net dependency to pre-slopped releases
+
 ## [0.22.0] - 2026-07-31
 
 ### Fixed

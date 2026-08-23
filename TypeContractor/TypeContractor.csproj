@@ -16,7 +16,7 @@
 	  <EmbeddedResource Include="Templates\react-axios.hbs" />
 	</ItemGroup>
 	<ItemGroup>
-	  <PackageReference Include="Handlebars.Net" Version="2.1.6" />
+	  <PackageReference Include="Handlebars.Net" Version="[2.1.6]" />
 	  <PackageReference Include="System.Reflection.MetadataLoadContext" Version="10.0.11" />
 	</ItemGroup>
 	<ItemGroup>
