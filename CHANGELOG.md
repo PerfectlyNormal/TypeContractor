@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.23.0] - 2026-10-11
+
 ### Added
 
 * Configurable line endings (`--line-endings`)
@@ -515,7 +517,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[unreleased]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.22.1...HEAD
+[unreleased]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.23.0...HEAD
+[0.23.0]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.22.1...v0.23.0
 [0.22.1]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.22.0...v0.22.1
 [0.22.0]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.21.0...v0.22.0
 [0.21.0]: https://github.com/PerfectlyNormal/TypeContractor/compare/v0.20.0...v0.21.0
