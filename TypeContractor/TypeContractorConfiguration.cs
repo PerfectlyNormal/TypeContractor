@@ -18,6 +18,7 @@ public class TypeContractorConfiguration
 	private List<ApiClient> _apiClients = [];
 	private string? _apiClientTemplate;
 	private Casing? _casing;
+	private LineEndings? _lineEndings;
 
 	public IReadOnlyDictionary<string, string> TypeMaps => _map;
 	public IReadOnlyList<string> Suffixes => _suffixes.AsReadOnly();
@@ -31,6 +32,7 @@ public class TypeContractorConfiguration
 	public IReadOnlyList<ApiClient> ApiClients => _apiClients.AsReadOnly();
 	public string ApiClientTemplate => _apiClientTemplate ?? "aurelia";
 	public Casing Casing => _casing ?? Casing.Kebab;
+	public LineEndings LineEndings => _lineEndings ?? LineEndings.CrLf;
 
 	/// <summary>
 	/// Set up a default configuration using <see cref="AddDefaultSuffixes"/> and <see cref="AddDefaultTypeMaps"/>
@@ -289,6 +291,17 @@ public class TypeContractorConfiguration
 	public TypeContractorConfiguration SetCasing(Casing casing)
 	{
 		_casing = casing;
+		return this;
+	}
+
+	/// <summary>
+	/// Set the line endings for generated files
+	/// </summary>
+	/// <param name="lineEndings"></param>
+	/// <returns>The configuration object for continued chaining</returns>
+	public TypeContractorConfiguration SetLineEndings(LineEndings lineEndings)
+	{
+		_lineEndings = lineEndings;
 		return this;
 	}
 

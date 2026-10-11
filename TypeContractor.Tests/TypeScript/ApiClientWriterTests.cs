@@ -25,7 +25,7 @@ public sealed class ApiClientWriterTests : IDisposable
 			.AddAssembly(assembly.FullName!, assembly.Location)
 			.SetOutputDirectory(_outputDirectory.FullName);
 		_converter = new TypeScriptConverter(_configuration, BuildMetadataLoadContext());
-		Sut = new ApiClientWriter(_configuration.OutputPath, "~");
+		Sut = new ApiClientWriter(_configuration.OutputPath, "~", _configuration.LineEndings);
 
 		_templateFn = CompileTemplate("TypeContractor.Templates.aurelia.hbs");
 	}
@@ -416,6 +416,41 @@ public sealed class ApiClientWriterTests : IDisposable
 				break;
 			case Casing.Snake:
 				result.Should().EndWith("test_client.ts");
+				break;
+		}
+	}
+
+	[Theory]
+	[InlineData(LineEndings.CrLf)]
+	[InlineData(LineEndings.Lf)]
+	public void Uses_Configured_LineEndings(LineEndings lineEndings)
+	{
+		// Arrange
+		var apiClient = new ApiClient("TestClient", "TestController", "test", null);
+		apiClient.AddEndpoint(new ApiClientEndpoint("getLatest", "latest/{id}/{referenceId}/{groupId?}", EndpointMethod.GET, null, typeof(Guid), false, [
+			new EndpointParameter("id", typeof(Guid), null, false, false, true, false, false, false, false, false),
+			new EndpointParameter("referenceId", typeof(Guid), null, false, false, true, false, false, false, false, false),
+			new EndpointParameter("groupId", typeof(Guid?), typeof(Guid), false, false, true, false, false, false, false, true),
+		], null));
+
+		var sut = new ApiClientWriter(_configuration.OutputPath, "~", lineEndings);
+
+		// Act
+		var result = sut.Write(apiClient, [], _converter, false, _templateFn, Casing.Camel);
+
+		// Assert
+		var file = File.ReadAllText(result).Trim();
+
+		switch (lineEndings)
+		{
+			case LineEndings.CrLf:
+				file.Should().NotBeEmpty()
+					.And.Contain("\r\n");
+				break;
+			case LineEndings.Lf:
+				file.Should().NotBeEmpty()
+					.And.Contain("\n")
+					.And.NotContain("\r\n");
 				break;
 		}
 	}

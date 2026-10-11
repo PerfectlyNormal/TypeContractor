@@ -6,7 +6,7 @@ using TypeContractor.Output;
 namespace TypeContractor.TypeScript;
 
 #pragma warning disable CA1305 // Specify IFormatProvider
-public class TypeScriptWriter(string outputPath)
+public class TypeScriptWriter(string outputPath, LineEndings lineEndings)
 {
 	private static readonly Encoding _utf8WithoutBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 	private readonly StringBuilder _builder = new();
@@ -31,7 +31,8 @@ public class TypeScriptWriter(string outputPath)
 			Directory.CreateDirectory(directory);
 
 		// Write file
-		File.WriteAllText(filePath, _builder.ToString().Trim() + Environment.NewLine, _utf8WithoutBom);
+		var newLine = lineEndings.ToReplacementString();
+		File.WriteAllText(filePath, _builder.ToString().Trim().ReplaceLineEndings(newLine) + newLine, _utf8WithoutBom);
 
 		// Return the path we wrote to
 		return filePath;
@@ -124,6 +125,8 @@ public class TypeScriptWriter(string outputPath)
 
 	private void BuildExport(OutputType type)
 	{
+		var newLine = lineEndings.ToReplacementString();
+
 		// Header
 		if (type.IsEnum)
 		{
@@ -163,7 +166,7 @@ public class TypeScriptWriter(string outputPath)
 					_ => $"{property.Value}",
 				};
 
-				_builder.AppendFormat("  {0}: {1},\r\n", property.DestinationName, value);
+				_builder.AppendFormat("  {0}: {1},{2}", property.DestinationName, value, newLine);
 			}
 			else
 			{
@@ -171,14 +174,14 @@ public class TypeScriptWriter(string outputPath)
 				var array = property.IsArray ? "[]" : "";
 				var isReadonly = property.IsReadonly ? "readonly " : "";
 
-				_builder.AppendFormat("  {4}{0}{1}: {2}{3};\r\n", property.DestinationName, nullable, property.DestinationType, array, isReadonly);
+				_builder.AppendFormat("  {4}{0}{1}: {2}{3};{5}", property.DestinationName, nullable, property.DestinationType, array, isReadonly, newLine);
 			}
 		}
 
 		foreach (var member in type.EnumMembers ?? Enumerable.Empty<OutputEnumMember>())
 		{
 			_builder.AppendDeprecationComment(member.Obsolete);
-			_builder.AppendFormat("  {0} = {1},\r\n", member.DestinationName, member.DestinationValue);
+			_builder.AppendFormat("  {0} = {1},{2}", member.DestinationName, member.DestinationValue, newLine);
 		}
 
 		// Footer

@@ -23,6 +23,7 @@ internal class Generator
 	private readonly bool _generateApiClients;
 	private readonly string _apiClientTemplate;
 	private readonly Casing? _casing;
+	private readonly LineEndings? _lineEndings;
 
 	public Generator(string assemblyPath,
 					 string[] alsoLookIn,
@@ -38,7 +39,8 @@ internal class Generator
 					 bool buildZodSchemas,
 					 bool generateApiClients,
 					 string apiClientTemplate,
-					 Casing? casing)
+					 Casing? casing,
+					 LineEndings? lineEndings)
 	{
 		_assemblyPath = assemblyPath;
 		_alsoLookIn = alsoLookIn;
@@ -55,6 +57,7 @@ internal class Generator
 		_generateApiClients = generateApiClients;
 		_apiClientTemplate = apiClientTemplate;
 		_casing = casing;
+		_lineEndings = lineEndings;
 	}
 
 	public Task<int> Execute(CancellationToken cancellationToken)
@@ -236,8 +239,11 @@ internal class Generator
 				configuration = configuration.AddCustomMap(parts.ElementAt(0), parts.ElementAt(1));
 			}
 
-		if (_casing is not null)
+		if (_casing.HasValue)
 			configuration = configuration.SetCasing(_casing.Value);
+
+		if (_lineEndings.HasValue)
+			configuration = configuration.SetLineEndings(_lineEndings.Value);
 
 		return Contractor.WithConfiguration(configuration);
 	}

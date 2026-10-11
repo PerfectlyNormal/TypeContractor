@@ -56,7 +56,7 @@ public class Contractor
 		var allTypes = new List<OutputType>();
 
 		var converter = new TypeScriptConverter(Configuration, metadataLoadContext);
-		var writer = new TypeScriptWriter(Configuration.OutputPath);
+		var writer = new TypeScriptWriter(Configuration.OutputPath, Configuration.LineEndings);
 
 		foreach (var (assemblyName, assemblyPath) in Configuration.Assemblies)
 		{
@@ -134,7 +134,7 @@ public class Contractor
 			}
 
 			var templateFn = Handlebars.Compile(template);
-			var apiWriter = new ApiClientWriter(Configuration.OutputPath, Configuration.RelativeRoot);
+			var apiWriter = new ApiClientWriter(Configuration.OutputPath, Configuration.RelativeRoot, Configuration.LineEndings);
 			foreach (var client in Configuration.ApiClients)
 			{
 				try

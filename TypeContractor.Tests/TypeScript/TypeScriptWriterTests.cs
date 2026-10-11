@@ -23,7 +23,7 @@ public class TypeScriptWriterTests : IDisposable
 			.AddAssembly(assembly.FullName!, assembly.Location)
 			.SetOutputDirectory(_outputDirectory.FullName);
 		_converter = new TypeScriptConverter(_configuration, BuildMetadataLoadContext());
-		Sut = new TypeScriptWriter(_configuration.OutputPath);
+		Sut = new TypeScriptWriter(_configuration.OutputPath, _configuration.LineEndings);
 	}
 
 	[Fact]
@@ -491,6 +491,36 @@ public class TypeScriptWriterTests : IDisposable
 			.And.Contain("  useTabsInsteadOfSpaces: true")
 			.And.Contain("  retries: 5")
 			.And.Contain("}");
+	}
+
+	[Theory]
+	[InlineData(LineEndings.CrLf)]
+	[InlineData(LineEndings.Lf)]
+	public void Uses_Configured_LineEndings(LineEndings lineEndings)
+	{
+		// Arrange
+		var outputTypes = BuildOutputTypes(typeof(MyConstants));
+
+		var sut = new TypeScriptWriter(_configuration.OutputPath, lineEndings);
+
+		// Act
+		var result = sut.Write(outputTypes.First(), outputTypes, buildZodSchema: false);
+
+		// Assert
+		var file = File.ReadAllText(result).Trim();
+
+		switch (lineEndings)
+		{
+			case LineEndings.CrLf:
+				file.Should().NotBeEmpty()
+					.And.Contain("\r\n");
+				break;
+			case LineEndings.Lf:
+				file.Should().NotBeEmpty()
+					.And.Contain("\n")
+					.And.NotContain("\r\n");
+				break;
+		}
 	}
 
 	private List<OutputType> BuildOutputTypes(Type type, Casing casing = Casing.Pascal)

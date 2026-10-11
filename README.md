@@ -85,6 +85,7 @@ dotnet-config tool for viewing and changing configuration similar to how
     root = "~/api"
     generate-api-clients = true
     build-zod-schemas = true
+    line-endings = "Lf"
 ```
 
 ## Run manually

@@ -7,9 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+* Configurable line endings (`--line-endings`)
+
 ### Fixed
 
 * Fix use of backslash in a path instead of a cross-platform way
+* Line endings are not mixed when running on a non-Windows platform
 
 ### Changed
 
