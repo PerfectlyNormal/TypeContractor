@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+* Fix use of backslash in a path instead of a cross-platform way
+
+### Changed
+
+* Provide a cross-platform way of suggesting a default path to dotnet packs
 * Added [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## [0.22.1] - 2026-08-23

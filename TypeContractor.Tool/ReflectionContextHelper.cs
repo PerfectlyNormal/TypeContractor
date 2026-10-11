@@ -44,7 +44,7 @@ internal static class ReflectionContextHelper
 
 	internal static string? GetNetCorePack(string packPath, string packName, int dotnetVersion)
 	{
-		var packPrefix = @$"{packPath}\{packName}";
+		var packPrefix = Path.Combine(packPath, packName);
 		if (!Directory.Exists(packPrefix))
 			return null;
 

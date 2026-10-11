@@ -1,5 +1,6 @@
 using DotNetConfig;
 using System.CommandLine;
+using System.Runtime.InteropServices;
 using TypeContractor;
 using TypeContractor.Logger;
 using TypeContractor.Tool;
@@ -67,8 +68,8 @@ var constantOptions = new Option<string[]>("--generate-constants")
 
 var packsOptions = new Option<string>("--packs-path")
 {
-	DefaultValueFactory = (arg) => config.GetStringWithFallback("packs-path", @"C:\Program Files\dotnet\packs\"),
-	Description = "Path where dotnet is installed and reference assemblies can be found.",
+	DefaultValueFactory = (arg) => config.GetStringWithFallback("packs-path", GetDefaultPacksPath()),
+	Description = "Path where dotnet reference packs is installed.",
 };
 
 var dotnetVersionOptions = new Option<int>("--dotnet-version")
@@ -184,3 +185,9 @@ rootCommand.SetAction(async (parseResult, cancellationToken) =>
 
 var parsedResult = rootCommand.Parse(args);
 return await parsedResult.InvokeAsync();
+
+static string GetDefaultPacksPath()
+{
+	var path = Path.Combine(RuntimeEnvironment.GetRuntimeDirectory(), "..", "..", "..", "packs");
+	return Path.GetFullPath(path);
+}
