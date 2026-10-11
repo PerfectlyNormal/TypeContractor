@@ -13,27 +13,27 @@ var rootCommand = new RootCommand("Tool for generating TypeScript definitions fr
 var assemblyOption = new Option<string>("--assembly")
 {
 	DefaultValueFactory = (arg) => config.TryGetString("assembly") ?? "",
-	Description = "Path to the assembly to start with. Will be relative to the current directory",
+	Description = "Path to the assembly to start with. Will be relative to the current directory.",
 	Required = true,
 };
 
 var extraAssemblyOptions = new Option<string[]>("--also-look-in")
 {
 	DefaultValueFactory = (arg) => config.GetStrings("also-look-in"),
-	Description = "Path to additional assemblies to look for relevant types in. Can be repeated",
+	Description = "Path to additional assemblies to look for relevant types in. Can be repeated.",
 };
 
 var outputOption = new Option<string>("--output")
 {
 	DefaultValueFactory = (arg) => config.TryGetString("output") ?? "",
-	Description = "Output path to write to. Will be relative to the current directory",
+	Description = "Output path to write to. Will be relative to the current directory.",
 	Required = true,
 };
 
 var relativeRootOption = new Option<string>("--root")
 {
 	DefaultValueFactory = (arg) => config.TryGetString("root") ?? "",
-	Description = "Relative root for generating cleaner imports. For example '~/api'",
+	Description = "Relative root for generating cleaner imports. For example '~/api'.",
 };
 
 var cleanOption = new Option<CleanMethod>("--clean")
@@ -45,25 +45,25 @@ var cleanOption = new Option<CleanMethod>("--clean")
 var replaceOptions = new Option<string[]>("--replace")
 {
 	DefaultValueFactory = (arg) => config.GetStrings("replace"),
-	Description = "Provide one replacement in the form '<search>:<replace>'. Can be repeated",
+	Description = "Provide one replacement in the form '<search>:<replace>'. Can be repeated.",
 };
 
 var stripOptions = new Option<string[]>("--strip")
 {
 	DefaultValueFactory = (arg) => config.GetStrings("strip"),
-	Description = "Provide a prefix to strip out of types. Can be repeated",
+	Description = "Provide a prefix to strip out of types. Can be repeated.",
 };
 
 var mapOptions = new Option<string[]>("--custom-map")
 {
 	DefaultValueFactory = (arg) => config.GetStrings("custom-map"),
-	Description = "Provide a custom type map in the form '<from>:<to>'. Can be repeated",
+	Description = "Provide a custom type map in the form '<from>:<to>'. Can be repeated.",
 };
 
 var constantOptions = new Option<string[]>("--generate-constants")
 {
 	DefaultValueFactory = (arg) => config.GetStrings("generate-constants"),
-	Description = "Treat the provided type name as containing constants to convert. Can be repeated",
+	Description = "Treat the provided type name as containing constants to convert. Can be repeated.",
 };
 
 var packsOptions = new Option<string>("--packs-path")
@@ -75,7 +75,7 @@ var packsOptions = new Option<string>("--packs-path")
 var dotnetVersionOptions = new Option<int>("--dotnet-version")
 {
 	DefaultValueFactory = (arg) => config.GetNumberWithFallback("dotnet-version", 10),
-	Description = "Major version of dotnet to look for",
+	Description = "Major version of dotnet to look for.",
 };
 
 var logLevelOptions = new Option<LogLevel>("--log-level")
@@ -98,13 +98,14 @@ var generateApiClientsOptions = new Option<bool>("--generate-api-clients")
 var apiClientsTemplateOptions = new Option<string>("--api-client-template")
 {
 	DefaultValueFactory = (arg) => config.GetStringWithFallback("api-client-template", "aurelia"),
-	Description = "Template to use for API clients. Either 'aurelia', 'react-axios' (built-in) or a path to a Handlebars file, including extension",
+	Description = "Template to use for API clients. Either 'aurelia', 'react-axios' (built-in) or a path to a Handlebars file, including extension.",
 };
 
 var casingOptions = new Option<Casing>("--casing")
 {
 	DefaultValueFactory = (arg) => config.GetEnum("casing", Casing.Kebab),
-	Description = "Casing to use for generated file names",
+	Description = "Casing to use for generated file names.",
+};
 };
 
 rootCommand.Options.Add(assemblyOption);
